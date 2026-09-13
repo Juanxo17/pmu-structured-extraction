@@ -10,27 +10,33 @@ Los principios de producto y las exclusiones de alcance (qué no calcula ni deci
 
 ## Arquitectura: 5 servicios independientes (en paralelo)
 
-Cada uno un proceso FastAPI propio, comunicándose por HTTP — ver `docs/CONTRATOS_SISTEMA.md` para el contrato completo (endpoints, request/response, esquema compartido).
+Cada uno un proceso FastAPI propio, comunicándose por HTTP — ver `docs/CONTRATOS_SISTEMA.md` para el contrato completo (endpoints, request/response, esquema compartido). Viven bajo `backend/<nombre>/`, cada uno con su propio `pyproject.toml` y `Dockerfile` (workspace de `uv`, un solo `uv.lock` en la raíz).
 
-- **BFF** (:8000) — **Cesar** — gateway único hacia lo externo (Telegram, Frontend); proxy puro hacia CRUD, dispara `/procesar` en Backend
+- **BFF** (:8000) — **Cesar** — gateway único hacia lo externo (Telegram, Frontend); proxy puro hacia CRUD, dispara `/procesar` en Process
 - **CRUD** (:8001) — **Julian** — persistencia SQLite/SQLAlchemy; único componente que toca la base de datos
-- **Backend** (:8002) — **Cesar** — preprocesamiento (anonimización, duplicados) + orquestador de dos etapas; llama a Inferencia, Geo y CRUD
-- **Inferencia** (:8003) — **Juan** — cliente de inferencia (Groq), prompts, validador/reparación
+- **Process** (:8002) — **Cesar** — preprocesamiento (anonimización, duplicados) + orquestador de dos etapas; llama a Inference, Geo y CRUD
+- **Inference** (:8003) — **Juan** — cliente de inferencia (Groq), prompts, validador/reparación
 - **Geo** (:8004) — **Julian** — gazetteer, normalización geográfica determinista, nunca invoca al LLM
 
 **Frontend** (Streamlit) — **Sebas** — cliente puro de BFF; consume `GET/PATCH /reportes` y `GET /reportes/resumen`, no es uno de los 5 servicios ni implementa lógica propia de negocio.
 
 El esquema Pydantic de extracción (`ReporteEstructurado`, en `docs/CONTRATOS_SISTEMA.md`) es el contrato central: nadie implementa contra un campo hasta que quede congelado y acordado por el equipo. Cambios a cualquier endpoint o campo van en el mismo PR que actualiza ese documento.
 
-## Gestor de paquetes: uv, exclusivamente
+Código compartido por los 5 servicios (esquema, ontología) vive en `common/sirena-schema` (paquete `sirena_schema`) — nunca se duplica en un servicio. El vocabulario de `tipo_evento`/`servicio_de_respuesta` se edita en `config/ontologia.yaml`, no en código.
 
-Prohibido `pip install` directo.
+## Gestor de paquetes: uv, exclusivamente (workspace)
+
+Prohibido `pip install` directo. Es un workspace de `uv`: un `uv.lock` en la raíz, cada servicio (`backend/*`, `common/*`, `frontend`) con su propio `pyproject.toml`.
 
 ```bash
-uv add <paquete>          # dependencia de producción
-uv add --dev <paquete>    # dependencia de desarrollo (linter, tests, etc.)
-uv sync                   # instalar/actualizar el entorno desde pyproject.toml + uv.lock
+uv sync --all-packages          # instalar todo el workspace (entorno de desarrollo local)
+uv sync --package <nombre>      # instalar solo un servicio (lo que usa cada Dockerfile)
+uv run --package <nombre> ...   # correr un comando dentro del entorno de ese servicio
+uv add --package <nombre> <paquete>       # dependencia de producción de ese servicio
+uv add --package <nombre> --dev <paquete> # dependencia de desarrollo de ese servicio
 ```
+
+Los comandos de día a día están en el `Makefile`: `make install`, `make lint`, `make format`, `make test`, `make test-cov`, `make run-<servicio>` (ej. `make run-bff`), `make docker-up`.
 
 ## Estilo de código
 
@@ -39,6 +45,7 @@ uv sync                   # instalar/actualizar el entorno desde pyproject.toml 
 - Cero warnings: se corrige la causa, nunca se silencia con `warnings.filterwarnings`.
 - Sin abstracciones ni manejo de errores para casos que no pueden ocurrir. No hacer refactors fuera del alcance de lo que se está trabajando.
 - Alta cohesión, bajo acoplamiento — mismo criterio que en `uao-neumonia`: si un método hace algo claramente distinto al resto de la clase, se extrae a su propia clase con nombre específico, nunca a un `utils.py`/`Manager.py`.
+- No referenciar IDs de tarea (`T-XX`) en código, docstrings ni comentarios — el código no necesita saber qué ticket lo originó; esa trazabilidad va en el commit/PR.
 
 ## Pruebas
 
@@ -60,7 +67,7 @@ Como el modelo es preentrenado (no hay fine-tuning), cada corrida de MLflow regi
 
 ## Flujo de Git
 
-- Gitflow: `main` (producción) ← `develop` (integración) ← `feature/<frente>-<algo>` (ej. `feature/b-esquema-pydantic`).
+- Gitflow: `main` (producción) ← `develop` (integración) ← `feature/<servicio>-<algo>` (ej. `feature/inference-prompts-v1`).
 - Todo cambio se integra mediante Pull Request con la plantilla oficial (`.github/pull_request_template.md`) — nunca push directo a `main` ni a `develop`.
 - Un PR no se mergea si `pytest` o `ruff` fallan.
 

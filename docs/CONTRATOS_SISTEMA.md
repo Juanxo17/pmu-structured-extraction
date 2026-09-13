@@ -13,8 +13,8 @@ Este documento define la interfaz HTTP que debe exponer cada uno de los 5 servic
 |---|---|---|---|
 | **BFF** | 8000 | Cesar | T-19, T-21 |
 | **CRUD** | 8001 | Julian | T-20 |
-| **Backend** (Preprocesamiento + Extracción) | 8002 | Cesar | T-10, T-14, T-17 |
-| **Inferencia** | 8003 | Juan | T-11, T-12, T-13 |
+| **Process** (Preprocesamiento + Extracción) | 8002 | Cesar | T-10, T-14, T-17 |
+| **Inference** | 8003 | Juan | T-11, T-12, T-13 |
 | **Geo** | 8004 | Julian | T-06, T-16 |
 
 ## Flujo de llamadas
@@ -26,22 +26,22 @@ Telegram ──────────► BFF :8000 ──────► CRUD 
                         │
                         │ POST /procesar
                         ▼
-              Backend :8002 (Preprocesamiento + Extracción)
+              Process :8002 (Preprocesamiento + Extracción)
                         │
-                        ├──► Inferencia :8003 (POST /compuerta, luego POST /extraccion si aplica)
+                        ├──► Inference :8003 (POST /compuerta, luego POST /extraccion si aplica)
                         ├──► Geo :8004 (POST /resolver)
                         └──► CRUD :8001 (POST /reportes — persiste resultado final, directo, sin pasar por BFF)
 ```
 
 BFF mantiene la interfaz `FuenteDeMensajes` (una implementación hoy: `TelegramSource`; diseñada para admitir otras a futuro, ej. WhatsApp, sin tocar el resto del sistema).
 
-Backend decide internamente si ejecuta la llamada 2 (extracción) tras el resultado de la llamada 1 (compuerta) — esto es opaco para quien lo invoca: BFF solo ve un único `POST /procesar` que responde con el resultado final (estructurado o descartado).
+Process decide internamente si ejecuta la llamada 2 (extracción) tras el resultado de la llamada 1 (compuerta) — esto es opaco para quien lo invoca: BFF solo ve un único `POST /procesar` que responde con el resultado final (estructurado o descartado).
 
 ---
 
 ## Esquema compartido — `ReporteEstructurado` (Pydantic v2)
 
-Fuente de verdad: T-02. Lo consumen Inferencia (lo produce), Backend (lo orquesta), CRUD (lo persiste), BFF/Frontend (lo consultan).
+Fuente de verdad: T-02. Lo consumen Inference (lo produce), Process (lo orquesta), CRUD (lo persiste), BFF/Frontend (lo consultan).
 
 `tipo_evento`/`servicio_de_respuesta` se validan en runtime contra `config/ontologia.yaml` (T-03), no van como `Literal` fijo — así el vocabulario cambia sin tocar código.
 
@@ -53,7 +53,7 @@ class Compuerta(BaseModel):
 
 
 class Naturaleza(BaseModel):
-    tipo_evento: str               # validado en tiempo de ejecución contra config/ontologia.yaml
+    tipo_evento: str  # validado en tiempo de ejecución contra config/ontologia.yaml
     servicio_de_respuesta: list[str]  # idem — multietiqueta
 
     @field_validator("tipo_evento")
@@ -106,13 +106,13 @@ class Ubicacion(BaseModel):
 class ReporteEstructurado(BaseModel):
     id: str
     fuente: Literal["telegram"]
-    id_externo: str                   # id del mensaje en la fuente — usado para idempotencia
-    autor_anonimizado_id: str          # hash del autor
-    mensaje_anonimizado: str          # nunca el texto crudo con PII
+    id_externo: str  # id del mensaje en la fuente — usado para idempotencia
+    autor_anonimizado_id: str  # hash del autor
+    mensaje_anonimizado: str  # nunca el texto crudo con PII
     estado_revision: Literal["pendiente", "revisado"]
     compuerta: Compuerta
-    naturaleza: Naturaleza | None      # None si es_reporte_accionable = False
-    ubicacion: Ubicacion | None        # None si es_reporte_accionable = False
+    naturaleza: Naturaleza | None  # None si es_reporte_accionable = False
+    ubicacion: Ubicacion | None  # None si es_reporte_accionable = False
     creado_en: datetime
 ```
 
@@ -126,7 +126,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/mensajes` | ver abajo | `202 {id_mensaje: str, estado: "recibido"}` | Recibe un mensaje desde `FuenteDeMensajes` (hoy: Telegram) y dispara `POST /procesar` en Backend |
+| `POST` | `/mensajes` | ver abajo | `202 {id_mensaje: str, estado: "recibido"}` | Recibe un mensaje desde `FuenteDeMensajes` (hoy: Telegram) y dispara `POST /procesar` en Process |
 | `GET` | `/reportes` | filtros + paginación, ver CRUD | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Proxy directo a CRUD — consumido por la bandeja del tablero (T-22) |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` \| `404` | Proxy directo a CRUD — vista de detalle (T-23) |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Proxy directo a CRUD — mecanismo del triaje asistido (1.4): el operador marca "revisado" o corrige un campo mal extraído |
@@ -138,7 +138,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 |---|---|---|---|
 | `fuente` | `"telegram"` | sí | Fijo por ahora — más adelante puede haber otras vía `FuenteDeMensajes` |
 | `id_externo` | `string` | sí | ID del mensaje en Telegram — usado para idempotencia |
-| `texto` | `string` | sí | Contenido crudo. La anonimización (T-10) ocurre dentro de Backend, no en BFF |
+| `texto` | `string` | sí | Contenido crudo. La anonimización (T-10) ocurre dentro de Process, no en BFF |
 | `marca_temporal_origen` | `datetime ISO 8601` | sí | Hora del mensaje en Telegram, no la de recepción |
 
 **Errores de `POST /mensajes`:** `400` si falta `fuente`/`texto`/`marca_temporal_origen`; `409` si `id_externo` ya fue recibido antes (duplicado exacto); `503` si el pipeline está saturado (cuota de Groq agotada, 4.6) — el cliente reintenta con backoff.
@@ -149,6 +149,7 @@ Internamente implementa la interfaz:
 class FuenteDeMensajes(Protocol):
     def escuchar(self) -> Iterator[MensajeCrudo]: ...
 
+
 class TelegramSource(FuenteDeMensajes): ...
 ```
 
@@ -158,7 +159,7 @@ class TelegramSource(FuenteDeMensajes): ...
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Backend al final del pipeline |
+| `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
 | `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`/coordenadas), para que la bandeja cargue rápido |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
@@ -166,15 +167,15 @@ class TelegramSource(FuenteDeMensajes): ...
 
 **Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
 
-## 3. Backend (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
+## 3. Process (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17) → llama Inferencia (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado |
+| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado |
 
-Las llamadas 1/2 a Inferencia y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Backend decide el flujo interno.
+Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Process decide el flujo interno.
 
-## 4. Inferencia — puerto 8003 (Juan)
+## 4. Inference — puerto 8003 (Juan)
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
@@ -193,7 +194,7 @@ Internamente incluye el validador/reparador (T-13): si la salida cruda del model
 
 ## Cómo desarrollar en paralelo sin bloquearse
 
-Cada servicio se mockea contra este contrato mientras los demás no estén listos: un `TestClient` o un stub HTTP que responda con la forma exacta de arriba. Cuando el servicio real esté listo, se reemplaza la URL mockeada por la real (vía variable de entorno, ej. `INFERENCIA_URL`), sin tocar el código del que consume.
+Cada servicio se mockea contra este contrato mientras los demás no estén listos: un `TestClient` o un stub HTTP que responda con la forma exacta de arriba. Cuando el servicio real esté listo, se reemplaza la URL mockeada por la real (vía variable de entorno, ej. `INFERENCE_URL`), sin tocar el código del que consume.
 
 ## Cambios a este contrato
 
