@@ -50,8 +50,24 @@ class Compuerta(BaseModel):
     es_reporte_accionable: bool
     temporalidad: Literal["ocurriendo_ahora", "ya_ocurrio", "riesgo_previsto", "referencia_noticia"]
     intencion: Literal["solicita_ayuda", "reporta_terceros", "ofrece_ayuda", "solicita_informacion"]
+```
 
+Correspondencia de `intencion`/`temporalidad` hacia las clases de HumAID (justificación, no se valida en código):
 
+| HumAID | SIRENA |
+|---|---|
+| Requests or urgent needs | `intencion = solicita_ayuda` |
+| Rescue, volunteering, or donation effort | `intencion = ofrece_ayuda` |
+| Displaced people and evacuations | `intencion = reporta_terceros` |
+| Injured or dead people | `intencion = reporta_terceros` + `servicio_de_respuesta = G` |
+| Missing or found people | `intencion = reporta_terceros` + `servicio_de_respuesta = M` |
+| Infrastructure and utility damage | `intencion = reporta_terceros` + `servicio_de_respuesta ∈ {K, L}` |
+| Caution and advice | `temporalidad = riesgo_previsto` |
+| Other relevant information | `intencion = solicita_informacion` |
+| Sympathy and support | `es_reporte_accionable = false` |
+| Not humanitarian | `es_reporte_accionable = false` |
+
+```python
 class Naturaleza(BaseModel):
     tipo_evento: str  # validado en tiempo de ejecución contra config/ontologia.yaml
     servicio_de_respuesta: list[str]  # idem — multietiqueta

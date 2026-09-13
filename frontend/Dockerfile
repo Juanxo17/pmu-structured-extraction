@@ -10,4 +10,4 @@ COPY frontend ./frontend
 RUN uv sync --package frontend --frozen --no-dev
 
 EXPOSE 8501
-CMD ["uv", "run", "--package", "frontend", "streamlit", "run", "frontend/src/frontend/streamlit_app.py", "--server.address=0.0.0.0"]
+CMD ["uv", "run", "--package", "frontend", "streamlit", "run", "frontend/frontend/streamlit_app.py", "--server.address=0.0.0.0"]

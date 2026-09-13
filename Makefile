@@ -59,7 +59,7 @@ run-geo:
 	uv run --package geo uvicorn geo.main:app --reload --port 8004
 
 run-frontend:
-	uv run --package frontend streamlit run frontend/src/frontend/streamlit_app.py
+	uv run --package frontend streamlit run frontend/frontend/streamlit_app.py
 
 docker-build:
 	docker compose build
