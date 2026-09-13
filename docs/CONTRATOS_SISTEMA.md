@@ -43,6 +43,8 @@ Backend decide internamente si ejecuta la llamada 2 (extracción) tras el result
 
 Fuente de verdad: T-02. Lo consumen Inferencia (lo produce), Backend (lo orquesta), CRUD (lo persiste), BFF/Frontend (lo consultan).
 
+`tipo_evento`/`servicio_de_respuesta` se validan en runtime contra `config/ontologia.yaml` (T-03), no van como `Literal` fijo — así el vocabulario cambia sin tocar código.
+
 ```python
 class Compuerta(BaseModel):
     es_reporte_accionable: bool
@@ -51,20 +53,46 @@ class Compuerta(BaseModel):
 
 
 class Naturaleza(BaseModel):
-    tipo_evento: Literal[
-        "sismo", "movimiento_en_masa", "inundacion_subita", "inundacion_lenta",
-        "incendio_cobertura_vegetal", "incendio_estructural", "aglomeracion_publico",
-        "salud_ambiental",
-    ]
-    servicio_de_respuesta: list[Literal[
-        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "R",
-    ]]  # A Búsqueda y Rescate · B Extinción de Incendios · C Telecomunicaciones para la comunidad ·
-       # D Manejo de Materiales Peligrosos · E Seguridad y Convivencia · F Accesibilidad y Transporte ·
-       # G Salud · H Agua Potable · I Asistencia Humanitaria · J Alojamientos Temporales ·
-       # K Energía y Gas · L Saneamiento Básico · M Reencuentro Familiar · N Fauna Doméstica ·
-       # O Fauna Silvestre · R Manejo de Residuos Sólidos — multietiqueta
+    tipo_evento: str               # validado en tiempo de ejecución contra config/ontologia.yaml
+    servicio_de_respuesta: list[str]  # idem — multietiqueta
 
+    @field_validator("tipo_evento")
+    @classmethod
+    def _validar_tipo_evento(cls, v: str) -> str:
+        if v not in ONTOLOGIA.tipos_evento:
+            raise ValueError(f"tipo_evento no está en la ontología vigente: {v}")
+        return v
 
+    @field_validator("servicio_de_respuesta")
+    @classmethod
+    def _validar_servicios(cls, v: list[str]) -> list[str]:
+        invalidos = set(v) - ONTOLOGIA.servicios_de_respuesta
+        if invalidos:
+            raise ValueError(f"servicio_de_respuesta no reportable: {invalidos}")
+        return v
+```
+
+Vocabulario vigente hoy en `config/ontologia.yaml` (Anexo C, fuente: ERE de Cali):
+
+- **`tipo_evento`** (8): `sismo` · `movimiento_en_masa` · `inundacion_subita` · `inundacion_lenta` · `incendio_cobertura_vegetal` · `incendio_estructural` · `aglomeracion_publico` · `salud_ambiental`
+- **`servicio_de_respuesta`** (16 reportables, código de letra): `A` Búsqueda y Rescate · `B` Extinción de Incendios · `C` Telecomunicaciones para la comunidad · `D` Manejo de Materiales Peligrosos · `E` Seguridad y Convivencia · `F` Accesibilidad y Transporte · `G` Salud · `H` Agua Potable · `I` Asistencia Humanitaria · `J` Alojamientos Temporales · `K` Energía y Gas · `L` Saneamiento Básico · `M` Reencuentro Familiar · `N` Fauna Doméstica · `O` Fauna Silvestre · `R` Manejo de Residuos Sólidos (se excluyen `P`/`Q`, funciones institucionales no reportables por la ciudadanía)
+
+**No hay mapeo fijo `tipo_evento` → `servicio_de_respuesta`** — son campos independientes, el modelo los extrae cada uno de lo que dice el mensaje concreto. Tabla orientativa (no oficial, no validada por la ERE) para guiar T-04 (protocolo de anotación):
+
+| `tipo_evento` | Servicios más probables | Menos probables, no descartar |
+|---|---|---|
+| `sismo` | A, G, J, K, H, M | C, F, D, N, O, L |
+| `movimiento_en_masa` | A, G, J, F, K | M, N, O |
+| `inundacion_subita` | A, G, J, H, L | K, F, N, O, M |
+| `inundacion_lenta` | J, H, L, G | I, F |
+| `incendio_cobertura_vegetal` | B, G, N, O | A, F, K |
+| `incendio_estructural` | B, A, G | J, K, D, M |
+| `aglomeracion_publico` | E, G, A | F, C |
+| `salud_ambiental` | G, H, L | D, I, R |
+
+Un mensaje puede salirse de esta tabla — es guía para anotadores, no una regla de validación del esquema.
+
+```python
 class Ubicacion(BaseModel):
     ubicacion_texto_literal: str
     barrio: str | None
@@ -79,6 +107,7 @@ class ReporteEstructurado(BaseModel):
     id: str
     fuente: Literal["telegram"]
     id_externo: str                   # id del mensaje en la fuente — usado para idempotencia
+    autor_anonimizado_id: str          # hash del autor
     mensaje_anonimizado: str          # nunca el texto crudo con PII
     estado_revision: Literal["pendiente", "revisado"]
     compuerta: Compuerta
@@ -87,7 +116,7 @@ class ReporteEstructurado(BaseModel):
     creado_en: datetime
 ```
 
-`pii_removida` **no se persiste ni viaja en el esquema** — el efecto de la anonimización es que `mensaje_anonimizado` ya no contiene PII, no se marca con un flag aparte.
+`pii_removida` no se persiste ni viaja en el esquema.
 
 ---
 
@@ -164,7 +193,7 @@ Internamente incluye el validador/reparador (T-13): si la salida cruda del model
 
 ## Cómo desarrollar en paralelo sin bloquearse
 
-Cada servicio se mockea contra este contrato mientras los demás no estén listos — mismo patrón que en `uao-neumonia`: un `TestClient` o un stub HTTP que responda con la forma exacta de arriba. Cuando el servicio real esté listo, se reemplaza la URL mockeada por la real (vía variable de entorno, ej. `INFERENCIA_URL`), sin tocar el código del que consume.
+Cada servicio se mockea contra este contrato mientras los demás no estén listos: un `TestClient` o un stub HTTP que responda con la forma exacta de arriba. Cuando el servicio real esté listo, se reemplaza la URL mockeada por la real (vía variable de entorno, ej. `INFERENCIA_URL`), sin tocar el código del que consume.
 
 ## Cambios a este contrato
 
