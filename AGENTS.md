@@ -8,16 +8,19 @@ Lineamientos para cualquier persona o agente de código (Claude Code, OpenCode, 
 
 Los principios de producto y las exclusiones de alcance (qué no calcula ni decide el sistema, límites éticos, restricciones de despliegue) están en [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — ese archivo es el que valida `/speckit-plan` y `/speckit-analyze`; este `AGENTS.md` cubre solo convenciones operativas del día a día.
 
-## Frentes de trabajo (en paralelo)
+## Arquitectura: 5 servicios independientes (en paralelo)
 
-Cuatro frentes, cada uno con dueño de módulo (ver 5.3 de la propuesta):
+Cada uno un proceso FastAPI propio, comunicándose por HTTP — ver `docs/CONTRATOS_SISTEMA.md` para el contrato completo (endpoints, request/response, esquema compartido).
 
-- **A — Datos y Evaluación**: corpus, anotación, MLflow, informe de evaluación
-- **B — Núcleo de extracción**: esquema Pydantic v2 (compuerta + naturaleza + ubicación), prompts, cliente de inferencia (Groq), validador, orquestador de dos etapas
-- **C — Geo e Ingesta**: gazetteer, normalización geográfica, anonimización (Ley 1581), fuentes de mensajes
-- **D — Plataforma e Interfaz**: persistencia (SQLite + SQLAlchemy), API (FastAPI), tablero (Streamlit), Docker
+- **BFF** (:8000) — **Cesar** — gateway único hacia lo externo (Telegram, Frontend); proxy puro hacia CRUD, dispara `/procesar` en Backend
+- **CRUD** (:8001) — **Julian** — persistencia SQLite/SQLAlchemy; único componente que toca la base de datos
+- **Backend** (:8002) — **Cesar** — preprocesamiento (anonimización, duplicados) + orquestador de dos etapas; llama a Inferencia, Geo y CRUD
+- **Inferencia** (:8003) — **Juan** — cliente de inferencia (Groq), prompts, validador/reparación
+- **Geo** (:8004) — **Julian** — gazetteer, normalización geográfica determinista, nunca invoca al LLM
 
-El contrato central entre frentes es el esquema Pydantic de extracción — ver `docs/CONTRATOS_MODULOS.md` (pendiente de formalizar vía `/speckit-specify`). Nadie implementa contra ese esquema hasta que quede congelado y acordado por el equipo.
+**Frontend** (Streamlit) — **Sebas** — cliente puro de BFF; consume `GET/PATCH /reportes` y `GET /reportes/resumen`, no es uno de los 5 servicios ni implementa lógica propia de negocio.
+
+El esquema Pydantic de extracción (`ReporteEstructurado`, en `docs/CONTRATOS_SISTEMA.md`) es el contrato central: nadie implementa contra un campo hasta que quede congelado y acordado por el equipo. Cambios a cualquier endpoint o campo van en el mismo PR que actualiza ese documento.
 
 ## Gestor de paquetes: uv, exclusivamente
 
@@ -63,7 +66,7 @@ Como el modelo es preentrenado (no hay fine-tuning), cada corrida de MLflow regi
 
 ## Contratos entre módulos
 
-Las firmas y esquemas documentados en `docs/CONTRATOS_MODULOS.md` son la interfaz que el resto del equipo asume para integrar su propio módulo. Si necesitas cambiar el esquema de un campo ya contratado:
+Las firmas y esquemas documentados en `docs/CONTRATOS_SISTEMA.md` son la interfaz que el resto del equipo asume para integrar su propio módulo. Si necesitas cambiar el esquema de un campo ya contratado:
 
-1. Actualiza `docs/CONTRATOS_MODULOS.md` en el mismo PR.
+1. Actualiza `docs/CONTRATOS_SISTEMA.md` en el mismo PR.
 2. Avisa al equipo — quien depende de ese campo puede estar trabajando con un mock basado en la versión anterior.
