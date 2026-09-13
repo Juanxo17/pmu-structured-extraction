@@ -1,10 +1,27 @@
 .PHONY: install lint format format-check test test-cov clean \
 	run-bff run-crud run-process run-inference run-geo run-frontend \
-	docker-build docker-up docker-down
+	docker-build docker-up docker-down \
+	gga-install gga-setup
 
-install:
+install: gga-setup
 	uv sync --all-packages
 	uv run pre-commit install
+
+# GGA revisa el diff staged contra AGENTS.md usando tu propio agente (Claude Code
+# u OpenCode) como proveedor. Corre como un hook local declarado en
+# .pre-commit-config.yaml — `make install` ya deja el binario y el .gga listos;
+# solo falta que edites PROVIDER en .gga si no usas Claude Code.
+gga-install:
+	@command -v gga >/dev/null 2>&1 && echo "gga ya esta instalado: $$(gga version)" || ( \
+		tmp=$$(mktemp -d) && \
+		git clone --depth 1 https://github.com/Gentleman-Programming/gentleman-guardian-angel.git "$$tmp" && \
+		bash "$$tmp/install.sh" && \
+		rm -rf "$$tmp" \
+	)
+
+gga-setup: gga-install
+	@test -f .gga || gga init
+	@echo "Edita .gga y define PROVIDER=claude o PROVIDER=opencode segun tu agente."
 
 lint:
 	uv run ruff check .

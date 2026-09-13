@@ -1,50 +1,32 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# SIRENA Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Copiloto, no decisor
+El sistema estructura hechos; nunca valora gravedad, prioridad, orden de atención, ni despacha recursos. Toda decisión de despacho la toma un operador humano sobre el registro estructurado.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Trazabilidad obligatoria
+Cada registro se persiste y se presenta junto al mensaje original (anonimizado) que lo produjo. Ningún campo estructurado existe sin su evidencia de origen visible al operador.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. El modelo no geocodifica ni decide territorio
+La extracción entrega texto (`ubicacion_texto_literal`, `punto_referencia`); la resolución a barrio/comuna/coordenadas la hace un componente determinista (Geo), nunca el LLM. Ante ambigüedad, se declara el nivel de granularidad más específico defendible — nunca una suposición de mayor precisión.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Taxonomía enchufable
+`tipo_evento` y `servicio_de_respuesta` se validan contra `config/ontologia.yaml` en tiempo de ejecución, nunca como valores fijos en código. Sustituir la ontología por la de otro dominio no debe requerir tocar el esquema ni los servicios.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Sin entrenamiento, sin GPU local
+El modelo se usa zero/few-shot tal como se publica; no hay fine-tuning ni ajuste de pesos. La inferencia corre íntegramente vía API remota (Groq); ningún servicio asume GPU disponible.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Restricciones de alcance
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+No incluidos por principio, no por falta de tiempo: valoración de gravedad/prioridad, despacho automático de recursos, verificación factual del contenido del mensaje (el sistema estructura lo que dice el mensaje, no si es cierto). Datos personales (nombres, teléfonos, direcciones exactas) se anonimizan antes de llegar al modelo y antes de persistirse — nunca se envían a un proveedor externo ni se guardan en claro.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Flujo de desarrollo
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Convenciones operativas del día a día (gestor de paquetes, estilo, pruebas, Gitflow, estructura de carpetas) viven en [`AGENTS.md`](../../AGENTS.md), no se duplican aquí. El contrato entre servicios vive en [`docs/CONTRATOS_SISTEMA.md`](../../docs/CONTRATOS_SISTEMA.md).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constitución fija principios de producto y ética; no se modifica para acomodar una implementación puntual. Un cambio a los Core Principles requiere acuerdo del equipo completo, igual que un cambio al esquema de extracción.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-09-13 | **Last Amended**: 2026-09-13
