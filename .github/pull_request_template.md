@@ -10,13 +10,17 @@ Aplica un [prefijo convencional](https://www.conventionalcommits.org/) en el tí
 
 ---
 
-### 🧱 Frente o Componente Afectado
+### 🧱 Servicio o Componente Afectado
 Selecciona las áreas principales en las que trabaja esta PR:
-- [ ] **Datos / Evaluación** (corpus, anotación, gold standard, métricas)
-- [ ] **Núcleo de Extracción** (modelo, prompts, validador, pipeline)
-- [ ] **Geo / Ingesta** (gazetteer, normalización geográfica, fuentes de datos)
-- [ ] **Plataforma / Interfaz** (API, persistencia, visualización, despliegue)
-- [ ] **Infraestructura & Contenedores** (`Dockerfile`, `.gitignore`, CI, dependencias)
+- [ ] **BFF** (`backend/bff`) — gateway externo, proxy hacia CRUD
+- [ ] **CRUD** (`backend/crud`) — persistencia SQLite/SQLAlchemy
+- [ ] **Process** (`backend/process`) — anonimización, duplicados, orquestador
+- [ ] **Inference** (`backend/inference`) — cliente de inferencia, prompts, validador
+- [ ] **Geo** (`backend/geo`) — gazetteer, normalización geográfica
+- [ ] **Frontend** (`frontend`) — tablero Streamlit
+- [ ] **Datos / Evaluación** (`eval-prompt`) — corpus, anotación, métricas, informe
+- [ ] **Contrato compartido** (`common/sirena-schema`, `config/ontologia.yaml`)
+- [ ] **Infraestructura & Contenedores** (`Dockerfile`, `docker-compose.yml`, CI, dependencias)
 - [ ] **Documentación** (`docs/`, README, plantillas)
 
 ---
@@ -43,7 +47,7 @@ Explica brevemente cómo se mantuvo la Alta Cohesión y Bajo Acoplamiento en las
 - [ ] El código se ejecutó y probó exitosamente con la herramienta de dependencias del proyecto (`uv`).
 - [ ] La ejecución corre **sin advertencias (warnings)**.
 - [ ] Artefactos generados y archivos sensibles (`.env`, credenciales, datos pesados) están excluidos en `.gitignore`.
-- [ ] La estructura sigue las convenciones del repo (`src/`, `tests/`, `docs/`, `data/`).
+- [ ] La estructura sigue las convenciones del repo (`backend/<servicio>/<servicio>`, `common/`, `frontend/`, `tests/`, `docs/`).
 - [ ] Se ejecutaron las pruebas (`uv run pytest`) y pasan correctamente.
 - [ ] Las funciones son cohesivas, con responsabilidad única y nombres descriptivos.
 

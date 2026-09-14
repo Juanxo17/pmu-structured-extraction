@@ -1,0 +1,31 @@
+# Ontologia operativa del dominio — fuente: ERE de Cali.
+# Sustituir este archivo por el de otro dominio no requiere tocar codigo.
+
+tipo_evento:
+  - sismo
+  - movimiento_en_masa
+  - inundacion_subita
+  - inundacion_lenta
+  - incendio_cobertura_vegetal
+  - incendio_estructural
+  - aglomeracion_publico
+  - salud_ambiental
+
+# Codigo: nombre (ERE de Cali, Tabla 8, p. 44). P y Q son funciones institucionales, no reportables.
+servicio_de_respuesta:
+  - A  # Busqueda y Rescate
+  - B  # Extincion de Incendios
+  - C  # Telecomunicaciones para la comunidad
+  - D  # Manejo de Materiales Peligrosos
+  - E  # Seguridad y Convivencia
+  - F  # Accesibilidad y Transporte
+  - G  # Salud
+  - H  # Agua Potable
+  - I  # Asistencia Humanitaria
+  - J  # Alojamientos Temporales
+  - K  # Energia y Gas
+  - L  # Saneamiento Basico
+  - M  # Reencuentro Familiar
+  - N  # Fauna Domestica
+  - O  # Fauna Silvestre
+  - R  # Manejo de Residuos Solidos
