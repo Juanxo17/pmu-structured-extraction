@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+venv/
 .ruff_cache/
 .pytest_cache/
 .coverage
@@ -8,3 +9,4 @@ __pycache__/
 .env
 mlruns/
 .gga
+opencode.json
