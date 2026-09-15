@@ -1,4 +1,4 @@
-﻿"""Pruebas del modulo de anonimizacion de datos personales."""
+"""Pruebas del modulo de anonimizacion de datos personales."""
 
 import pytest
 
