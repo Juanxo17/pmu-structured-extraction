@@ -99,3 +99,17 @@ h1, h2, h3, [data-testid="stMetricLabel"] { font-family: "Archivo", system-ui, s
 def inyectar_tema() -> None:
     """Inyecta la hoja de estilos compartida (tipografía, ajustes de KPI) en la página."""
     st.markdown(_CSS, unsafe_allow_html=True)
+
+
+def renderizar_pie_sidebar() -> None:
+    """Muestra la nota de pie del sidebar, debajo del menú de navegación.
+
+    Se llama desde cada página (mismo patrón que `inyectar_tema`) porque el
+    menú de páginas de `st.navigation` ya ocupa la parte de arriba del
+    sidebar — lo que agregue cada página aquí queda debajo de ese menú.
+    """
+    st.sidebar.divider()
+    st.sidebar.caption(
+        "Sin `BFF_URL` definida, el tablero corre contra datos de ejemplo "
+        "locales (`ClienteReportesSimulado`) — ver docs/CONTRATOS_SISTEMA.md."
+    )

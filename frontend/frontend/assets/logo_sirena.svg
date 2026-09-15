@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 44" width="220" height="44" role="img" aria-label="SIRENA">
+  <circle cx="16" cy="22" r="10" fill="#123C6B"/>
+  <circle cx="16" cy="22" r="4" fill="#F9FBF8"/>
+  <text x="36" y="30" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="1" fill="#123C6B">SIRENA</text>
+</svg>
