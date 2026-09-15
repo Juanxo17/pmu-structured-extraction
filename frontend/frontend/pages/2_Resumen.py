@@ -20,6 +20,19 @@ from frontend.resumen import (
 from frontend.theme import inyectar_tema, renderizar_pie_sidebar
 
 
+def _metrica(columna, etiqueta: str, valor: object) -> None:
+    """Muestra un `st.metric` dentro de una tarjeta con contorno, como en el mockup.
+
+    Args:
+        columna: Columna de Streamlit donde va la tarjeta.
+        etiqueta: Título de la métrica.
+        valor: Valor a mostrar (número o texto ya formateado).
+
+    """
+    with columna, st.container(border=True):
+        st.metric(etiqueta, valor)
+
+
 def _leer_rango_fechas() -> tuple[str | None, str | None]:
     """Renderiza los selectores de fecha y los convierte a ISO 8601.
 
@@ -49,41 +62,41 @@ def main() -> None:
     resumen = cliente.resumen(desde=desde, hasta=hasta)
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total", resumen.total)
-    col2.metric("Pendientes", resumen.pendientes)
-    col3.metric("Revisados", resumen.revisados)
-    col4.metric("Tasa de revisión", f"{calcular_tasa_revision(resumen):.1f}%")
+    _metrica(col1, "Total", resumen.total)
+    _metrica(col2, "Pendientes", resumen.pendientes)
+    _metrica(col3, "Revisados", resumen.revisados)
+    _metrica(col4, "Tasa de revisión", f"{calcular_tasa_revision(resumen):.1f}%")
 
     if resumen.total == 0:
         st.info("No hay reportes en este rango de fechas.")
         return
 
     col5, col6, col7 = st.columns(3)
-    col5.metric("Accionables", resumen.por_accionable.get("accionable", 0))
-    col6.metric("No accionables", resumen.por_accionable.get("no_accionable", 0))
-    col7.metric("Tasa de accionabilidad", f"{calcular_tasa_accionable(resumen):.1f}%")
+    _metrica(col5, "Accionables", resumen.por_accionable.get("accionable", 0))
+    _metrica(col6, "No accionables", resumen.por_accionable.get("no_accionable", 0))
+    _metrica(col7, "Tasa de accionabilidad", f"{calcular_tasa_accionable(resumen):.1f}%")
 
     col_tipo, col_comuna = st.columns(2)
-    with col_tipo:
+    with col_tipo, st.container(border=True):
         st.subheader("Reportes por tipo de evento")
         st.plotly_chart(construir_grafico_tipo_evento(resumen), use_container_width=True)
-    with col_comuna:
+    with col_comuna, st.container(border=True):
         st.subheader("Reportes por comuna")
         st.plotly_chart(construir_grafico_comuna(resumen), use_container_width=True)
 
     col_temp, col_intencion = st.columns(2)
-    with col_temp:
+    with col_temp, st.container(border=True):
         st.subheader("Reportes por temporalidad")
         st.plotly_chart(construir_grafico_temporalidad(resumen), use_container_width=True)
-    with col_intencion:
+    with col_intencion, st.container(border=True):
         st.subheader("Reportes por intención")
         st.plotly_chart(construir_grafico_intencion(resumen), use_container_width=True)
 
     col_servicio, col_granularidad = st.columns(2)
-    with col_servicio:
+    with col_servicio, st.container(border=True):
         st.subheader("Servicios de respuesta más solicitados")
         st.plotly_chart(construir_grafico_servicio(resumen), use_container_width=True)
-    with col_granularidad:
+    with col_granularidad, st.container(border=True):
         st.subheader("Precisión de la ubicación")
         st.plotly_chart(construir_grafico_granularidad(resumen), use_container_width=True)
 
