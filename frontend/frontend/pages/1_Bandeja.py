@@ -173,7 +173,7 @@ def main() -> None:
         st.info("No hay reportes con estos filtros.")
         return
 
-    col_tabla, col_mapa = st.columns([1.5, 1])
+    col_tabla, col_previa = st.columns([1.5, 1])
     with col_tabla:
         filas = pd.DataFrame(construir_filas_grid(pagina.resultados))
         grid_options = construir_grid_options(filas)
@@ -181,15 +181,17 @@ def main() -> None:
             filas,
             gridOptions=grid_options,
             height=420,
-            theme="alpine",
         )
         fila = fila_seleccionada_de(respuesta_grid)
+
+    with col_previa:
         if fila:
             _mostrar_vista_previa(cliente, fila["id"])
+        else:
+            st.caption("Selecciona un reporte en la tabla para ver su vista previa.")
 
-    with col_mapa:
-        st.caption("Ubicación exacta cuando está disponible; si no, aproximada por comuna.")
-        st_folium(construir_mapa(pagina.resultados), width=None, height=420)
+    st.caption("Ubicación exacta cuando está disponible; si no, aproximada por comuna.")
+    st_folium(construir_mapa(pagina.resultados), width=None, height=420)
 
 
 if __name__ == "__main__":
