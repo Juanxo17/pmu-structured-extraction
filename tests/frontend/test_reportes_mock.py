@@ -112,6 +112,36 @@ class TestCoincideConFiltros:
         assert resultado
         assert all(r.estado_revision == "revisado" for r in resultado)
 
+    def test_filtro_desde_no_revienta_con_fecha_sin_huso_y_excluye_lo_anterior(self) -> None:
+        """desde llega como fecha simple (sin hora ni huso) desde st.date_input.
+
+        `creado_en` en el dataset es *aware* (con huso); comparar contra un
+        `datetime` *naive* lanzaba `TypeError: can't compare offset-naive and
+        offset-aware datetimes` antes de este fix.
+        """
+        # Arrange
+        reportes = reportes_de_ejemplo()
+        filtros = FiltrosReportes(desde="2026-09-15")
+
+        # Act
+        resultado = [r for r in reportes if coincide_con_filtros(r, filtros)]
+
+        # Assert
+        assert any(r.id == "rpt_8f3a1c02" for r in resultado)
+        assert not any(r.id == "rpt_f10ac266" for r in resultado)
+
+    def test_filtro_hasta_incluye_todo_el_dia_no_solo_la_medianoche(self) -> None:
+        """hasta="2026-09-15" debe incluir reportes creados esa tarde, no solo hasta las 00:00."""
+        # Arrange
+        reportes = reportes_de_ejemplo()
+        filtros = FiltrosReportes(hasta="2026-09-15")
+
+        # Act
+        resultado = [r for r in reportes if coincide_con_filtros(r, filtros)]
+
+        # Assert
+        assert any(r.id == "rpt_8f3a1c02" for r in resultado)
+
     def test_filtro_de_busqueda_q_es_insensible_a_mayusculas(self) -> None:
         """El filtro de texto libre no distingue mayúsculas de minúsculas."""
         # Arrange

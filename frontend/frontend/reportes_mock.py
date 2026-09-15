@@ -380,6 +380,27 @@ def reportes_de_ejemplo() -> list[ReporteEstructurado]:
     return list(_REPORTES)
 
 
+def _inicio_de_dia(fecha_iso: str) -> datetime:
+    """Convierte una fecha `YYYY-MM-DD` (de `st.date_input`, sin huso) en medianoche UTC.
+
+    `creado_en` en el dataset de ejemplo es *aware* (con huso); comparar un
+    `datetime` *naive* contra uno *aware* lanza `TypeError`, así que los
+    filtros `desde`/`hasta` (que llegan como fecha simple, sin hora ni huso)
+    necesitan este ajuste antes de compararse.
+
+    Args:
+        fecha_iso: Fecha en formato `YYYY-MM-DD`.
+
+    Returns:
+        La medianoche de esa fecha, en UTC.
+
+    """
+    valor = datetime.fromisoformat(fecha_iso)
+    if valor.tzinfo is None:
+        valor = valor.replace(tzinfo=timezone.utc)
+    return valor
+
+
 def coincide_con_filtros(reporte: ReporteEstructurado, filtros: FiltrosReportes) -> bool:
     """Aplica los filtros de `GET /reportes` sobre un reporte, en memoria.
 
@@ -422,9 +443,9 @@ def coincide_con_filtros(reporte: ReporteEstructurado, filtros: FiltrosReportes)
         and reporte.compuerta.es_reporte_accionable != filtros.accionable
     ):
         return False
-    if filtros.desde and reporte.creado_en < datetime.fromisoformat(filtros.desde):
+    if filtros.desde and reporte.creado_en < _inicio_de_dia(filtros.desde):
         return False
-    if filtros.hasta and reporte.creado_en > datetime.fromisoformat(filtros.hasta):
+    if filtros.hasta and reporte.creado_en >= _inicio_de_dia(filtros.hasta) + timedelta(days=1):
         return False
     if filtros.q and filtros.q.lower() not in reporte.mensaje_anonimizado.lower():
         return False

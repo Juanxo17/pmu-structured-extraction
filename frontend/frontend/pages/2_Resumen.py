@@ -66,26 +66,26 @@ def main() -> None:
     col_tipo, col_comuna = st.columns(2)
     with col_tipo, st.container(border=True):
         st.subheader("Reportes por tipo de evento")
-        st.plotly_chart(construir_grafico_tipo_evento(resumen), use_container_width=True)
+        st.plotly_chart(construir_grafico_tipo_evento(resumen), width="stretch")
     with col_comuna, st.container(border=True):
         st.subheader("Reportes por comuna")
-        st.plotly_chart(construir_grafico_comuna(resumen), use_container_width=True)
+        st.plotly_chart(construir_grafico_comuna(resumen), width="stretch")
 
     col_temp, col_intencion = st.columns(2)
     with col_temp, st.container(border=True):
         st.subheader("Reportes por temporalidad")
-        st.plotly_chart(construir_grafico_temporalidad(resumen), use_container_width=True)
+        st.plotly_chart(construir_grafico_temporalidad(resumen), width="stretch")
     with col_intencion, st.container(border=True):
         st.subheader("Reportes por intención")
-        st.plotly_chart(construir_grafico_intencion(resumen), use_container_width=True)
+        st.plotly_chart(construir_grafico_intencion(resumen), width="stretch")
 
     col_servicio, col_granularidad = st.columns(2)
     with col_servicio, st.container(border=True):
         st.subheader("Servicios de respuesta más solicitados")
-        st.plotly_chart(construir_grafico_servicio(resumen), use_container_width=True)
+        st.plotly_chart(construir_grafico_servicio(resumen), width="stretch")
     with col_granularidad, st.container(border=True):
         st.subheader("Precisión de la ubicación")
-        st.plotly_chart(construir_grafico_granularidad(resumen), use_container_width=True)
+        st.plotly_chart(construir_grafico_granularidad(resumen), width="stretch")
 
     st.caption("Próximamente: tendencia de reportes por día.")
 
