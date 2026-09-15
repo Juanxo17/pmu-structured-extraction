@@ -17,20 +17,7 @@ from frontend.resumen import (
     construir_grafico_temporalidad,
     construir_grafico_tipo_evento,
 )
-from frontend.theme import inyectar_tema, renderizar_pie_sidebar
-
-
-def _metrica(columna, etiqueta: str, valor: object) -> None:
-    """Muestra un `st.metric` dentro de una tarjeta con contorno, como en el mockup.
-
-    Args:
-        columna: Columna de Streamlit donde va la tarjeta.
-        etiqueta: Título de la métrica.
-        valor: Valor a mostrar (número o texto ya formateado).
-
-    """
-    with columna, st.container(border=True):
-        st.metric(etiqueta, valor)
+from frontend.theme import inyectar_tema, mostrar_metrica, renderizar_pie_sidebar
 
 
 def _leer_rango_fechas() -> tuple[str | None, str | None]:
@@ -62,19 +49,19 @@ def main() -> None:
     resumen = cliente.resumen(desde=desde, hasta=hasta)
 
     col1, col2, col3, col4 = st.columns(4)
-    _metrica(col1, "Total", resumen.total)
-    _metrica(col2, "Pendientes", resumen.pendientes)
-    _metrica(col3, "Revisados", resumen.revisados)
-    _metrica(col4, "Tasa de revisión", f"{calcular_tasa_revision(resumen):.1f}%")
+    mostrar_metrica(col1, "Total", resumen.total)
+    mostrar_metrica(col2, "Pendientes", resumen.pendientes)
+    mostrar_metrica(col3, "Revisados", resumen.revisados)
+    mostrar_metrica(col4, "Tasa de revisión", f"{calcular_tasa_revision(resumen):.1f}%")
 
     if resumen.total == 0:
         st.info("No hay reportes en este rango de fechas.")
         return
 
     col5, col6, col7 = st.columns(3)
-    _metrica(col5, "Accionables", resumen.por_accionable.get("accionable", 0))
-    _metrica(col6, "No accionables", resumen.por_accionable.get("no_accionable", 0))
-    _metrica(col7, "Tasa de accionabilidad", f"{calcular_tasa_accionable(resumen):.1f}%")
+    mostrar_metrica(col5, "Accionables", resumen.por_accionable.get("accionable", 0))
+    mostrar_metrica(col6, "No accionables", resumen.por_accionable.get("no_accionable", 0))
+    mostrar_metrica(col7, "Tasa de accionabilidad", f"{calcular_tasa_accionable(resumen):.1f}%")
 
     col_tipo, col_comuna = st.columns(2)
     with col_tipo, st.container(border=True):

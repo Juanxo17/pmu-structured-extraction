@@ -27,46 +27,48 @@ from frontend.theme import (
     ETIQUETA_SERVICIO,
     ETIQUETA_TIPO_EVENTO,
     inyectar_tema,
+    mostrar_metrica,
     renderizar_pie_sidebar,
 )
 
 
 def _leer_filtros() -> FiltrosReportes:
-    """Renderiza la barra de filtros y arma los `FiltrosReportes` resultantes.
+    """Renderiza la barra de filtros (con contorno) y arma los `FiltrosReportes`.
 
     Returns:
         Los filtros según lo que el operador haya seleccionado.
 
     """
-    col_tipo, col_comuna = st.columns(2)
-    with col_tipo:
-        tipos = st.multiselect(
-            "Tipo de evento",
-            options=sorted(ONTOLOGIA.tipos_evento),
-            format_func=lambda t: ETIQUETA_TIPO_EVENTO.get(t, t),
-        )
-    with col_comuna:
-        comuna = st.selectbox("Comuna", options=["Todas", *COMUNAS_CONOCIDAS])
+    with st.container(border=True):
+        col_tipo, col_comuna = st.columns(2)
+        with col_tipo:
+            tipos = st.multiselect(
+                "Tipo de evento",
+                options=sorted(ONTOLOGIA.tipos_evento),
+                format_func=lambda t: ETIQUETA_TIPO_EVENTO.get(t, t),
+            )
+        with col_comuna:
+            comuna = st.selectbox("Comuna", options=["Todas", *COMUNAS_CONOCIDAS])
 
-    col_estado, col_accionable = st.columns(2)
-    with col_estado:
-        estado = st.segmented_control(
-            "Estado", options=["Todos", "Pendientes", "Revisados"], default="Todos"
-        )
-    with col_accionable:
-        accionable = st.segmented_control(
-            "Accionable",
-            options=["Todos", "Accionables", "No accionables"],
-            default="Todos",
-        )
+        col_estado, col_accionable = st.columns(2)
+        with col_estado:
+            estado = st.segmented_control(
+                "Estado", options=["Todos", "Pendientes", "Revisados"], default="Todos"
+            )
+        with col_accionable:
+            accionable = st.segmented_control(
+                "Accionable",
+                options=["Todos", "Accionables", "No accionables"],
+                default="Todos",
+            )
 
-    col_desde, col_hasta, col_q = st.columns([1, 1, 2])
-    with col_desde:
-        fecha_desde = st.date_input("Desde", value=None)
-    with col_hasta:
-        fecha_hasta = st.date_input("Hasta", value=None)
-    with col_q:
-        q = st.text_input("Buscar", placeholder="texto del mensaje…")
+        col_desde, col_hasta, col_q = st.columns([1, 1, 2])
+        with col_desde:
+            fecha_desde = st.date_input("Desde", value=None)
+        with col_hasta:
+            fecha_hasta = st.date_input("Hasta", value=None)
+        with col_q:
+            q = st.text_input("Buscar", placeholder="texto del mensaje…")
 
     estado_revision = {"Pendientes": "pendiente", "Revisados": "revisado"}.get(estado)
     es_accionable = {"Accionables": True, "No accionables": False}.get(accionable)
@@ -94,9 +96,9 @@ def _mostrar_kpis(cliente) -> None:
     """
     resumen = cliente.resumen()
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total", resumen.total)
-    col2.metric("Pendientes", resumen.pendientes)
-    col3.metric("Revisados", resumen.revisados)
+    mostrar_metrica(col1, "Total", resumen.total)
+    mostrar_metrica(col2, "Pendientes", resumen.pendientes)
+    mostrar_metrica(col3, "Revisados", resumen.revisados)
 
 
 def _mostrar_vista_previa(cliente, id_reporte: str) -> None:

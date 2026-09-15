@@ -143,6 +143,19 @@ def inyectar_tema() -> None:
     st.markdown(_CSS, unsafe_allow_html=True)
 
 
+def mostrar_metrica(columna, etiqueta: str, valor: object) -> None:
+    """Muestra un `st.metric` dentro de una tarjeta con contorno, como en el mockup.
+
+    Args:
+        columna: Columna de Streamlit donde va la tarjeta.
+        etiqueta: Título de la métrica.
+        valor: Valor a mostrar (número o texto ya formateado).
+
+    """
+    with columna, st.container(border=True):
+        st.metric(etiqueta, valor)
+
+
 def renderizar_pie_sidebar(modo_demo: bool = False) -> None:
     """Muestra la nota de pie del sidebar, debajo del menú de navegación.
 
