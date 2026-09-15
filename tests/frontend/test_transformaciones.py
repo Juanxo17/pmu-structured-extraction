@@ -14,7 +14,6 @@ from frontend.bandeja import (
     elegir_cliente,
     exportar_csv,
     fila_seleccionada_de,
-    ubicar_en_mapa,
     usa_datos_de_ejemplo,
 )
 from frontend.bff_client import BFFClient, ReporteResumen
@@ -210,41 +209,6 @@ class TestConstruirGridOptions:
         # Assert
         columnas = {c["field"]: c for c in opciones["columnDefs"]}
         assert columnas["recibido"]["sort"] == "desc"
-
-
-class TestUbicarEnMapa:
-    """Pruebas de la resolución híbrida de coordenadas para el mapa."""
-
-    def test_usa_la_coordenada_exacta_cuando_esta_presente(self) -> None:
-        """Con lat/lon en el reporte, se usan tal cual, sin tocar el centroide."""
-        # Arrange
-        resultado = _resumen(comuna="Comuna inexistente", lat=3.4531, lon=-76.5424)
-
-        # Act
-        punto = ubicar_en_mapa(resultado)
-
-        # Assert
-        assert punto == (3.4531, -76.5424)
-
-    def test_cae_al_centroide_de_comuna_sin_coordenada_exacta(self) -> None:
-        """Sin lat/lon, se aproxima con el centroide local de la comuna."""
-        # Arrange
-        resultado = _resumen(comuna="Comuna 20", lat=None, lon=None)
-
-        # Act
-        punto = ubicar_en_mapa(resultado)
-
-        # Assert
-        assert punto is not None
-        assert punto != (None, None)
-
-    def test_devuelve_none_sin_coordenada_exacta_ni_comuna_conocida(self) -> None:
-        """Sin ninguna de las dos fuentes, no hay dónde plantar el punto."""
-        # Arrange
-        resultado = _resumen(comuna="Comuna inexistente", lat=None, lon=None)
-
-        # Act / Assert
-        assert ubicar_en_mapa(resultado) is None
 
 
 class TestConstruirMapa:

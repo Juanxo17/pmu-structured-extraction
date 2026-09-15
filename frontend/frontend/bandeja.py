@@ -11,10 +11,11 @@ from typing import Any
 
 import folium
 import pandas as pd
+import streamlit as st
 from st_aggrid import GridOptionsBuilder
 
 from frontend.bff_client import BFFClient, ClienteReportes, ReporteResumen
-from frontend.comunas import centroide
+from frontend.comunas import ubicar_en_mapa
 from frontend.reportes_mock import ClienteReportesSimulado
 from frontend.theme import (
     COLOR_MUTED,
@@ -53,6 +54,27 @@ def elegir_cliente() -> ClienteReportes:
     if usa_datos_de_ejemplo():
         return ClienteReportesSimulado()
     return BFFClient(base_url=os.environ["BFF_URL"])
+
+
+def cliente_de_sesion() -> ClienteReportes:
+    """Como `elegir_cliente`, pero reutiliza el mismo cliente simulado entre reruns.
+
+    Streamlit vuelve a ejecutar todo el script en cada interacción; sin este
+    cacheo, cada rerun crearía un `ClienteReportesSimulado` nuevo (dataset de
+    ejemplo fresco) y cualquier cambio de triaje hecho en la sesión se
+    perdería de inmediato. No aplica a `BFFClient`: CRUD ya persiste de
+    verdad, así que ese caso se resuelve tal cual con `elegir_cliente`.
+
+    Returns:
+        El cliente a usar, estable durante toda la sesión del navegador
+        cuando es simulado.
+
+    """
+    if not usa_datos_de_ejemplo():
+        return elegir_cliente()
+    if "cliente_simulado" not in st.session_state:
+        st.session_state["cliente_simulado"] = elegir_cliente()
+    return st.session_state["cliente_simulado"]
 
 
 def construir_filas_grid(resultados: list[ReporteResumen]) -> list[dict[str, Any]]:
@@ -167,27 +189,6 @@ def construir_grid_options(filas: pd.DataFrame) -> dict[str, Any]:
     return opciones
 
 
-def ubicar_en_mapa(reporte: ReporteResumen) -> tuple[float, float] | None:
-    """Resuelve dónde plantar el punto de un reporte en el mapa.
-
-    Usa la coordenada exacta (`lat`/`lon`, propuesta — ver
-    docs/CONTRATOS_SISTEMA.md) cuando BFF ya la manda; si no, cae al
-    centroide local de la comuna (ver `frontend.comunas`), la misma
-    aproximación que se usaba mientras el campo no existía.
-
-    Args:
-        reporte: Resultado de `ClienteReportes.listar`.
-
-    Returns:
-        Una tupla `(lat, lon)`, o `None` si no hay forma de ubicar el reporte
-        (sin coordenada exacta y sin comuna conocida).
-
-    """
-    if reporte.lat is not None and reporte.lon is not None:
-        return (reporte.lat, reporte.lon)
-    return centroide(reporte.comuna)
-
-
 def construir_mapa(resultados: list[ReporteResumen]) -> folium.Map:
     """Arma el mapa de la Bandeja con un punto por resultado ubicable.
 
@@ -201,7 +202,7 @@ def construir_mapa(resultados: list[ReporteResumen]) -> folium.Map:
     mapa = folium.Map(location=_CENTRO_CALI, zoom_start=12, tiles="OpenStreetMap")
     for r in resultados:
         es_exacta = r.lat is not None and r.lon is not None
-        punto = ubicar_en_mapa(r)
+        punto = ubicar_en_mapa(r.lat, r.lon, r.comuna)
         if punto is None:
             continue
         color = COLOR_TIPO_EVENTO.get(r.tipo_evento or "", COLOR_MUTED)

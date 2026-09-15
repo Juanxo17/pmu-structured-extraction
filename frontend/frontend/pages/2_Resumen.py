@@ -6,7 +6,7 @@ pytest normal (ver `frontend/frontend/pages/1_Bandeja.py` para el mismo patrón)
 
 import streamlit as st
 
-from frontend.bandeja import elegir_cliente, usa_datos_de_ejemplo
+from frontend.bandeja import cliente_de_sesion, usa_datos_de_ejemplo
 from frontend.resumen import (
     calcular_tasa_accionable,
     calcular_tasa_revision,
@@ -44,7 +44,7 @@ def main() -> None:
     renderizar_pie_sidebar(modo_demo=usa_datos_de_ejemplo())
     st.title("Resumen operativo")
 
-    cliente = elegir_cliente()
+    cliente = cliente_de_sesion()
     desde, hasta = _leer_rango_fechas()
     resumen = cliente.resumen(desde=desde, hasta=hasta)
 

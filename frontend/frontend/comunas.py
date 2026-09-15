@@ -1,11 +1,11 @@
-"""Centroides aproximados de comunas de Cali, exclusivos del mapa de la Bandeja.
+"""Centroides aproximados de comunas de Cali, exclusivos de los mapas del tablero.
 
 `GET /reportes` (versión resumida) no confirma `lat`/`lon` todavía — ver
-"Propuesto" en `docs/CONTRATOS_SISTEMA.md`. `frontend.bandeja.ubicar_en_mapa`
-usa esta tabla como respaldo cuando un reporte no trae coordenada exacta (o
-mientras el campo no exista); no sustituye la resolución geográfica real de
-Geo (`POST /resolver`) ni debe usarse para nada distinto de ubicar puntos en
-el mapa de la Bandeja.
+"Propuesto" en `docs/CONTRATOS_SISTEMA.md`. `ubicar_en_mapa` usa esta tabla
+como respaldo cuando un reporte no trae coordenada exacta (o mientras el
+campo no exista); no sustituye la resolución geográfica real de Geo
+(`POST /resolver`) ni debe usarse para nada distinto de ubicar puntos en un
+mapa.
 """
 
 from __future__ import annotations
@@ -40,3 +40,26 @@ def centroide(comuna: str | None) -> tuple[float, float] | None:
     if comuna is None:
         return None
     return _CENTROIDES_COMUNA.get(comuna)
+
+
+def ubicar_en_mapa(
+    lat: float | None, lon: float | None, comuna: str | None
+) -> tuple[float, float] | None:
+    """Resuelve dónde plantar un punto en el mapa: exacto si existe, si no por comuna.
+
+    Usa la coordenada exacta (`lat`/`lon`, propuesta — ver
+    docs/CONTRATOS_SISTEMA.md) cuando ya está disponible; si no, cae al
+    centroide de la comuna.
+
+    Args:
+        lat: Latitud exacta, o None si no se conoce.
+        lon: Longitud exacta, o None si no se conoce.
+        comuna: Comuna resuelta, usada como respaldo.
+
+    Returns:
+        Una tupla `(lat, lon)`, o `None` si no hay forma de ubicar el punto.
+
+    """
+    if lat is not None and lon is not None:
+        return (lat, lon)
+    return centroide(comuna)
