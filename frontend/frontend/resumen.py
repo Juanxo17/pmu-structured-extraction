@@ -10,9 +10,9 @@ import plotly.graph_objects as go
 
 from frontend.bff_client import ResumenReportes
 from frontend.theme import (
-    COLOR_ACCENT,
-    COLOR_MUTED,
-    COLOR_TIPO_EVENTO,
+    COLOR_ACCENT_PASTEL,
+    COLOR_MUTED_PASTEL,
+    COLOR_TIPO_EVENTO_PASTEL,
     ETIQUETA_GRANULARIDAD,
     ETIQUETA_INTENCION,
     ETIQUETA_SERVICIO,
@@ -116,7 +116,7 @@ def _pares_ascendentes(conteos: dict[str, int], etiquetas: dict[str, str]) -> li
 def construir_grafico_tipo_evento(resumen: ResumenReportes) -> go.Figure:
     """Arma la barra horizontal de reportes por tipo_evento.
 
-    El color de cada barra sigue a la categoría (`COLOR_TIPO_EVENTO`), no a
+    El color de cada barra sigue a la categoría (`COLOR_TIPO_EVENTO_PASTEL`), no a
     su posición en el ranking — así una categoría no cambia de color cuando
     otra sube o baja de conteo.
 
@@ -132,7 +132,7 @@ def construir_grafico_tipo_evento(resumen: ResumenReportes) -> go.Figure:
         key=lambda item: item[1],
     )
     pares = [(ETIQUETA_TIPO_EVENTO.get(tipo, tipo), conteo) for tipo, conteo in items]
-    colores = [COLOR_TIPO_EVENTO.get(tipo, COLOR_MUTED) for tipo, _ in items]
+    colores = [COLOR_TIPO_EVENTO_PASTEL.get(tipo, COLOR_MUTED_PASTEL) for tipo, _ in items]
     return _barra_horizontal(pares, colores)
 
 
@@ -140,7 +140,7 @@ def construir_grafico_comuna(resumen: ResumenReportes, top_n: int = 6) -> go.Fig
     """Arma la barra horizontal de las comunas con más reportes.
 
     Es un ranking de magnitud, no de identidad categórica, por eso usa un
-    solo hue (`COLOR_ACCENT`) en vez de la paleta categórica de tipo_evento.
+    solo hue (`COLOR_ACCENT_PASTEL`) en vez de la paleta categórica de tipo_evento.
 
     Args:
         resumen: Agregados de `GET /reportes/resumen`.
@@ -152,7 +152,7 @@ def construir_grafico_comuna(resumen: ResumenReportes, top_n: int = 6) -> go.Fig
     """
     items = sorted(resumen.por_comuna.items(), key=lambda item: item[1], reverse=True)[:top_n]
     items.reverse()
-    return _barra_horizontal(items, COLOR_ACCENT)
+    return _barra_horizontal(items, COLOR_ACCENT_PASTEL)
 
 
 def construir_grafico_temporalidad(resumen: ResumenReportes) -> go.Figure:
@@ -169,7 +169,7 @@ def construir_grafico_temporalidad(resumen: ResumenReportes) -> go.Figure:
 
     """
     return _barra_horizontal(
-        _pares_ascendentes(resumen.por_temporalidad, ETIQUETA_TEMPORALIDAD), COLOR_ACCENT
+        _pares_ascendentes(resumen.por_temporalidad, ETIQUETA_TEMPORALIDAD), COLOR_ACCENT_PASTEL
     )
 
 
@@ -184,7 +184,7 @@ def construir_grafico_intencion(resumen: ResumenReportes) -> go.Figure:
 
     """
     return _barra_horizontal(
-        _pares_ascendentes(resumen.por_intencion, ETIQUETA_INTENCION), COLOR_ACCENT
+        _pares_ascendentes(resumen.por_intencion, ETIQUETA_INTENCION), COLOR_ACCENT_PASTEL
     )
 
 
@@ -207,7 +207,7 @@ def construir_grafico_servicio(resumen: ResumenReportes, top_n: int = 8) -> go.F
     )[:top_n]
     items.reverse()
     pares = [(ETIQUETA_SERVICIO.get(codigo, codigo), conteo) for codigo, conteo in items]
-    return _barra_horizontal(pares, COLOR_ACCENT)
+    return _barra_horizontal(pares, COLOR_ACCENT_PASTEL)
 
 
 def construir_grafico_granularidad(resumen: ResumenReportes) -> go.Figure:
@@ -215,7 +215,7 @@ def construir_grafico_granularidad(resumen: ResumenReportes) -> go.Figure:
 
     Es un indicador de calidad de la resolución geográfica (qué tan seguido
     Geo logra ubicar un reporte con precisión), no de negocio — por eso usa
-    un gris neutro (`COLOR_MUTED`) en vez del acento de marca.
+    un gris neutro (`COLOR_MUTED_PASTEL`) en vez del acento de marca.
 
     Args:
         resumen: Agregados de `GET /reportes/resumen`.
@@ -225,5 +225,6 @@ def construir_grafico_granularidad(resumen: ResumenReportes) -> go.Figure:
 
     """
     return _barra_horizontal(
-        _pares_ascendentes(resumen.por_nivel_granularidad, ETIQUETA_GRANULARIDAD), COLOR_MUTED
+        _pares_ascendentes(resumen.por_nivel_granularidad, ETIQUETA_GRANULARIDAD),
+        COLOR_MUTED_PASTEL,
     )

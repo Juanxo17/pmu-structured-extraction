@@ -11,7 +11,7 @@ from frontend.resumen import (
     construir_grafico_temporalidad,
     construir_grafico_tipo_evento,
 )
-from frontend.theme import COLOR_ACCENT, COLOR_MUTED, COLOR_TIPO_EVENTO
+from frontend.theme import COLOR_ACCENT_PASTEL, COLOR_MUTED_PASTEL, COLOR_TIPO_EVENTO_PASTEL
 
 
 def _resumen(**overrides: object) -> ResumenReportes:
@@ -91,7 +91,7 @@ class TestConstruirGraficoTipoEvento:
 
         # Assert
         colores_por_etiqueta = dict(zip(figura.data[0].y, figura.data[0].marker.color))
-        assert colores_por_etiqueta["Sismo"] == COLOR_TIPO_EVENTO["sismo"]
+        assert colores_por_etiqueta["Sismo"] == COLOR_TIPO_EVENTO_PASTEL["sismo"]
 
     def test_la_categoria_con_mas_reportes_queda_al_final_de_la_lista(self) -> None:
         """Plotly dibuja barras horizontales de abajo hacia arriba: la mayor va última."""
@@ -129,7 +129,7 @@ class TestConstruirGraficoComuna:
         figura = construir_grafico_comuna(resumen)
 
         # Assert
-        assert figura.data[0].marker.color == COLOR_ACCENT
+        assert figura.data[0].marker.color == COLOR_ACCENT_PASTEL
 
 
 class TestCalcularTasaAccionable:
@@ -182,7 +182,7 @@ class TestConstruirGraficoTemporalidad:
         figura = construir_grafico_temporalidad(resumen)
 
         # Assert
-        assert figura.data[0].marker.color == COLOR_ACCENT
+        assert figura.data[0].marker.color == COLOR_ACCENT_PASTEL
 
 
 class TestConstruirGraficoIntencion:
@@ -240,5 +240,5 @@ class TestConstruirGraficoGranularidad:
         figura = construir_grafico_granularidad(resumen)
 
         # Assert
-        assert figura.data[0].marker.color == COLOR_MUTED
-        assert figura.data[0].marker.color != COLOR_ACCENT
+        assert figura.data[0].marker.color == COLOR_MUTED_PASTEL
+        assert figura.data[0].marker.color != COLOR_ACCENT_PASTEL
