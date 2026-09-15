@@ -11,7 +11,7 @@ from frontend.resumen import (
     construir_grafico_temporalidad,
     construir_grafico_tipo_evento,
 )
-from frontend.theme import COLOR_ACCENT_PASTEL, COLOR_MUTED_PASTEL, COLOR_TIPO_EVENTO_PASTEL
+from frontend.theme import COLOR_ACCENT_PASTEL
 
 
 def _resumen(**overrides: object) -> ResumenReportes:
@@ -81,8 +81,8 @@ class TestConstruirGraficoTipoEvento:
         assert len(figura.data[0].y) == 1
         assert figura.data[0].y[0] == "Sismo"
 
-    def test_el_color_de_cada_barra_sigue_a_su_categoria(self) -> None:
-        """El color de la barra de sismo es siempre el mismo, sin importar el ranking."""
+    def test_usa_el_mismo_color_de_acento_que_los_demas_graficos(self) -> None:
+        """Todos los gráficos de Resumen comparten un único color (pedido de diseño)."""
         # Arrange
         resumen = _resumen(por_tipo_evento={"sismo": 5, "inundacion_subita": 8})
 
@@ -90,8 +90,7 @@ class TestConstruirGraficoTipoEvento:
         figura = construir_grafico_tipo_evento(resumen)
 
         # Assert
-        colores_por_etiqueta = dict(zip(figura.data[0].y, figura.data[0].marker.color))
-        assert colores_por_etiqueta["Sismo"] == COLOR_TIPO_EVENTO_PASTEL["sismo"]
+        assert figura.data[0].marker.color == COLOR_ACCENT_PASTEL
 
     def test_la_categoria_con_mas_reportes_queda_al_final_de_la_lista(self) -> None:
         """Plotly dibuja barras horizontales de abajo hacia arriba: la mayor va última."""
@@ -231,8 +230,8 @@ class TestConstruirGraficoServicio:
 class TestConstruirGraficoGranularidad:
     """Pruebas de construir_grafico_granularidad."""
 
-    def test_usa_el_color_neutro_no_el_acento_de_marca(self) -> None:
-        """Es un indicador de calidad de dato, no de contenido: color deliberadamente distinto."""
+    def test_usa_el_mismo_color_de_acento_que_los_demas_graficos(self) -> None:
+        """Mismo color en todos los gráficos de Resumen (pedido de diseño)."""
         # Arrange
         resumen = _resumen(por_nivel_granularidad={"exacta": 3, "indeterminada": 1})
 
@@ -240,5 +239,4 @@ class TestConstruirGraficoGranularidad:
         figura = construir_grafico_granularidad(resumen)
 
         # Assert
-        assert figura.data[0].marker.color == COLOR_MUTED_PASTEL
-        assert figura.data[0].marker.color != COLOR_ACCENT_PASTEL
+        assert figura.data[0].marker.color == COLOR_ACCENT_PASTEL

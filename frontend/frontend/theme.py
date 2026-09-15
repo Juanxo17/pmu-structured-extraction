@@ -98,25 +98,12 @@ COLOR_ACCENT = "#123C6B"
 # categórica, para que no se lean como "más contenido" sino como "meta-dato".
 COLOR_MUTED = "#79847E"
 
-# Variantes pasteles — solo para los gráficos de la pantalla Resumen (pedido
-# explícito de diseño para esa pantalla). Cada hue se revalidó con el
-# validador de paletas colorblind-safe del skill de dataviz (banda de
-# luminosidad, piso de croma, separación CVD); el WARN de contraste vs. fondo
-# que queda es aceptable porque cada barra siempre lleva su valor como texto
-# plano al lado, no depende del color para leerse.
-COLOR_TIPO_EVENTO_PASTEL: dict[str, str] = {
-    "sismo": "#8F82D9",
-    "movimiento_en_masa": "#C08840",
-    "inundacion_subita": "#5B9FD4",
-    "inundacion_lenta": "#3FBE7F",
-    "incendio_cobertura_vegetal": "#DE9840",
-    "incendio_estructural": "#CC5E8C",
-    "aglomeracion_publico": "#BDA83E",
-    "salud_ambiental": "#A57FC7",
-}
-
+# Azul pastel — único color para todos los gráficos de barras de Resumen
+# (pedido explícito de diseño: mismo color en todos, sin distinguir
+# categoría por hue). Revalidado con el validador de paletas colorblind-safe
+# del skill de dataviz; el WARN de contraste vs. fondo es aceptable porque
+# cada barra siempre lleva su valor como texto plano al lado.
 COLOR_ACCENT_PASTEL = "#7C93BF"
-COLOR_MUTED_PASTEL = "#ADB5AC"
 
 _CSS = """
 <style>
