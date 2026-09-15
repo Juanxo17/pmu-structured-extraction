@@ -1,4 +1,4 @@
-﻿"""Anonimizacion de datos personales (Ley 1581 de 2012).
+"""Anonimizacion de datos personales (Ley 1581 de 2012).
 
 Este modulo recibe el texto crudo de un mensaje ciudadano y devuelve una
 version sin datos que identifiquen a una persona: nombres propios y
@@ -44,9 +44,7 @@ MASCARA = "[DATO_PERSONAL]"
 
 # Telefono colombiano: opcional +57, luego 10 digitos (movil) o 7 (fijo
 # local), permitiendo espacios o guiones entre grupos.
-_REGEX_TELEFONO = re.compile(
-    r"(?:\+?57\s?)?(?:3\d{2}[\s.-]?\d{3}[\s.-]?\d{4}|\d{7})\b"
-)
+_REGEX_TELEFONO = re.compile(r"(?:\+?57\s?)?(?:3\d{2}[\s.-]?\d{3}[\s.-]?\d{4}|\d{7})\b")
 
 # No hay regex de direccion -- decision de equipo: ninguna mencion de
 # ubicacion/direccion se anonimiza, se trata como dato de entrada
