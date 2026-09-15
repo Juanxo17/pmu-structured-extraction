@@ -19,10 +19,16 @@ from frontend.bandeja import (
     elegir_cliente,
     exportar_csv,
     fila_seleccionada_de,
+    usa_datos_de_ejemplo,
 )
 from frontend.bff_client import ErrorBFF, FiltrosReportes
 from frontend.comunas import COMUNAS_CONOCIDAS
-from frontend.theme import ETIQUETA_TIPO_EVENTO, inyectar_tema, renderizar_pie_sidebar
+from frontend.theme import (
+    ETIQUETA_SERVICIO,
+    ETIQUETA_TIPO_EVENTO,
+    inyectar_tema,
+    renderizar_pie_sidebar,
+)
 
 
 def _leer_filtros() -> FiltrosReportes:
@@ -97,27 +103,32 @@ def _mostrar_vista_previa(cliente, id_reporte: str) -> None:
     """
     try:
         reporte = cliente.obtener(id_reporte)
-    except (KeyError, ErrorBFF) as error:
-        st.warning(f"No se pudo cargar el detalle de {id_reporte}: {error}")
+    except (KeyError, ErrorBFF):
+        st.warning("No se pudo cargar el detalle de este reporte. Intenta de nuevo.")
         return
 
-    with st.expander(f"Vista previa · {reporte.id}", expanded=True):
+    with st.expander("Vista previa del reporte", expanded=True):
         if reporte.naturaleza:
-            st.write(f"**Tipo de evento:** {reporte.naturaleza.tipo_evento}")
-            st.write(f"**Servicios:** {', '.join(reporte.naturaleza.servicio_de_respuesta)}")
+            tipo = ETIQUETA_TIPO_EVENTO.get(reporte.naturaleza.tipo_evento, "—")
+            st.write(f"**Tipo de evento:** {tipo}")
+            servicios = ", ".join(
+                ETIQUETA_SERVICIO.get(codigo, codigo)
+                for codigo in reporte.naturaleza.servicio_de_respuesta
+            )
+            st.write(f"**Servicios:** {servicios}")
         if reporte.ubicacion:
             st.write(
                 f"**Ubicación:** {reporte.ubicacion.comuna or '—'} · "
                 f"{reporte.ubicacion.barrio or '—'}"
             )
         st.write(f"**Mensaje:** {reporte.mensaje_anonimizado}")
-        st.caption("Formulario de triaje completo: próxima iteración (pantalla Detalle).")
+        st.caption("La edición completa de este reporte estará disponible próximamente.")
 
 
 def main() -> None:
     """Renderiza la pantalla completa de la Bandeja."""
     inyectar_tema()
-    renderizar_pie_sidebar()
+    renderizar_pie_sidebar(modo_demo=usa_datos_de_ejemplo())
     # Reserva el lugar del encabezado arriba de todo; se llena más abajo, una
     # vez que ya hay resultados con los que armar el botón de exportar.
     encabezado = st.container()
@@ -128,10 +139,10 @@ def main() -> None:
 
     try:
         pagina = cliente.listar(filtros)
-    except ErrorBFF as error:
+    except ErrorBFF:
         with encabezado:
             st.title("Bandeja de reportes")
-        st.error(f"BFF respondió con un error: {error}")
+        st.error("No se pudieron cargar los reportes en este momento. Intenta de nuevo más tarde.")
         return
 
     with encabezado:
@@ -163,11 +174,7 @@ def main() -> None:
             _mostrar_vista_previa(cliente, fila["id"])
 
     with col_mapa:
-        st.caption(
-            "⚠ Mapa con centroides por comuna (mock local) — "
-            "lat/lon en el listado resumido es un campo propuesto, "
-            "pendiente de confirmar con CRUD."
-        )
+        st.caption("Ubicación aproximada por comuna.")
         st_folium(construir_mapa(pagina.resultados), width=None, height=420)
 
 

@@ -30,6 +30,16 @@ from frontend.theme import (
 _CENTRO_CALI = (3.4516, -76.5320)
 
 
+def usa_datos_de_ejemplo() -> bool:
+    """Indica si el tablero está corriendo contra datos de ejemplo en vez de BFF real.
+
+    Returns:
+        True si la variable de entorno `BFF_URL` no está definida.
+
+    """
+    return not os.environ.get("BFF_URL")
+
+
 def elegir_cliente() -> ClienteReportes:
     """Elige el cliente real o simulado según la variable de entorno `BFF_URL`.
 
@@ -39,10 +49,9 @@ def elegir_cliente() -> ClienteReportes:
         para poder desarrollar sin que BFF exista todavía.
 
     """
-    base_url = os.environ.get("BFF_URL")
-    if base_url:
-        return BFFClient(base_url=base_url)
-    return ClienteReportesSimulado()
+    if usa_datos_de_ejemplo():
+        return ClienteReportesSimulado()
+    return BFFClient(base_url=os.environ["BFF_URL"])
 
 
 def construir_filas_grid(resultados: list[ReporteResumen]) -> list[dict[str, Any]]:

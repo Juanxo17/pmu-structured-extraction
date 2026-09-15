@@ -14,6 +14,7 @@ from frontend.bandeja import (
     elegir_cliente,
     exportar_csv,
     fila_seleccionada_de,
+    usa_datos_de_ejemplo,
 )
 from frontend.bff_client import BFFClient, ReporteResumen
 from frontend.reportes_mock import ClienteReportesSimulado
@@ -74,6 +75,26 @@ class TestElegirCliente:
 
         # Assert
         assert isinstance(cliente, BFFClient)
+
+
+class TestUsaDatosDeEjemplo:
+    """Pruebas del indicador de modo demo usado por el pie del sidebar."""
+
+    def test_es_true_sin_bff_url(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Sin BFF_URL, el tablero está en modo demo."""
+        # Arrange
+        monkeypatch.delenv("BFF_URL", raising=False)
+
+        # Act / Assert
+        assert usa_datos_de_ejemplo() is True
+
+    def test_es_false_con_bff_url(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Con BFF_URL definida, ya no es modo demo."""
+        # Arrange
+        monkeypatch.setenv("BFF_URL", "http://bff.test")
+
+        # Act / Assert
+        assert usa_datos_de_ejemplo() is False
 
 
 class TestConstruirFilasGrid:

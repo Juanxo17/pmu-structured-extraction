@@ -6,7 +6,7 @@ pytest normal (ver `frontend/frontend/pages/1_Bandeja.py` para el mismo patrón)
 
 import streamlit as st
 
-from frontend.bandeja import elegir_cliente
+from frontend.bandeja import elegir_cliente, usa_datos_de_ejemplo
 from frontend.resumen import (
     calcular_tasa_revision,
     construir_grafico_comuna,
@@ -36,9 +36,8 @@ def _leer_rango_fechas() -> tuple[str | None, str | None]:
 def main() -> None:
     """Renderiza la pantalla completa de Resumen."""
     inyectar_tema()
-    renderizar_pie_sidebar()
+    renderizar_pie_sidebar(modo_demo=usa_datos_de_ejemplo())
     st.title("Resumen operativo")
-    st.caption("GET /reportes/resumen")
 
     cliente = elegir_cliente()
     desde, hasta = _leer_rango_fechas()
@@ -62,11 +61,7 @@ def main() -> None:
         st.subheader("Reportes por comuna")
         st.plotly_chart(construir_grafico_comuna(resumen), use_container_width=True)
 
-    st.info(
-        "**Tendencia diaria** — propuesto: requiere agregar una serie temporal a "
-        "`GET /reportes/resumen`, que hoy no existe en el contrato. No se muestra "
-        "para no aparentar una capacidad que el backend todavía no tiene."
-    )
+    st.caption("Próximamente: tendencia de reportes por día.")
 
 
 if __name__ == "__main__":

@@ -105,15 +105,25 @@ def inyectar_tema() -> None:
     st.markdown(_CSS, unsafe_allow_html=True)
 
 
-def renderizar_pie_sidebar() -> None:
+def renderizar_pie_sidebar(modo_demo: bool = False) -> None:
     """Muestra la nota de pie del sidebar, debajo del menú de navegación.
 
     Se llama desde cada página (mismo patrón que `inyectar_tema`) porque el
     menú de páginas de `st.navigation` ya ocupa la parte de arriba del
     sidebar — lo que agregue cada página aquí queda debajo de ese menú.
+
+    El texto está pensado para el operador que usa el tablero, no para quien
+    lo programa: nada de nombres de variables de entorno, clases o archivos
+    de contrato — solo un aviso de que los datos son de ejemplo, cuando
+    aplica.
+
+    Args:
+        modo_demo: True si el tablero está mostrando datos de ejemplo en vez
+            de reportes reales.
+
     """
     st.sidebar.divider()
-    st.sidebar.caption(
-        "Sin `BFF_URL` definida, el tablero corre contra datos de ejemplo "
-        "locales (`ClienteReportesSimulado`) — ver docs/CONTRATOS_SISTEMA.md."
-    )
+    if modo_demo:
+        st.sidebar.caption(
+            "🧪 Datos de ejemplo — este tablero aún no está conectado a reportes reales."
+        )
