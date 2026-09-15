@@ -76,6 +76,10 @@ COLOR_ESTADO_FONDO: dict[str, str] = {
     "revisado": "#E1EEE5",
 }
 
+# Acento de marca (navy del mockup) — para elementos de magnitud/UI que no
+# son identidad categórica, como las barras de "reportes por comuna".
+COLOR_ACCENT = "#123C6B"
+
 _CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
