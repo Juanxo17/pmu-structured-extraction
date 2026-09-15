@@ -1,0 +1,174 @@
+"""Lógica de la pantalla Bandeja, separada de `pages/1_Bandeja.py`.
+
+Se separa para poder probarla con pytest normal: los archivos de página de
+Streamlit, con prefijo numérico, no son módulos Python importables.
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Any
+
+import folium
+import pandas as pd
+from st_aggrid import GridOptionsBuilder
+
+from frontend.bff_client import BFFClient, ClienteReportes, ReporteResumen
+from frontend.comunas import centroide
+from frontend.reportes_mock import ClienteReportesSimulado
+from frontend.theme import (
+    COLOR_TIPO_EVENTO,
+    ETIQUETA_ESTADO,
+    ETIQUETA_INTENCION,
+    ETIQUETA_SERVICIO,
+    ETIQUETA_TEMPORALIDAD,
+    ETIQUETA_TIPO_EVENTO,
+    ICONO_ESTADO,
+    ICONO_TIPO_EVENTO,
+)
+
+_CENTRO_CALI = (3.4516, -76.5320)
+
+
+def elegir_cliente() -> ClienteReportes:
+    """Elige el cliente real o simulado según la variable de entorno `BFF_URL`.
+
+    Returns:
+        `BFFClient` si `BFF_URL` está definida (ver docker-compose.yml);
+        `ClienteReportesSimulado` con datos de ejemplo en cualquier otro caso,
+        para poder desarrollar sin que BFF exista todavía.
+
+    """
+    base_url = os.environ.get("BFF_URL")
+    if base_url:
+        return BFFClient(base_url=base_url)
+    return ClienteReportesSimulado()
+
+
+def construir_filas_grid(resultados: list[ReporteResumen]) -> list[dict[str, Any]]:
+    """Convierte resultados resumidos en filas listas para mostrar en la tabla.
+
+    Args:
+        resultados: Resultados de `ClienteReportes.listar`.
+
+    Returns:
+        Una lista de dicts con etiquetas y colores ya resueltos, para que la
+        tabla no tenga que conocer la ontología ni la paleta.
+
+    """
+    filas = []
+    for r in resultados:
+        icono_estado = ICONO_ESTADO.get(r.estado_revision, "⚪")
+        etiqueta_estado = ETIQUETA_ESTADO.get(r.estado_revision, r.estado_revision)
+        icono_tipo = ICONO_TIPO_EVENTO.get(r.tipo_evento or "", "⚪")
+        etiqueta_tipo = ETIQUETA_TIPO_EVENTO.get(r.tipo_evento or "", "—")
+        filas.append(
+            {
+                "id": r.id,
+                "estado_revision": r.estado_revision,
+                "estado_label": f"{icono_estado} {etiqueta_estado}",
+                "tipo_evento_label": f"{icono_tipo} {etiqueta_tipo}",
+                "servicios": ", ".join(
+                    ETIQUETA_SERVICIO.get(codigo, codigo) for codigo in r.servicio_de_respuesta
+                ),
+                "ubicacion": f"{r.comuna or '—'} · {r.barrio or '—'}",
+                "intencion": ETIQUETA_INTENCION.get(r.intencion, r.intencion),
+                "temporalidad": ETIQUETA_TEMPORALIDAD.get(r.temporalidad, r.temporalidad),
+                "recibido": r.creado_en,
+            }
+        )
+    return filas
+
+
+def construir_grid_options(filas: pd.DataFrame) -> dict[str, Any]:
+    """Arma las gridOptions de AgGrid: columnas, orden por defecto y selección de fila.
+
+    Args:
+        filas: DataFrame construido a partir de `construir_filas_grid`.
+
+    Returns:
+        El diccionario de gridOptions listo para pasarle a `AgGrid`.
+
+    """
+    constructor = GridOptionsBuilder.from_dataframe(filas)
+    constructor.configure_default_column(sortable=True, filter=False, resizable=True)
+    constructor.configure_selection(selection_mode="single", use_checkbox=False)
+    constructor.configure_column("id", hide=True)
+    constructor.configure_column("estado_revision", hide=True)
+    constructor.configure_column("estado_label", header_name="Estado")
+    constructor.configure_column("tipo_evento_label", header_name="Tipo de evento")
+    constructor.configure_column("servicios", header_name="Servicios")
+    constructor.configure_column("ubicacion", header_name="Ubicación")
+    constructor.configure_column("intencion", header_name="Intención")
+    constructor.configure_column("temporalidad", header_name="Temporalidad")
+    constructor.configure_column(
+        "recibido", header_name="Recibido", sort="desc", type=["dateColumnFilter"]
+    )
+    opciones = constructor.build()
+    opciones["autoSizeStrategy"] = {"type": "fitGridWidth"}
+    return opciones
+
+
+def construir_mapa(resultados: list[ReporteResumen]) -> folium.Map:
+    """Arma el mapa de la Bandeja con un punto por resultado ubicable.
+
+    El centroide usado por comuna es una conveniencia local (ver
+    `frontend.comunas`) mientras `GET /reportes` no incluya `lat`/`lon`.
+
+    Args:
+        resultados: Resultados de `ClienteReportes.listar`.
+
+    Returns:
+        Un `folium.Map` centrado en Cali con los marcadores agregados.
+
+    """
+    mapa = folium.Map(location=_CENTRO_CALI, zoom_start=12, tiles="OpenStreetMap")
+    for r in resultados:
+        punto = centroide(r.comuna)
+        if punto is None:
+            continue
+        color = COLOR_TIPO_EVENTO.get(r.tipo_evento or "", "#79847E")
+        etiqueta = ETIQUETA_TIPO_EVENTO.get(r.tipo_evento or "", r.tipo_evento or "—")
+        folium.CircleMarker(
+            location=punto,
+            radius=7,
+            color=color,
+            weight=1 if r.estado_revision == "pendiente" else 2,
+            dash_array="4,3" if r.estado_revision == "pendiente" else None,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.85,
+            tooltip=r.id,
+            popup=folium.Popup(
+                f"<b>{etiqueta}</b><br>{r.comuna or '—'} · {r.barrio or '—'}", max_width=220
+            ),
+        ).add_to(mapa)
+    return mapa
+
+
+def fila_seleccionada_de(grid_response: Any) -> dict[str, Any] | None:
+    """Extrae la primera fila seleccionada de la respuesta de `AgGrid`.
+
+    Acepta tanto la forma antigua (dict con `selected_rows` como lista) como
+    la forma más reciente (`selected_rows` como DataFrame), sin acoplar el
+    resto del código a un formato específico de `streamlit-aggrid`.
+
+    Args:
+        grid_response: Valor devuelto por `AgGrid(...)`.
+
+    Returns:
+        La primera fila seleccionada como dict, o None si no hay selección.
+
+    """
+    seleccionadas = getattr(grid_response, "selected_rows", None)
+    if seleccionadas is None and isinstance(grid_response, dict):
+        seleccionadas = grid_response.get("selected_rows")
+
+    if seleccionadas is None:
+        return None
+    if hasattr(seleccionadas, "to_dict"):
+        registros = seleccionadas.to_dict("records")
+        return registros[0] if registros else None
+    if isinstance(seleccionadas, list) and seleccionadas:
+        return seleccionadas[0]
+    return None
