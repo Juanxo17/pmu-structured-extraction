@@ -23,5 +23,5 @@ class TestPaginaResumen:
 
         # Assert
         assert not app.exception
-        assert len(app.metric) == 4
+        assert len(app.metric) == 7
         assert app.title[0].value == "Resumen operativo"

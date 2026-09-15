@@ -17,6 +17,7 @@ from frontend.bff_client import BFFClient, ClienteReportes, ReporteResumen
 from frontend.comunas import centroide
 from frontend.reportes_mock import ClienteReportesSimulado
 from frontend.theme import (
+    COLOR_MUTED,
     COLOR_TIPO_EVENTO,
     ETIQUETA_ESTADO,
     ETIQUETA_INTENCION,
@@ -184,7 +185,7 @@ def construir_mapa(resultados: list[ReporteResumen]) -> folium.Map:
         punto = centroide(r.comuna)
         if punto is None:
             continue
-        color = COLOR_TIPO_EVENTO.get(r.tipo_evento or "", "#79847E")
+        color = COLOR_TIPO_EVENTO.get(r.tipo_evento or "", COLOR_MUTED)
         etiqueta = ETIQUETA_TIPO_EVENTO.get(r.tipo_evento or "", r.tipo_evento or "—")
         folium.CircleMarker(
             location=punto,

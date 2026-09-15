@@ -66,6 +66,19 @@ ETIQUETA_ESTADO: dict[str, str] = {
     "revisado": "Revisado",
 }
 
+ETIQUETA_ACCIONABLE: dict[str, str] = {
+    "accionable": "Accionables",
+    "no_accionable": "No accionables",
+}
+
+ETIQUETA_GRANULARIDAD: dict[str, str] = {
+    "exacta": "Exacta",
+    "barrio": "Barrio",
+    "comuna": "Comuna",
+    "ciudad": "Ciudad",
+    "indeterminada": "Indeterminada",
+}
+
 COLOR_ESTADO: dict[str, str] = {
     "pendiente": "#9A6512",
     "revisado": "#25714A",
@@ -79,6 +92,11 @@ COLOR_ESTADO_FONDO: dict[str, str] = {
 # Acento de marca (navy del mockup) — para elementos de magnitud/UI que no
 # son identidad categórica, como las barras de "reportes por comuna".
 COLOR_ACCENT = "#123C6B"
+
+# Gris neutro — para indicadores de calidad de dato (ej. granularidad de la
+# ubicación), a propósito distinto del acento de marca y de la paleta
+# categórica, para que no se lean como "más contenido" sino como "meta-dato".
+COLOR_MUTED = "#79847E"
 
 _CSS = """
 <style>

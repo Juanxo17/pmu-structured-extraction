@@ -2,11 +2,16 @@
 
 from frontend.bff_client import ResumenReportes
 from frontend.resumen import (
+    calcular_tasa_accionable,
     calcular_tasa_revision,
     construir_grafico_comuna,
+    construir_grafico_granularidad,
+    construir_grafico_intencion,
+    construir_grafico_servicio,
+    construir_grafico_temporalidad,
     construir_grafico_tipo_evento,
 )
-from frontend.theme import COLOR_ACCENT, COLOR_TIPO_EVENTO
+from frontend.theme import COLOR_ACCENT, COLOR_MUTED, COLOR_TIPO_EVENTO
 
 
 def _resumen(**overrides: object) -> ResumenReportes:
@@ -25,6 +30,11 @@ def _resumen(**overrides: object) -> ResumenReportes:
         "revisados": 6,
         "por_tipo_evento": {"sismo": 5, "inundacion_subita": 3, "incendio_estructural": 2},
         "por_comuna": {"Comuna 13": 4, "Comuna 20": 3, "Comuna 1": 3},
+        "por_accionable": {"accionable": 8, "no_accionable": 2},
+        "por_temporalidad": {"ocurriendo_ahora": 3, "ya_ocurrio": 5, "riesgo_previsto": 2},
+        "por_intencion": {"solicita_ayuda": 4, "reporta_terceros": 6},
+        "por_servicio_de_respuesta": {"A": 5, "G": 4, "B": 2},
+        "por_nivel_granularidad": {"exacta": 3, "barrio": 4, "comuna": 1},
     }
     base.update(overrides)
     return ResumenReportes(**base)
@@ -120,3 +130,115 @@ class TestConstruirGraficoComuna:
 
         # Assert
         assert figura.data[0].marker.color == COLOR_ACCENT
+
+
+class TestCalcularTasaAccionable:
+    """Pruebas de calcular_tasa_accionable."""
+
+    def test_calcula_el_porcentaje_de_accionables(self) -> None:
+        """8 accionables de 10 clasificados da 80.0%."""
+        # Arrange
+        resumen = _resumen(por_accionable={"accionable": 8, "no_accionable": 2})
+
+        # Act
+        tasa = calcular_tasa_accionable(resumen)
+
+        # Assert
+        assert tasa == 80.0
+
+    def test_devuelve_cero_si_no_hay_reportes_clasificados(self) -> None:
+        """Sin accionables ni no_accionables, la tasa es 0.0, nunca una división por cero."""
+        # Arrange
+        resumen = _resumen(por_accionable={"accionable": 0, "no_accionable": 0})
+
+        # Act
+        tasa = calcular_tasa_accionable(resumen)
+
+        # Assert
+        assert tasa == 0.0
+
+
+class TestConstruirGraficoTemporalidad:
+    """Pruebas de construir_grafico_temporalidad."""
+
+    def test_incluye_una_barra_por_temporalidad_con_conteo_mayor_a_cero(self) -> None:
+        """Las temporalidades sin reportes no aparecen en el gráfico."""
+        # Arrange
+        resumen = _resumen(por_temporalidad={"ocurriendo_ahora": 3, "referencia_noticia": 0})
+
+        # Act
+        figura = construir_grafico_temporalidad(resumen)
+
+        # Assert
+        assert len(figura.data[0].y) == 1
+        assert figura.data[0].y[0] == "Ocurriendo ahora"
+
+    def test_usa_un_solo_color_de_acento(self) -> None:
+        """Temporalidad es una distribución de pocos valores fijos, no identidad: un solo hue."""
+        # Arrange
+        resumen = _resumen(por_temporalidad={"ocurriendo_ahora": 3, "ya_ocurrio": 5})
+
+        # Act
+        figura = construir_grafico_temporalidad(resumen)
+
+        # Assert
+        assert figura.data[0].marker.color == COLOR_ACCENT
+
+
+class TestConstruirGraficoIntencion:
+    """Pruebas de construir_grafico_intencion."""
+
+    def test_incluye_una_barra_por_intencion_con_conteo_mayor_a_cero(self) -> None:
+        """Las intenciones sin reportes no aparecen en el gráfico."""
+        # Arrange
+        resumen = _resumen(por_intencion={"solicita_ayuda": 4, "ofrece_ayuda": 0})
+
+        # Act
+        figura = construir_grafico_intencion(resumen)
+
+        # Assert
+        assert len(figura.data[0].y) == 1
+        assert figura.data[0].y[0] == "Solicita ayuda"
+
+
+class TestConstruirGraficoServicio:
+    """Pruebas de construir_grafico_servicio."""
+
+    def test_usa_el_nombre_completo_del_servicio_no_la_letra(self) -> None:
+        """El eje de categorías muestra el nombre legible, no el código."""
+        # Arrange
+        resumen = _resumen(por_servicio_de_respuesta={"A": 5})
+
+        # Act
+        figura = construir_grafico_servicio(resumen)
+
+        # Assert
+        assert figura.data[0].y[0] == "Búsqueda y Rescate"
+
+    def test_respeta_el_top_n(self) -> None:
+        """Con top_n=1 solo aparece el servicio más solicitado."""
+        # Arrange
+        resumen = _resumen(por_servicio_de_respuesta={"A": 5, "G": 9, "B": 2})
+
+        # Act
+        figura = construir_grafico_servicio(resumen, top_n=1)
+
+        # Assert
+        assert len(figura.data[0].y) == 1
+        assert figura.data[0].y[0] == "Salud"
+
+
+class TestConstruirGraficoGranularidad:
+    """Pruebas de construir_grafico_granularidad."""
+
+    def test_usa_el_color_neutro_no_el_acento_de_marca(self) -> None:
+        """Es un indicador de calidad de dato, no de contenido: color deliberadamente distinto."""
+        # Arrange
+        resumen = _resumen(por_nivel_granularidad={"exacta": 3, "indeterminada": 1})
+
+        # Act
+        figura = construir_grafico_granularidad(resumen)
+
+        # Assert
+        assert figura.data[0].marker.color == COLOR_MUTED
+        assert figura.data[0].marker.color != COLOR_ACCENT

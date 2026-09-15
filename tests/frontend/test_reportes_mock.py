@@ -186,4 +186,42 @@ class TestClienteReportesSimulado:
 
         # Assert
         assert resumen.pendientes + resumen.revisados == resumen.total
-        assert sum(resumen.por_tipo_evento.values()) == resumen.total
+
+    def test_resumen_por_accionable_cuadra_con_el_total(self) -> None:
+        """accionables + no_accionables == total, y por_tipo_evento solo cuenta accionables."""
+        # Arrange
+        cliente = ClienteReportesSimulado()
+
+        # Act
+        resumen = cliente.resumen()
+
+        # Assert
+        accionables = resumen.por_accionable["accionable"]
+        no_accionables = resumen.por_accionable["no_accionable"]
+        assert accionables + no_accionables == resumen.total
+        assert no_accionables > 0
+        assert sum(resumen.por_tipo_evento.values()) == accionables
+
+    def test_resumen_por_temporalidad_e_intencion_cuadran_con_el_total(self) -> None:
+        """A diferencia de por_tipo_evento, estos dos sí cuentan a los no accionables."""
+        # Arrange
+        cliente = ClienteReportesSimulado()
+
+        # Act
+        resumen = cliente.resumen()
+
+        # Assert
+        assert sum(resumen.por_temporalidad.values()) == resumen.total
+        assert sum(resumen.por_intencion.values()) == resumen.total
+
+    def test_resumen_por_servicio_de_respuesta_no_esta_vacio(self) -> None:
+        """El resumen cuenta al menos un servicio de respuesta reportado."""
+        # Arrange
+        cliente = ClienteReportesSimulado()
+
+        # Act
+        resumen = cliente.resumen()
+
+        # Assert
+        assert resumen.por_servicio_de_respuesta
+        assert all(conteo > 0 for conteo in resumen.por_servicio_de_respuesta.values())

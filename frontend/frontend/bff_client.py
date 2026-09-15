@@ -103,13 +103,25 @@ class PaginaReportes:
 
 @dataclass(frozen=True)
 class ResumenReportes:
-    """Respuesta de `GET /reportes/resumen`."""
+    """Respuesta de `GET /reportes/resumen` (ver docs/CONTRATOS_SISTEMA.md).
+
+    `por_tipo_evento`, `por_comuna` y `por_nivel_granularidad` solo cuentan
+    reportes accionables (`naturaleza`/`ubicacion` no son `None`);
+    `por_temporalidad` y `por_intencion` cuentan todos, porque `compuerta`
+    siempre existe. `por_servicio_de_respuesta` es multietiqueta: la suma de
+    sus valores puede superar `total`.
+    """
 
     total: int
     pendientes: int
     revisados: int
     por_tipo_evento: dict[str, int]
     por_comuna: dict[str, int]
+    por_accionable: dict[str, int]
+    por_temporalidad: dict[str, int]
+    por_intencion: dict[str, int]
+    por_servicio_de_respuesta: dict[str, int]
+    por_nivel_granularidad: dict[str, int]
 
 
 class ClienteReportes(Protocol):
@@ -234,6 +246,11 @@ class BFFClient:
             revisados=cuerpo["revisados"],
             por_tipo_evento=dict(cuerpo.get("por_tipo_evento", {})),
             por_comuna=dict(cuerpo.get("por_comuna", {})),
+            por_accionable=dict(cuerpo.get("por_accionable", {})),
+            por_temporalidad=dict(cuerpo.get("por_temporalidad", {})),
+            por_intencion=dict(cuerpo.get("por_intencion", {})),
+            por_servicio_de_respuesta=dict(cuerpo.get("por_servicio_de_respuesta", {})),
+            por_nivel_granularidad=dict(cuerpo.get("por_nivel_granularidad", {})),
         )
 
 

@@ -218,6 +218,11 @@ class TestBFFClientResumen:
                     "revisados": 6,
                     "por_tipo_evento": {"sismo": 2},
                     "por_comuna": {"Comuna 13": 3},
+                    "por_accionable": {"accionable": 8, "no_accionable": 2},
+                    "por_temporalidad": {"ocurriendo_ahora": 3},
+                    "por_intencion": {"solicita_ayuda": 5},
+                    "por_servicio_de_respuesta": {"A": 4},
+                    "por_nivel_granularidad": {"exacta": 6},
                 },
             )
 
@@ -230,3 +235,36 @@ class TestBFFClientResumen:
         assert resumen.total == 10
         assert resumen.pendientes == 4
         assert resumen.por_tipo_evento["sismo"] == 2
+        assert resumen.por_accionable["accionable"] == 8
+        assert resumen.por_temporalidad["ocurriendo_ahora"] == 3
+        assert resumen.por_intencion["solicita_ayuda"] == 5
+        assert resumen.por_servicio_de_respuesta["A"] == 4
+        assert resumen.por_nivel_granularidad["exacta"] == 6
+
+    def test_resumen_usa_diccionarios_vacios_si_bff_todavia_no_manda_los_campos_nuevos(
+        self,
+    ) -> None:
+        """Compatibilidad hacia atrás: BFF viejo sin los campos nuevos no rompe el parseo."""
+
+        # Arrange
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                json={
+                    "total": 10,
+                    "pendientes": 4,
+                    "revisados": 6,
+                    "por_tipo_evento": {"sismo": 2},
+                    "por_comuna": {"Comuna 13": 3},
+                },
+            )
+
+        cliente = _cliente_con_transporte(handler)
+
+        # Act
+        resumen = cliente.resumen()
+
+        # Assert
+        assert resumen.por_accionable == {}
+        assert resumen.por_temporalidad == {}
+        assert resumen.por_servicio_de_respuesta == {}

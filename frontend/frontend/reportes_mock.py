@@ -99,6 +99,47 @@ def _reporte(
     )
 
 
+def _reporte_no_accionable(
+    sufijo: str,
+    minutos_desde_ahora: int,
+    temporalidad: str,
+    intencion: str,
+    estado: str,
+    mensaje: str,
+) -> ReporteEstructurado:
+    """Arma un ReporteEstructurado de ejemplo descartado en la compuerta (etapa 1).
+
+    Sin `naturaleza` ni `ubicacion`, tal como los deja Process cuando
+    `es_reporte_accionable = False` (ver docs/CONTRATOS_SISTEMA.md).
+
+    Args:
+        sufijo: Sufijo corto para el id y el id_externo del reporte.
+        minutos_desde_ahora: Antigüedad del reporte respecto a `_AHORA`.
+        temporalidad: Ver Compuerta.
+        intencion: Ver Compuerta.
+        estado: "pendiente" o "revisado".
+        mensaje: Texto ya anonimizado del reporte.
+
+    Returns:
+        El reporte de ejemplo, validado contra el esquema compartido.
+
+    """
+    return ReporteEstructurado(
+        id=f"rpt_{sufijo}",
+        fuente="telegram",
+        id_externo=f"tg_{sufijo}",
+        autor_anonimizado_id=f"anon_{sufijo}",
+        mensaje_anonimizado=mensaje,
+        estado_revision=estado,
+        compuerta=Compuerta(
+            es_reporte_accionable=False, temporalidad=temporalidad, intencion=intencion
+        ),
+        naturaleza=None,
+        ubicacion=None,
+        creado_en=_AHORA - timedelta(minutes=minutos_desde_ahora),
+    )
+
+
 _REPORTES: list[ReporteEstructurado] = [
     _reporte(
         "8f3a1c02",
@@ -300,6 +341,22 @@ _REPORTES: list[ReporteEstructurado] = [
         "comuna",
         "El fuego del cerro de ayer ya está controlado según los vecinos del sector.",
     ),
+    _reporte_no_accionable(
+        "e5f10a91",
+        200,
+        "referencia_noticia",
+        "solicita_informacion",
+        "revisado",
+        "Vi en las noticias que hubo un temblor fuerte en otra ciudad, por acá no se sintió.",
+    ),
+    _reporte_no_accionable(
+        "77c22b40",
+        900,
+        "ya_ocurrio",
+        "reporta_terceros",
+        "revisado",
+        "Gracias a los bomberos y a los vecinos por la atención de ayer, todo salió bien.",
+    ),
 ]
 
 
@@ -476,19 +533,46 @@ class ClienteReportesSimulado:
         pendientes = sum(1 for r in en_rango if r.estado_revision == "pendiente")
         por_tipo: dict[str, int] = {}
         por_comuna: dict[str, int] = {}
+        por_accionable = {"accionable": 0, "no_accionable": 0}
+        por_temporalidad: dict[str, int] = {}
+        por_intencion: dict[str, int] = {}
+        por_servicio: dict[str, int] = {}
+        por_granularidad: dict[str, int] = {}
         for reporte in en_rango:
+            clave_accionable = (
+                "accionable" if reporte.compuerta.es_reporte_accionable else "no_accionable"
+            )
+            por_accionable[clave_accionable] += 1
+            por_temporalidad[reporte.compuerta.temporalidad] = (
+                por_temporalidad.get(reporte.compuerta.temporalidad, 0) + 1
+            )
+            por_intencion[reporte.compuerta.intencion] = (
+                por_intencion.get(reporte.compuerta.intencion, 0) + 1
+            )
             if reporte.naturaleza:
                 clave = reporte.naturaleza.tipo_evento
                 por_tipo[clave] = por_tipo.get(clave, 0) + 1
-            if reporte.ubicacion and reporte.ubicacion.comuna:
-                clave_comuna = reporte.ubicacion.comuna
-                por_comuna[clave_comuna] = por_comuna.get(clave_comuna, 0) + 1
+                for codigo in reporte.naturaleza.servicio_de_respuesta:
+                    por_servicio[codigo] = por_servicio.get(codigo, 0) + 1
+            if reporte.ubicacion:
+                if reporte.ubicacion.comuna:
+                    clave_comuna = reporte.ubicacion.comuna
+                    por_comuna[clave_comuna] = por_comuna.get(clave_comuna, 0) + 1
+                clave_granularidad = reporte.ubicacion.nivel_granularidad
+                por_granularidad[clave_granularidad] = (
+                    por_granularidad.get(clave_granularidad, 0) + 1
+                )
         return ResumenReportes(
             total=len(en_rango),
             pendientes=pendientes,
             revisados=len(en_rango) - pendientes,
             por_tipo_evento=por_tipo,
             por_comuna=por_comuna,
+            por_accionable=por_accionable,
+            por_temporalidad=por_temporalidad,
+            por_intencion=por_intencion,
+            por_servicio_de_respuesta=por_servicio,
+            por_nivel_granularidad=por_granularidad,
         )
 
 
