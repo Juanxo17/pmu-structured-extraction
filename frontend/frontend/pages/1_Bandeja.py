@@ -38,7 +38,7 @@ def _leer_filtros() -> FiltrosReportes:
         Los filtros según lo que el operador haya seleccionado.
 
     """
-    col_tipo, col_comuna, col_estado = st.columns(3)
+    col_tipo, col_comuna = st.columns(2)
     with col_tipo:
         tipos = st.multiselect(
             "Tipo de evento",
@@ -47,9 +47,17 @@ def _leer_filtros() -> FiltrosReportes:
         )
     with col_comuna:
         comuna = st.selectbox("Comuna", options=["Todas", *COMUNAS_CONOCIDAS])
+
+    col_estado, col_accionable = st.columns(2)
     with col_estado:
         estado = st.segmented_control(
             "Estado", options=["Todos", "Pendientes", "Revisados"], default="Todos"
+        )
+    with col_accionable:
+        accionable = st.segmented_control(
+            "Accionable",
+            options=["Todos", "Accionables", "No accionables"],
+            default="Todos",
         )
 
     col_desde, col_hasta, col_q = st.columns([1, 1, 2])
@@ -61,10 +69,12 @@ def _leer_filtros() -> FiltrosReportes:
         q = st.text_input("Buscar", placeholder="texto del mensaje…")
 
     estado_revision = {"Pendientes": "pendiente", "Revisados": "revisado"}.get(estado)
+    es_accionable = {"Accionables": True, "No accionables": False}.get(accionable)
     return FiltrosReportes(
         tipo_evento=tipos,
         comuna=None if comuna == "Todas" else comuna,
         estado_revision=estado_revision,
+        accionable=es_accionable,
         desde=fecha_desde.isoformat() if fecha_desde else None,
         hasta=fecha_hasta.isoformat() if fecha_hasta else None,
         q=q or None,

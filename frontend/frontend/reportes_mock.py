@@ -408,6 +408,11 @@ def coincide_con_filtros(reporte: ReporteEstructurado, filtros: FiltrosReportes)
         return False
     if filtros.estado_revision and reporte.estado_revision != filtros.estado_revision:
         return False
+    if (
+        filtros.accionable is not None
+        and reporte.compuerta.es_reporte_accionable != filtros.accionable
+    ):
+        return False
     if filtros.desde and reporte.creado_en < datetime.fromisoformat(filtros.desde):
         return False
     if filtros.hasta and reporte.creado_en > datetime.fromisoformat(filtros.hasta):

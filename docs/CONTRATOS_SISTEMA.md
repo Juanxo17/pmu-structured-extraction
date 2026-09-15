@@ -181,7 +181,7 @@ class TelegramSource(FuenteDeMensajes): ...
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
 | `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad}` | Llamado por BFF |
 
-**Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
+**Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `accionable` (`true`/`false`, sobre `compuerta.es_reporte_accionable` — sin este filtro el listado incluye los reportes descartados en la compuerta, con `tipo_evento`/`ubicación` vacíos), `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
 
 **Campos de `GET /reportes/resumen`** (todos sobre el rango `desde`/`hasta` si se da; si no, histórico completo):
 

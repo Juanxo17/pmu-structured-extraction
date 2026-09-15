@@ -29,6 +29,7 @@ class FiltrosReportes:
     intencion: str | None = None
     estado_revision: str | None = None
     nivel_granularidad: str | None = None
+    accionable: bool | None = None
     desde: str | None = None
     hasta: str | None = None
     q: str | None = None
@@ -66,6 +67,9 @@ class FiltrosReportes:
             valor = getattr(self, campo)
             if valor:
                 params[campo] = valor
+        if self.accionable is not None:
+            # Bool explícito: "if self.accionable" descartaría accionable=False.
+            params["accionable"] = "true" if self.accionable else "false"
         return params
 
 

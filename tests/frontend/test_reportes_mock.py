@@ -96,6 +96,33 @@ class TestCoincideConFiltros:
         # Assert
         assert algun_reporte in resultado
 
+    def test_filtro_de_accionable_deja_solo_los_descartados_en_la_compuerta(self) -> None:
+        """accionable=False deja solo los reportes sin naturaleza/ubicación."""
+        # Arrange
+        reportes = reportes_de_ejemplo()
+        filtros = FiltrosReportes(accionable=False)
+
+        # Act
+        resultado = [r for r in reportes if coincide_con_filtros(r, filtros)]
+
+        # Assert
+        assert resultado
+        assert all(not r.compuerta.es_reporte_accionable for r in resultado)
+        assert all(r.naturaleza is None for r in resultado)
+
+    def test_filtro_de_accionable_en_true_excluye_los_descartados(self) -> None:
+        """accionable=True deja solo los reportes con naturaleza/ubicación resueltas."""
+        # Arrange
+        reportes = reportes_de_ejemplo()
+        filtros = FiltrosReportes(accionable=True)
+
+        # Act
+        resultado = [r for r in reportes if coincide_con_filtros(r, filtros)]
+
+        # Assert
+        assert resultado
+        assert all(r.compuerta.es_reporte_accionable for r in resultado)
+
 
 class TestAplicarCorreccion:
     """Pruebas de la aplicación de correcciones de triaje."""

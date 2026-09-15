@@ -84,6 +84,28 @@ class TestFiltrosReportes:
         assert params["comuna"] == "Comuna 13"
         assert "barrio" not in params
 
+    def test_accionable_en_false_se_envia_explicitamente(self) -> None:
+        """accionable=False no debe descartarse (un `if valor:` normal lo haría)."""
+        # Arrange
+        filtros = FiltrosReportes(accionable=False)
+
+        # Act
+        params = filtros.como_query_params()
+
+        # Assert
+        assert params["accionable"] == "false"
+
+    def test_accionable_sin_definir_no_aparece_en_los_params(self) -> None:
+        """Sin filtro de accionable, el listado no se acota por este campo."""
+        # Arrange
+        filtros = FiltrosReportes()
+
+        # Act
+        params = filtros.como_query_params()
+
+        # Assert
+        assert "accionable" not in params
+
 
 class TestBFFClientListar:
     """Pruebas de BFFClient.listar contra un transporte HTTP simulado."""
