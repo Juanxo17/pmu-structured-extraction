@@ -12,6 +12,7 @@ st.logo(str(_LOGO))
 paginas = [
     st.Page("pages/1_Bandeja.py", title="Bandeja", icon="📥", default=True),
     st.Page("pages/2_Resumen.py", title="Resumen", icon="📊"),
+    st.Page("pages/3_Detalle.py", title="Detalle", icon="📄"),
 ]
 
 st.navigation(paginas).run()

@@ -117,10 +117,6 @@ h1, h2, h3, [data-testid="stMetricLabel"] { font-family: "Archivo", system-ui, s
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
 }
-.sirena-caveat {
-  font-size: 12.5px; border: 1px dashed #9A6512; background: #F6ECD9;
-  border-radius: 8px; padding: 8px 12px; color: #4B5652;
-}
 </style>
 """
 

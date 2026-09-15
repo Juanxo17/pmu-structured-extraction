@@ -13,10 +13,10 @@ from st_aggrid import AgGrid
 from streamlit_folium import st_folium
 
 from frontend.bandeja import (
+    cliente_de_sesion,
     construir_filas_grid,
     construir_grid_options,
     construir_mapa,
-    elegir_cliente,
     exportar_csv,
     fila_seleccionada_de,
     usa_datos_de_ejemplo,
@@ -105,8 +105,8 @@ def _mostrar_vista_previa(cliente, id_reporte: str) -> None:
     """Muestra un resumen del reporte seleccionado en la tabla.
 
     Llama a `ClienteReportes.obtener` porque el listado resumido no trae el
-    mensaje ni la ubicación completa. La pantalla de Detalle (con el
-    formulario de triaje completo) queda para la siguiente iteración.
+    mensaje ni la ubicación completa. El botón "Ver detalle completo" lleva
+    a la pantalla de Detalle, con el formulario de triaje.
 
     Args:
         cliente: Cliente de reportes en uso.
@@ -134,7 +134,9 @@ def _mostrar_vista_previa(cliente, id_reporte: str) -> None:
                 f"{reporte.ubicacion.barrio or '—'}"
             )
         st.write(f"**Mensaje:** {reporte.mensaje_anonimizado}")
-        st.caption("La edición completa de este reporte estará disponible próximamente.")
+        if st.button("Ver detalle completo →", key=f"detalle_{reporte.id}"):
+            st.session_state["reporte_seleccionado_id"] = reporte.id
+            st.switch_page("pages/3_Detalle.py")
 
 
 def main() -> None:
@@ -145,7 +147,7 @@ def main() -> None:
     # vez que ya hay resultados con los que armar el botón de exportar.
     encabezado = st.container()
 
-    cliente = elegir_cliente()
+    cliente = cliente_de_sesion()
     _mostrar_kpis(cliente)
     filtros = _leer_filtros()
 
