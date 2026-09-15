@@ -80,6 +80,54 @@ def construir_filas_grid(resultados: list[ReporteResumen]) -> list[dict[str, Any
     return filas
 
 
+def construir_filas_exportacion(resultados: list[ReporteResumen]) -> list[dict[str, Any]]:
+    """Convierte resultados resumidos en filas para exportar (sin emoji).
+
+    A diferencia de `construir_filas_grid`, estas filas son para abrirse en
+    Excel/hojas de cálculo, no para pintarse en pantalla: usan nombres
+    legibles completos pero sin el ícono decorativo.
+
+    Args:
+        resultados: Resultados de `ClienteReportes.listar`.
+
+    Returns:
+        Una lista de dicts lista para convertir a `pandas.DataFrame`.
+
+    """
+    filas = []
+    for r in resultados:
+        filas.append(
+            {
+                "id": r.id,
+                "estado": ETIQUETA_ESTADO.get(r.estado_revision, r.estado_revision),
+                "tipo_evento": ETIQUETA_TIPO_EVENTO.get(r.tipo_evento or "", "—"),
+                "servicios": ", ".join(
+                    ETIQUETA_SERVICIO.get(codigo, codigo) for codigo in r.servicio_de_respuesta
+                ),
+                "comuna": r.comuna or "—",
+                "barrio": r.barrio or "—",
+                "temporalidad": ETIQUETA_TEMPORALIDAD.get(r.temporalidad, r.temporalidad),
+                "intencion": ETIQUETA_INTENCION.get(r.intencion, r.intencion),
+                "recibido": r.creado_en.isoformat(),
+            }
+        )
+    return filas
+
+
+def exportar_csv(resultados: list[ReporteResumen]) -> bytes:
+    """Serializa los resultados de la Bandeja como CSV, listo para descargar.
+
+    Args:
+        resultados: Resultados de `ClienteReportes.listar`.
+
+    Returns:
+        El CSV en bytes, con BOM UTF-8 para que Excel muestre bien las tildes.
+
+    """
+    filas = pd.DataFrame(construir_filas_exportacion(resultados))
+    return filas.to_csv(index=False).encode("utf-8-sig")
+
+
 def construir_grid_options(filas: pd.DataFrame) -> dict[str, Any]:
     """Arma las gridOptions de AgGrid: columnas, orden por defecto y selección de fila.
 

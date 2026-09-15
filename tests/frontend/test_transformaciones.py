@@ -7,10 +7,12 @@ import pandas as pd
 import pytest
 
 from frontend.bandeja import (
+    construir_filas_exportacion,
     construir_filas_grid,
     construir_grid_options,
     construir_mapa,
     elegir_cliente,
+    exportar_csv,
     fila_seleccionada_de,
 )
 from frontend.bff_client import BFFClient, ReporteResumen
@@ -115,6 +117,48 @@ class TestConstruirFilasGrid:
 
         # Assert
         assert filas[0]["tipo_evento_label"] == "⚪ —"
+
+
+class TestExportarCsv:
+    """Pruebas de la exportación a CSV de la Bandeja."""
+
+    def test_filas_de_exportacion_no_llevan_emoji(self) -> None:
+        """A diferencia de la tabla en pantalla, las filas de exportación son texto plano."""
+        # Arrange
+        resultados = [_resumen()]
+
+        # Act
+        filas = construir_filas_exportacion(resultados)
+
+        # Assert
+        assert filas[0]["tipo_evento"] == "Sismo"
+        assert filas[0]["estado"] == "Pendiente"
+
+    def test_filas_de_exportacion_usan_nombres_completos_de_servicios(self) -> None:
+        """Igual que en la tabla, servicios va con el nombre completo, no la letra."""
+        # Arrange
+        resultados = [_resumen(servicio_de_respuesta=["A", "G"])]
+
+        # Act
+        filas = construir_filas_exportacion(resultados)
+
+        # Assert
+        assert filas[0]["servicios"] == "Búsqueda y Rescate, Salud"
+
+    def test_exportar_csv_produce_un_csv_valido_con_encabezados_esperados(self) -> None:
+        """El CSV resultante se puede decodificar y trae las columnas esperadas."""
+        # Arrange
+        resultados = [_resumen(id="rpt_1"), _resumen(id="rpt_2", estado_revision="revisado")]
+
+        # Act
+        contenido = exportar_csv(resultados).decode("utf-8-sig")
+
+        # Assert
+        primera_linea = contenido.splitlines()[0]
+        assert "id" in primera_linea
+        assert "tipo_evento" in primera_linea
+        assert "rpt_1" in contenido
+        assert "rpt_2" in contenido
 
 
 class TestConstruirGridOptions:

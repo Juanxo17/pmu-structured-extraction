@@ -17,11 +17,12 @@ from frontend.bandeja import (
     construir_grid_options,
     construir_mapa,
     elegir_cliente,
+    exportar_csv,
     fila_seleccionada_de,
 )
 from frontend.bff_client import ErrorBFF, FiltrosReportes
 from frontend.comunas import COMUNAS_CONOCIDAS
-from frontend.theme import ETIQUETA_TIPO_EVENTO, inyectar_tema
+from frontend.theme import ETIQUETA_TIPO_EVENTO, inyectar_tema, renderizar_pie_sidebar
 
 
 def _leer_filtros() -> FiltrosReportes:
@@ -116,7 +117,10 @@ def _mostrar_vista_previa(cliente, id_reporte: str) -> None:
 def main() -> None:
     """Renderiza la pantalla completa de la Bandeja."""
     inyectar_tema()
-    st.title("Bandeja de reportes")
+    renderizar_pie_sidebar()
+    # Reserva el lugar del encabezado arriba de todo; se llena más abajo, una
+    # vez que ya hay resultados con los que armar el botón de exportar.
+    encabezado = st.container()
 
     cliente = elegir_cliente()
     _mostrar_kpis(cliente)
@@ -125,8 +129,20 @@ def main() -> None:
     try:
         pagina = cliente.listar(filtros)
     except ErrorBFF as error:
+        with encabezado:
+            st.title("Bandeja de reportes")
         st.error(f"BFF respondió con un error: {error}")
         return
+
+    with encabezado:
+        col_titulo, col_exportar = st.columns([3, 1])
+        col_titulo.title("Bandeja de reportes")
+        col_exportar.download_button(
+            "Exportar CSV",
+            data=exportar_csv(pagina.resultados),
+            file_name="reportes_sirena.csv",
+            mime="text/csv",
+        )
 
     if not pagina.resultados:
         st.info("No hay reportes con estos filtros.")
