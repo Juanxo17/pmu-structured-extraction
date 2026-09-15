@@ -151,6 +151,47 @@ class TestBFFClientListar:
         assert pagina.total == 1
         assert pagina.resultados[0].id == "rpt_1"
         assert pagina.resultados[0].servicio_de_respuesta == ["A"]
+        assert pagina.resultados[0].lat is None
+        assert pagina.resultados[0].lon is None
+
+    def test_parsea_lat_lon_cuando_bff_ya_los_manda(self) -> None:
+        """Campo propuesto: si BFF ya incluye lat/lon, listar los expone tal cual."""
+
+        # Arrange
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                json={
+                    "total": 1,
+                    "pagina": 1,
+                    "tamano_pagina": 20,
+                    "resultados": [
+                        {
+                            "id": "rpt_1",
+                            "tipo_evento": "sismo",
+                            "servicio_de_respuesta": ["A"],
+                            "comuna": "Comuna 20",
+                            "barrio": "Siloé",
+                            "temporalidad": "ya_ocurrio",
+                            "intencion": "reporta_terceros",
+                            "estado_revision": "pendiente",
+                            "nivel_granularidad": "exacta",
+                            "creado_en": "2026-09-15T08:00:00Z",
+                            "lat": 3.4437,
+                            "lon": -76.5661,
+                        }
+                    ],
+                },
+            )
+
+        cliente = _cliente_con_transporte(handler)
+
+        # Act
+        pagina = cliente.listar(FiltrosReportes())
+
+        # Assert
+        assert pagina.resultados[0].lat == 3.4437
+        assert pagina.resultados[0].lon == -76.5661
 
     def test_lanza_error_bff_si_la_respuesta_es_4xx(self) -> None:
         """Un 422 de BFF se traduce en ErrorBFF con el detalle del cuerpo."""

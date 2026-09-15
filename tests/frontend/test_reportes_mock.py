@@ -52,6 +52,36 @@ class TestDatosSimulados:
         for comuna in comunas_usadas:
             assert centroide(comuna) is not None
 
+    def test_incluye_al_menos_un_reporte_con_coordenada_exacta(self) -> None:
+        """El dataset cubre el camino de lat/lon real, no solo el respaldo por comuna."""
+        # Arrange
+        reportes = reportes_de_ejemplo()
+
+        # Act
+        con_coordenada = [
+            r for r in reportes if r.ubicacion and r.ubicacion.lat and r.ubicacion.lon
+        ]
+
+        # Assert
+        assert con_coordenada
+
+    def test_incluye_al_menos_un_reporte_exacto_sin_coordenada(self) -> None:
+        """Y también cubre el caso de respaldo: granularidad exacta pero sin lat/lon todavía."""
+        # Arrange
+        reportes = reportes_de_ejemplo()
+
+        # Act
+        sin_coordenada = [
+            r
+            for r in reportes
+            if r.ubicacion
+            and r.ubicacion.nivel_granularidad == "exacta"
+            and r.ubicacion.lat is None
+        ]
+
+        # Assert
+        assert sin_coordenada
+
 
 class TestCoincideConFiltros:
     """Pruebas de la función pura de filtrado usada por el cliente simulado."""

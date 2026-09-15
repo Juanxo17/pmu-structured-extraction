@@ -186,7 +186,7 @@ def main() -> None:
             _mostrar_vista_previa(cliente, fila["id"])
 
     with col_mapa:
-        st.caption("Ubicación aproximada por comuna.")
+        st.caption("Ubicación exacta cuando está disponible; si no, aproximada por comuna.")
         st_folium(construir_mapa(pagina.resultados), width=None, height=420)
 
 

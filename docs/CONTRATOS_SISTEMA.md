@@ -176,7 +176,9 @@ class TelegramSource(FuenteDeMensajes): ...
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
 | `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
-| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`/coordenadas), para que la bandeja cargue rápido |
+| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`), para que la bandeja cargue rápido |
+
+**Propuesto:** que la versión resumida sí incluya `lat`/`lon` (float o `None`) — el mapa de la bandeja los necesita para plantar un punto exacto en vez de aproximar por el centroide de la comuna; hoy el frontend lo mockea con un centroide local mientras se confirma. Cuando `nivel_granularidad` no sea `"exacta"`, `lat`/`lon` pueden venir `None` igual que en `ReporteEstructurado.ubicacion`.
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
 | `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad}` | Llamado por BFF |

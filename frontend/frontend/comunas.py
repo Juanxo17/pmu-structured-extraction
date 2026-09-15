@@ -1,10 +1,11 @@
 """Centroides aproximados de comunas de Cali, exclusivos del mapa de la Bandeja.
 
-`GET /reportes` (versión resumida) no incluye `lat`/`lon` hoy — ver
-`docs/CONTRATOS_SISTEMA.md`. Esta tabla es una conveniencia local del frontend
-para poder dibujar un mapa mientras ese campo no se agrega al contrato; no
-sustituye la resolución geográfica real de Geo (`POST /resolver`) ni debe
-usarse para nada distinto de ubicar puntos en el mapa de la Bandeja.
+`GET /reportes` (versión resumida) no confirma `lat`/`lon` todavía — ver
+"Propuesto" en `docs/CONTRATOS_SISTEMA.md`. `frontend.bandeja.ubicar_en_mapa`
+usa esta tabla como respaldo cuando un reporte no trae coordenada exacta (o
+mientras el campo no exista); no sustituye la resolución geográfica real de
+Geo (`POST /resolver`) ni debe usarse para nada distinto de ubicar puntos en
+el mapa de la Bandeja.
 """
 
 from __future__ import annotations

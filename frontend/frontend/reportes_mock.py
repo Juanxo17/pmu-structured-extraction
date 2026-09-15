@@ -54,6 +54,8 @@ def _reporte(
     estado: str,
     granularidad: str,
     mensaje: str,
+    lat: float | None = None,
+    lon: float | None = None,
 ) -> ReporteEstructurado:
     """Arma un ReporteEstructurado de ejemplo con los campos mínimos variables.
 
@@ -70,6 +72,9 @@ def _reporte(
         estado: "pendiente" o "revisado".
         granularidad: Ver Ubicacion.nivel_granularidad.
         mensaje: Texto ya anonimizado del reporte.
+        lat: Latitud exacta (propuesto, ver docs/CONTRATOS_SISTEMA.md); solo
+            tiene sentido cuando granularidad="exacta".
+        lon: Longitud exacta, mismo caso que `lat`.
 
     Returns:
         El reporte de ejemplo, validado contra el esquema compartido.
@@ -92,8 +97,8 @@ def _reporte(
             comuna=comuna,
             punto_referencia=ref,
             nivel_granularidad=granularidad,
-            lat=None,
-            lon=None,
+            lat=lat,
+            lon=lon,
         ),
         creado_en=_AHORA - timedelta(minutes=minutos_desde_ahora),
     )
@@ -168,6 +173,8 @@ _REPORTES: list[ReporteEstructurado] = [
         "pendiente",
         "exacta",
         "Se está incendiando una bodega de madera, el humo llega hasta la calle principal.",
+        lat=3.4531,
+        lon=-76.5424,
     ),
     _reporte(
         "a410cc19",
@@ -211,6 +218,8 @@ _REPORTES: list[ReporteEstructurado] = [
         "pendiente",
         "exacta",
         "Hay una pelea grande cerca al parque, ya se ve gente lastimada.",
+        lat=3.4295,
+        lon=-76.5432,
     ),
     _reporte(
         "77aab310",
@@ -462,11 +471,15 @@ def aplicar_correccion(
 def _a_resumen(reporte: ReporteEstructurado) -> ReporteResumen:
     """Proyecta un ReporteEstructurado a la forma resumida de listado.
 
+    Incluye `lat`/`lon` (propuestos, ver docs/CONTRATOS_SISTEMA.md) para que
+    el mapa de la Bandeja pueda mockear ya el comportamiento híbrido: punto
+    exacto cuando existen, centroide de comuna cuando no.
+
     Args:
         reporte: Reporte completo.
 
     Returns:
-        La versión resumida (sin mensaje ni precisión de ubicación).
+        La versión resumida (sin mensaje ni punto_referencia).
 
     """
     return ReporteResumen(
@@ -482,6 +495,8 @@ def _a_resumen(reporte: ReporteEstructurado) -> ReporteResumen:
         estado_revision=reporte.estado_revision,
         nivel_granularidad=reporte.ubicacion.nivel_granularidad if reporte.ubicacion else None,
         creado_en=reporte.creado_en,
+        lat=reporte.ubicacion.lat if reporte.ubicacion else None,
+        lon=reporte.ubicacion.lon if reporte.ubicacion else None,
     )
 
 

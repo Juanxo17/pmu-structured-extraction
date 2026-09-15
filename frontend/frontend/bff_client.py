@@ -78,9 +78,10 @@ class ReporteResumen:
     """Fila de la versión resumida de `GET /reportes`.
 
     Forma asumida a partir de `docs/CONTRATOS_SISTEMA.md`: incluye todo lo de
-    `ReporteEstructurado` salvo `mensaje_anonimizado` y los campos de
-    precisión de `Ubicacion` (`punto_referencia`, `lat`, `lon`), que el
-    contrato dice que se omiten del listado para que cargue rápido.
+    `ReporteEstructurado` salvo `mensaje_anonimizado` y `punto_referencia`.
+    `lat`/`lon` son **propuestos** (ver el contrato) — mientras el campo no
+    esté confirmado, `BFFClient` los deja en `None` si BFF no los manda.
+
     """
 
     id: str
@@ -93,6 +94,8 @@ class ReporteResumen:
     estado_revision: str
     nivel_granularidad: str | None
     creado_en: datetime
+    lat: float | None = None
+    lon: float | None = None
 
 
 @dataclass(frozen=True)
@@ -187,6 +190,8 @@ def _resumen_desde_json(datos: dict[str, object]) -> ReporteResumen:
         estado_revision=datos["estado_revision"],
         nivel_granularidad=datos.get("nivel_granularidad"),
         creado_en=datetime.fromisoformat(str(datos["creado_en"]).replace("Z", "+00:00")),
+        lat=datos.get("lat"),
+        lon=datos.get("lon"),
     )
 
 

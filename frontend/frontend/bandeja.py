@@ -167,11 +167,29 @@ def construir_grid_options(filas: pd.DataFrame) -> dict[str, Any]:
     return opciones
 
 
+def ubicar_en_mapa(reporte: ReporteResumen) -> tuple[float, float] | None:
+    """Resuelve dónde plantar el punto de un reporte en el mapa.
+
+    Usa la coordenada exacta (`lat`/`lon`, propuesta — ver
+    docs/CONTRATOS_SISTEMA.md) cuando BFF ya la manda; si no, cae al
+    centroide local de la comuna (ver `frontend.comunas`), la misma
+    aproximación que se usaba mientras el campo no existía.
+
+    Args:
+        reporte: Resultado de `ClienteReportes.listar`.
+
+    Returns:
+        Una tupla `(lat, lon)`, o `None` si no hay forma de ubicar el reporte
+        (sin coordenada exacta y sin comuna conocida).
+
+    """
+    if reporte.lat is not None and reporte.lon is not None:
+        return (reporte.lat, reporte.lon)
+    return centroide(reporte.comuna)
+
+
 def construir_mapa(resultados: list[ReporteResumen]) -> folium.Map:
     """Arma el mapa de la Bandeja con un punto por resultado ubicable.
-
-    El centroide usado por comuna es una conveniencia local (ver
-    `frontend.comunas`) mientras `GET /reportes` no incluya `lat`/`lon`.
 
     Args:
         resultados: Resultados de `ClienteReportes.listar`.
@@ -182,23 +200,27 @@ def construir_mapa(resultados: list[ReporteResumen]) -> folium.Map:
     """
     mapa = folium.Map(location=_CENTRO_CALI, zoom_start=12, tiles="OpenStreetMap")
     for r in resultados:
-        punto = centroide(r.comuna)
+        es_exacta = r.lat is not None and r.lon is not None
+        punto = ubicar_en_mapa(r)
         if punto is None:
             continue
         color = COLOR_TIPO_EVENTO.get(r.tipo_evento or "", COLOR_MUTED)
         etiqueta = ETIQUETA_TIPO_EVENTO.get(r.tipo_evento or "", r.tipo_evento or "—")
+        precision = "ubicación exacta" if es_exacta else "ubicación aproximada por comuna"
         folium.CircleMarker(
             location=punto,
-            radius=7,
+            radius=7 if es_exacta else 6,
             color=color,
             weight=1 if r.estado_revision == "pendiente" else 2,
             dash_array="4,3" if r.estado_revision == "pendiente" else None,
             fill=True,
             fill_color=color,
-            fill_opacity=0.85,
+            fill_opacity=0.9 if es_exacta else 0.6,
             tooltip=r.id,
             popup=folium.Popup(
-                f"<b>{etiqueta}</b><br>{r.comuna or '—'} · {r.barrio or '—'}", max_width=220
+                f"<b>{etiqueta}</b><br>{r.comuna or '—'} · {r.barrio or '—'}"
+                f"<br><small>{precision}</small>",
+                max_width=220,
             ),
         ).add_to(mapa)
     return mapa
