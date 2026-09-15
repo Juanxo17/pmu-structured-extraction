@@ -187,7 +187,7 @@ class TelegramSource(FuenteDeMensajes): ...
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado |
+| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17, aun no implementado) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado. `fuente`/`id_externo`/`autor_id_telegram` los reenvía BFF tal cual los recibio en `POST /mensajes`; Process calcula `autor_anonimizado_id` a partir de `autor_id_telegram`. `motivo` toma valores fijos: `"no_accionable"` (compuerta) o `"fallo_validacion_extraccion"` (Inference agoto reintentos) |
 
 Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Process decide el flujo interno.
 
