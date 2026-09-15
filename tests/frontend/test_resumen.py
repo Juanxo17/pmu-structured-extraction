@@ -9,6 +9,7 @@ from frontend.resumen import (
     construir_grafico_intencion,
     construir_grafico_servicio,
     construir_grafico_temporalidad,
+    construir_grafico_tendencia,
     construir_grafico_tipo_evento,
 )
 from frontend.theme import COLOR_ACCENT_PASTEL
@@ -35,6 +36,7 @@ def _resumen(**overrides: object) -> ResumenReportes:
         "por_intencion": {"solicita_ayuda": 4, "reporta_terceros": 6},
         "por_servicio_de_respuesta": {"A": 5, "G": 4, "B": 2},
         "por_nivel_granularidad": {"exacta": 3, "barrio": 4, "comuna": 1},
+        "por_dia": {"2026-09-14": 4, "2026-09-15": 6},
     }
     base.update(overrides)
     return ResumenReportes(**base)
@@ -240,3 +242,41 @@ class TestConstruirGraficoGranularidad:
 
         # Assert
         assert figura.data[0].marker.color == COLOR_ACCENT_PASTEL
+
+
+class TestConstruirGraficoTendencia:
+    """Pruebas de construir_grafico_tendencia."""
+
+    def test_ordena_los_dias_de_forma_ascendente(self) -> None:
+        """Las fechas quedan en orden cronológico en el eje X, sin importar el orden del dict."""
+        # Arrange
+        resumen = _resumen(por_dia={"2026-09-15": 6, "2026-09-13": 2, "2026-09-14": 4})
+
+        # Act
+        figura = construir_grafico_tendencia(resumen)
+
+        # Assert
+        assert list(figura.data[0].x) == ["2026-09-13", "2026-09-14", "2026-09-15"]
+        assert list(figura.data[0].y) == [2, 4, 6]
+
+    def test_usa_el_mismo_color_de_linea_que_los_demas_graficos(self) -> None:
+        """Mismo color de línea en todos los gráficos de Resumen (pedido de diseño)."""
+        # Arrange
+        resumen = _resumen(por_dia={"2026-09-14": 4, "2026-09-15": 6})
+
+        # Act
+        figura = construir_grafico_tendencia(resumen)
+
+        # Assert
+        assert figura.data[0].line.color == COLOR_ACCENT_PASTEL
+
+    def test_sin_dias_da_una_serie_vacia_sin_reventar(self) -> None:
+        """Sin por_dia, la figura se arma igual, sin puntos."""
+        # Arrange
+        resumen = _resumen(por_dia={})
+
+        # Act
+        figura = construir_grafico_tendencia(resumen)
+
+        # Assert
+        assert list(figura.data[0].x) == []

@@ -129,6 +129,7 @@ class ResumenReportes:
     por_intencion: dict[str, int]
     por_servicio_de_respuesta: dict[str, int]
     por_nivel_granularidad: dict[str, int]
+    por_dia: dict[str, int]
 
 
 class ClienteReportes(Protocol):
@@ -260,6 +261,7 @@ class BFFClient:
             por_intencion=dict(cuerpo.get("por_intencion", {})),
             por_servicio_de_respuesta=dict(cuerpo.get("por_servicio_de_respuesta", {})),
             por_nivel_granularidad=dict(cuerpo.get("por_nivel_granularidad", {})),
+            por_dia=dict(cuerpo.get("por_dia", {})),
         )
 
 

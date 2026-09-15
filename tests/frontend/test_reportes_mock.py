@@ -312,3 +312,16 @@ class TestClienteReportesSimulado:
         # Assert
         assert resumen.por_servicio_de_respuesta
         assert all(conteo > 0 for conteo in resumen.por_servicio_de_respuesta.values())
+
+    def test_resumen_por_dia_suma_el_total(self) -> None:
+        """La tendencia diaria reparte exactamente el total entre las fechas."""
+        # Arrange
+        cliente = ClienteReportesSimulado()
+
+        # Act
+        resumen = cliente.resumen()
+
+        # Assert
+        assert resumen.por_dia
+        assert sum(resumen.por_dia.values()) == resumen.total
+        assert all(len(fecha) == 10 for fecha in resumen.por_dia)  # "YYYY-MM-DD"

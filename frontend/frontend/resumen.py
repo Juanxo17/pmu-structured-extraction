@@ -27,6 +27,10 @@ _LAYOUT_BASE: dict[str, object] = {
     "font": {"family": "IBM Plex Sans, system-ui, sans-serif", "size": 13},
 }
 
+# Relleno translúcido del área bajo la línea de tendencia — mismo azul
+# pastel que el resto de Resumen (COLOR_ACCENT_PASTEL = #7C93BF), con alfa.
+_COLOR_TENDENCIA_AREA = "rgba(124,147,191,0.25)"
+
 
 def calcular_tasa_revision(resumen: ResumenReportes) -> float:
     """Calcula el porcentaje de reportes revisados sobre el total.
@@ -208,3 +212,45 @@ def construir_grafico_granularidad(resumen: ResumenReportes) -> go.Figure:
     return _barra_horizontal(
         _pares_ascendentes(resumen.por_nivel_granularidad, ETIQUETA_GRANULARIDAD)
     )
+
+
+def construir_grafico_tendencia(resumen: ResumenReportes) -> go.Figure:
+    """Arma la línea de tendencia de reportes por día.
+
+    A diferencia de las demás, esta es una serie temporal, no una
+    distribución por categoría: usa línea + área en vez de barras
+    horizontales, con las fechas en orden en el eje X.
+
+    Args:
+        resumen: Agregados de `GET /reportes/resumen`.
+
+    Returns:
+        Una figura de Plotly lista para `st.plotly_chart`.
+
+    """
+    dias = sorted(resumen.por_dia)
+    conteos = [resumen.por_dia[dia] for dia in dias]
+    figura = go.Figure(
+        go.Scatter(
+            x=dias,
+            y=conteos,
+            mode="lines+markers+text",
+            line={"color": COLOR_ACCENT_PASTEL, "width": 2},
+            marker={"color": COLOR_ACCENT_PASTEL, "size": 6},
+            fill="tozeroy",
+            fillcolor=_COLOR_TENDENCIA_AREA,
+            text=conteos,
+            textposition="top center",
+            hovertemplate="%{x}: %{y}<extra></extra>",
+        )
+    )
+    figura.update_layout(
+        margin={"l": 4, "r": 16, "t": 24, "b": 4},
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        yaxis={"visible": False},
+        xaxis={"type": "category"},
+        font={"family": "IBM Plex Sans, system-ui, sans-serif", "size": 13},
+    )
+    return figura

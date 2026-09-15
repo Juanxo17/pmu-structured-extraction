@@ -579,7 +579,10 @@ class ClienteReportesSimulado:
         por_intencion: dict[str, int] = {}
         por_servicio: dict[str, int] = {}
         por_granularidad: dict[str, int] = {}
+        por_dia: dict[str, int] = {}
         for reporte in en_rango:
+            clave_dia = reporte.creado_en.date().isoformat()
+            por_dia[clave_dia] = por_dia.get(clave_dia, 0) + 1
             clave_accionable = (
                 "accionable" if reporte.compuerta.es_reporte_accionable else "no_accionable"
             )
@@ -614,6 +617,7 @@ class ClienteReportesSimulado:
             por_intencion=por_intencion,
             por_servicio_de_respuesta=por_servicio,
             por_nivel_granularidad=por_granularidad,
+            por_dia=por_dia,
         )
 
 

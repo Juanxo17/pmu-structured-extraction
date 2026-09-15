@@ -15,6 +15,7 @@ from frontend.resumen import (
     construir_grafico_intencion,
     construir_grafico_servicio,
     construir_grafico_temporalidad,
+    construir_grafico_tendencia,
     construir_grafico_tipo_evento,
 )
 from frontend.theme import inyectar_tema, mostrar_metrica, renderizar_pie_sidebar
@@ -87,7 +88,9 @@ def main() -> None:
         st.subheader("Precisión de la ubicación")
         st.plotly_chart(construir_grafico_granularidad(resumen), width="stretch")
 
-    st.caption("Próximamente: tendencia de reportes por día.")
+    with st.container(border=True):
+        st.subheader("Tendencia de reportes por día")
+        st.plotly_chart(construir_grafico_tendencia(resumen), width="stretch")
 
 
 if __name__ == "__main__":

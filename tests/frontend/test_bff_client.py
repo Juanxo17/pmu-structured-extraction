@@ -286,6 +286,7 @@ class TestBFFClientResumen:
                     "por_intencion": {"solicita_ayuda": 5},
                     "por_servicio_de_respuesta": {"A": 4},
                     "por_nivel_granularidad": {"exacta": 6},
+                    "por_dia": {"2026-09-15": 10},
                 },
             )
 
@@ -303,6 +304,7 @@ class TestBFFClientResumen:
         assert resumen.por_intencion["solicita_ayuda"] == 5
         assert resumen.por_servicio_de_respuesta["A"] == 4
         assert resumen.por_nivel_granularidad["exacta"] == 6
+        assert resumen.por_dia["2026-09-15"] == 10
 
     def test_resumen_usa_diccionarios_vacios_si_bff_todavia_no_manda_los_campos_nuevos(
         self,
@@ -331,3 +333,4 @@ class TestBFFClientResumen:
         assert resumen.por_accionable == {}
         assert resumen.por_temporalidad == {}
         assert resumen.por_servicio_de_respuesta == {}
+        assert resumen.por_dia == {}
