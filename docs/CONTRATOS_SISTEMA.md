@@ -146,7 +146,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 | `GET` | `/reportes` | filtros + paginación, ver CRUD | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Proxy directo a CRUD — consumido por la bandeja del tablero (T-22) |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` \| `404` | Proxy directo a CRUD — vista de detalle (T-23) |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Proxy directo a CRUD — mecanismo del triaje asistido (1.4): el operador marca "revisado" o corrige un campo mal extraído |
-| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Proxy directo a CRUD — agregados para las tarjetas del encabezado del tablero |
+| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200` agregados, ver CRUD | Proxy directo a CRUD — agregados para las tarjetas del encabezado del tablero |
 
 **`POST /mensajes` — request:**
 
@@ -176,12 +176,14 @@ class TelegramSource(FuenteDeMensajes): ...
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
 | `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
-| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`/coordenadas), para que la bandeja cargue rápido |
+| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`), para que la bandeja cargue rápido |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
-| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Llamado por BFF |
+| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200` agregados, ver abajo | Llamado por BFF |
 
-**Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
+**Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `accionable` (`true`/`false`), `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20 — se capa a 100).
+
+**Resumen (`GET /reportes/resumen`):** `{total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}`. `por_tipo_evento`, `por_comuna`, `por_nivel_granularidad` y `por_servicio_de_respuesta` solo cuentan reportes accionables (`naturaleza`/`ubicacion` no son `None`); `por_temporalidad`, `por_intencion`, `por_accionable` y `por_dia` cuentan todos. `por_servicio_de_respuesta` es multietiqueta: la suma de sus valores puede superar `total`.
 
 ## 3. Process (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
 
