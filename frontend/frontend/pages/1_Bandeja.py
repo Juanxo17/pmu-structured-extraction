@@ -6,6 +6,8 @@ esas funciones (los archivos de página de Streamlit no son módulos Python
 importables por el prefijo numérico).
 """
 
+from dataclasses import replace
+
 import pandas as pd
 import streamlit as st
 from sirena_schema.ontologia import ONTOLOGIA
@@ -13,15 +15,16 @@ from st_aggrid import AgGrid
 from streamlit_folium import st_folium
 
 from frontend.bandeja import (
-    cliente_de_sesion,
+    calcular_total_paginas,
     construir_filas_grid,
     construir_grid_options,
     construir_mapa,
     exportar_csv,
     fila_seleccionada_de,
-    usa_datos_de_ejemplo,
+    listar_todo,
 )
 from frontend.bff_client import ErrorBFF, FiltrosReportes
+from frontend.cliente import cliente_de_sesion, usa_datos_de_ejemplo
 from frontend.comunas import COMUNAS_CONOCIDAS
 from frontend.theme import (
     ETIQUETA_SERVICIO,
@@ -30,6 +33,8 @@ from frontend.theme import (
     mostrar_metrica,
     renderizar_pie_sidebar,
 )
+
+_TAMANO_PAGINA = 50
 
 
 def _leer_filtros() -> FiltrosReportes:
@@ -80,8 +85,54 @@ def _leer_filtros() -> FiltrosReportes:
         desde=fecha_desde.isoformat() if fecha_desde else None,
         hasta=fecha_hasta.isoformat() if fecha_hasta else None,
         q=q or None,
-        tamano_pagina=50,
+        tamano_pagina=_TAMANO_PAGINA,
     )
+
+
+def _leer_pagina_actual(filtros_sin_pagina: FiltrosReportes) -> int:
+    """Lee la página actual de `session_state`, reseteándola a 1 si cambió el filtro.
+
+    Args:
+        filtros_sin_pagina: Filtros leídos del panel (siempre con `pagina=1`,
+            el valor por defecto de `_leer_filtros`), usados solo para
+            detectar si el operador cambió algún filtro desde el último rerun.
+
+    Returns:
+        El número de página a pedir.
+
+    """
+    if st.session_state.get("bandeja_filtros_previos") != filtros_sin_pagina:
+        st.session_state["bandeja_pagina"] = 1
+    st.session_state["bandeja_filtros_previos"] = filtros_sin_pagina
+    return st.session_state.get("bandeja_pagina", 1)
+
+
+def _mostrar_paginador(pagina_actual: int, total: int) -> None:
+    """Muestra los controles de Anterior/Siguiente y la posición actual.
+
+    Args:
+        pagina_actual: Página que se está mostrando.
+        total: Total de reportes que cumplen el filtro (no solo la página).
+
+    """
+    total_paginas = calcular_total_paginas(total, _TAMANO_PAGINA)
+    col_anterior, col_info, col_siguiente = st.columns([1, 2, 1])
+    with col_anterior:
+        if st.button("← Anterior", disabled=pagina_actual <= 1, key="bandeja_pagina_anterior"):
+            st.session_state["bandeja_pagina"] = pagina_actual - 1
+            st.rerun()
+    with col_info:
+        st.markdown(
+            f"<p style='text-align:center'>Página {pagina_actual} de {total_paginas} "
+            f"· {total} reportes en total</p>",
+            unsafe_allow_html=True,
+        )
+    with col_siguiente:
+        if st.button(
+            "Siguiente →", disabled=pagina_actual >= total_paginas, key="bandeja_pagina_siguiente"
+        ):
+            st.session_state["bandeja_pagina"] = pagina_actual + 1
+            st.rerun()
 
 
 def _mostrar_kpis(cliente) -> None:
@@ -149,7 +200,9 @@ def main() -> None:
 
     cliente = cliente_de_sesion()
     _mostrar_kpis(cliente)
-    filtros = _leer_filtros()
+    filtros_sin_pagina = _leer_filtros()
+    pagina_actual = _leer_pagina_actual(filtros_sin_pagina)
+    filtros = replace(filtros_sin_pagina, pagina=pagina_actual)
 
     try:
         pagina = cliente.listar(filtros)
@@ -162,9 +215,13 @@ def main() -> None:
     with encabezado:
         col_titulo, col_exportar = st.columns([3, 1])
         col_titulo.title("Bandeja de reportes")
+        # Trae *todo* lo filtrado (no solo esta página) para que el CSV
+        # coincida con el conteo del filtro, no con lo visible en pantalla.
+        # Esto pide todas las páginas en cada rerun — aceptable para un botón
+        # de exportar, que no se acciona en cada interacción del operador.
         col_exportar.download_button(
             "Exportar CSV",
-            data=exportar_csv(pagina.resultados),
+            data=exportar_csv(listar_todo(cliente, filtros_sin_pagina)),
             file_name="reportes_sirena.csv",
             mime="text/csv",
         )
@@ -183,6 +240,8 @@ def main() -> None:
             height=420,
         )
         fila = fila_seleccionada_de(respuesta_grid)
+
+    _mostrar_paginador(pagina_actual, pagina.total)
 
     with col_previa:
         if fila:

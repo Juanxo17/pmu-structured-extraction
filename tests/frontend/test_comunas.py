@@ -27,10 +27,19 @@ class TestCentroideComuna:
         # Arrange / Act / Assert
         assert centroide(None) is None
 
-    def test_comunas_conocidas_esta_ordenada_y_sin_duplicados(self) -> None:
-        """La lista usada para poblar el filtro de comuna es estable y única."""
+    def test_comunas_conocidas_esta_ordenada_numericamente_y_sin_duplicados(self) -> None:
+        """Ordena 1..22, no alfabéticamente ("Comuna 10" antes que "Comuna 2")."""
         # Arrange / Act / Assert
-        assert COMUNAS_CONOCIDAS == sorted(set(COMUNAS_CONOCIDAS))
+        assert len(COMUNAS_CONOCIDAS) == len(set(COMUNAS_CONOCIDAS))
+        assert COMUNAS_CONOCIDAS == sorted(COMUNAS_CONOCIDAS, key=lambda c: int(c.split()[-1]))
+        assert COMUNAS_CONOCIDAS[:3] == ["Comuna 1", "Comuna 2", "Comuna 3"]
+        assert COMUNAS_CONOCIDAS[-1] == "Comuna 22"
+
+    def test_cubre_las_22_comunas_de_cali(self) -> None:
+        """Ya no se limita a las 9 que traía el dataset de ejemplo original."""
+        # Arrange / Act / Assert
+        assert len(COMUNAS_CONOCIDAS) == 22
+        assert all(centroide(f"Comuna {n}") is not None for n in range(1, 23))
 
 
 class TestUbicarEnMapa:

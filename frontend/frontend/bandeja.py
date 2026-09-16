@@ -6,17 +6,15 @@ Streamlit, con prefijo numérico, no son módulos Python importables.
 
 from __future__ import annotations
 
-import os
+from dataclasses import replace
 from typing import Any
 
 import folium
 import pandas as pd
-import streamlit as st
 from st_aggrid import GridOptionsBuilder
 
-from frontend.bff_client import BFFClient, ClienteReportes, ReporteResumen
+from frontend.bff_client import ClienteReportes, FiltrosReportes, ReporteResumen
 from frontend.comunas import ubicar_en_mapa
-from frontend.reportes_mock import ClienteReportesSimulado
 from frontend.theme import (
     COLOR_MUTED,
     COLOR_TIPO_EVENTO,
@@ -31,50 +29,58 @@ from frontend.theme import (
 
 _CENTRO_CALI = (3.4516, -76.5320)
 
-
-def usa_datos_de_ejemplo() -> bool:
-    """Indica si el tablero está corriendo contra datos de ejemplo en vez de BFF real.
-
-    Returns:
-        True si la variable de entorno `BFF_URL` no está definida.
-
-    """
-    return not os.environ.get("BFF_URL")
+# Tope de páginas al traer "todo lo filtrado" (listar_todo) — protección
+# contra un filtro roto que devuelva un total absurdo y dispare cientos de
+# peticiones; con tamano_pagina=100 (el máximo del contrato) esto cubre
+# hasta 10.000 reportes, muy por encima de cualquier filtro real.
+_TOPE_PAGINAS_LISTAR_TODO = 100
 
 
-def elegir_cliente() -> ClienteReportes:
-    """Elige el cliente real o simulado según la variable de entorno `BFF_URL`.
+def calcular_total_paginas(total: int, tamano_pagina: int) -> int:
+    """Calcula cuántas páginas hacen falta para cubrir `total` resultados.
 
-    Returns:
-        `BFFClient` si `BFF_URL` está definida (ver docker-compose.yml);
-        `ClienteReportesSimulado` con datos de ejemplo en cualquier otro caso,
-        para poder desarrollar sin que BFF exista todavía.
-
-    """
-    if usa_datos_de_ejemplo():
-        return ClienteReportesSimulado()
-    return BFFClient(base_url=os.environ["BFF_URL"])
-
-
-def cliente_de_sesion() -> ClienteReportes:
-    """Como `elegir_cliente`, pero reutiliza el mismo cliente simulado entre reruns.
-
-    Streamlit vuelve a ejecutar todo el script en cada interacción; sin este
-    cacheo, cada rerun crearía un `ClienteReportesSimulado` nuevo (dataset de
-    ejemplo fresco) y cualquier cambio de triaje hecho en la sesión se
-    perdería de inmediato. No aplica a `BFFClient`: CRUD ya persiste de
-    verdad, así que ese caso se resuelve tal cual con `elegir_cliente`.
+    Args:
+        total: Cantidad de resultados que cumplen el filtro.
+        tamano_pagina: Tamaño de página en uso.
 
     Returns:
-        El cliente a usar, estable durante toda la sesión del navegador
-        cuando es simulado.
+        El total de páginas, mínimo 1 (para no mostrar "página 1 de 0"
+        cuando no hay resultados).
 
     """
-    if not usa_datos_de_ejemplo():
-        return elegir_cliente()
-    if "cliente_simulado" not in st.session_state:
-        st.session_state["cliente_simulado"] = elegir_cliente()
-    return st.session_state["cliente_simulado"]
+    if total <= 0 or tamano_pagina <= 0:
+        return 1
+    return -(-total // tamano_pagina)  # división entera hacia arriba
+
+
+def listar_todo(
+    cliente: ClienteReportes, filtros: FiltrosReportes, tamano_pagina: int = 100
+) -> list[ReporteResumen]:
+    """Trae todos los resultados que cumplen un filtro, sin importar la paginación.
+
+    Usado por `exportar_csv`: el CSV debe cubrir todo lo filtrado, no solo la
+    página que el operador tiene visible en la tabla.
+
+    Args:
+        cliente: Cliente de reportes en uso.
+        filtros: Filtros activos (se ignoran `filtros.pagina`/`tamano_pagina`).
+        tamano_pagina: Tamaño de página a usar en cada petición (el máximo
+            que admite el contrato es 100).
+
+    Returns:
+        Todos los resultados que cumplen el filtro, en el orden en que los
+        devuelve el cliente.
+
+    """
+    resultados: list[ReporteResumen] = []
+    pagina_actual = 1
+    while pagina_actual <= _TOPE_PAGINAS_LISTAR_TODO:
+        pagina = cliente.listar(replace(filtros, pagina=pagina_actual, tamano_pagina=tamano_pagina))
+        resultados.extend(pagina.resultados)
+        if len(resultados) >= pagina.total or not pagina.resultados:
+            break
+        pagina_actual += 1
+    return resultados
 
 
 def construir_filas_grid(resultados: list[ReporteResumen]) -> list[dict[str, Any]]:

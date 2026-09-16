@@ -4,20 +4,18 @@ from datetime import datetime, timezone
 
 import folium
 import pandas as pd
-import pytest
 
 from frontend.bandeja import (
+    calcular_total_paginas,
     construir_filas_exportacion,
     construir_filas_grid,
     construir_grid_options,
     construir_mapa,
-    elegir_cliente,
     exportar_csv,
     fila_seleccionada_de,
-    usa_datos_de_ejemplo,
+    listar_todo,
 )
-from frontend.bff_client import BFFClient, ReporteResumen
-from frontend.reportes_mock import ClienteReportesSimulado
+from frontend.bff_client import FiltrosReportes, PaginaReportes, ReporteResumen
 from frontend.theme import ICONO_ESTADO, ICONO_TIPO_EVENTO
 
 _CREADO_EN = datetime(2026, 9, 15, 8, 0, tzinfo=timezone.utc)
@@ -47,54 +45,6 @@ def _resumen(**overrides: object) -> ReporteResumen:
     }
     base.update(overrides)
     return ReporteResumen(**base)
-
-
-class TestElegirCliente:
-    """Pruebas de la selección de cliente real vs. simulado según BFF_URL."""
-
-    def test_usa_cliente_simulado_si_no_hay_bff_url(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Sin BFF_URL, se usa el cliente con datos de ejemplo."""
-        # Arrange
-        monkeypatch.delenv("BFF_URL", raising=False)
-
-        # Act
-        cliente = elegir_cliente()
-
-        # Assert
-        assert isinstance(cliente, ClienteReportesSimulado)
-
-    def test_usa_cliente_real_si_bff_url_esta_definida(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Con BFF_URL definida, se usa el cliente HTTP real."""
-        # Arrange
-        monkeypatch.setenv("BFF_URL", "http://bff.test")
-
-        # Act
-        cliente = elegir_cliente()
-
-        # Assert
-        assert isinstance(cliente, BFFClient)
-
-
-class TestUsaDatosDeEjemplo:
-    """Pruebas del indicador de modo demo usado por el pie del sidebar."""
-
-    def test_es_true_sin_bff_url(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Sin BFF_URL, el tablero está en modo demo."""
-        # Arrange
-        monkeypatch.delenv("BFF_URL", raising=False)
-
-        # Act / Assert
-        assert usa_datos_de_ejemplo() is True
-
-    def test_es_false_con_bff_url(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Con BFF_URL definida, ya no es modo demo."""
-        # Arrange
-        monkeypatch.setenv("BFF_URL", "http://bff.test")
-
-        # Act / Assert
-        assert usa_datos_de_ejemplo() is False
 
 
 class TestConstruirFilasGrid:
@@ -278,3 +228,93 @@ class TestFilaSeleccionadaDe:
         # Assert
         assert fila is not None
         assert fila["id"] == "rpt_1"
+
+
+class TestCalcularTotalPaginas:
+    """Pruebas de calcular_total_paginas."""
+
+    def test_redondea_hacia_arriba(self) -> None:
+        """45 resultados con tamano_pagina=20 son 3 páginas, no 2."""
+        # Arrange / Act / Assert
+        assert calcular_total_paginas(45, 20) == 3
+
+    def test_resultado_exacto_no_agrega_una_pagina_de_mas(self) -> None:
+        """40 resultados con tamano_pagina=20 son exactamente 2 páginas."""
+        # Arrange / Act / Assert
+        assert calcular_total_paginas(40, 20) == 2
+
+    def test_sin_resultados_devuelve_una_pagina_no_cero(self) -> None:
+        """ "Página 1 de 0" no tiene sentido en la UI; con total=0 igual es 1."""
+        # Arrange / Act / Assert
+        assert calcular_total_paginas(0, 20) == 1
+
+
+class _ClienteFalso:
+    """Cliente de prueba con resultados repartidos en varias páginas fijas."""
+
+    def __init__(self, paginas: list[list[ReporteResumen]], total: int) -> None:
+        """Guarda las páginas ya armadas y el total a devolver en cada una.
+
+        Args:
+            paginas: Una lista de páginas, cada una una lista de resultados.
+            total: Total a reportar en cada `PaginaReportes` (simula el
+                conteo real del filtro, no `len(paginas)`).
+
+        """
+        self._paginas = paginas
+        self._total = total
+        self.pedidos: list[int] = []
+
+    def listar(self, filtros: FiltrosReportes) -> PaginaReportes:
+        """Devuelve la página pedida en `filtros.pagina` (1-indexada)."""
+        self.pedidos.append(filtros.pagina)
+        indice = filtros.pagina - 1
+        resultados = self._paginas[indice] if indice < len(self._paginas) else []
+        return PaginaReportes(
+            total=self._total,
+            pagina=filtros.pagina,
+            tamano_pagina=filtros.tamano_pagina,
+            resultados=resultados,
+        )
+
+
+class TestListarTodo:
+    """Pruebas de listar_todo, usado para el CSV completo de la Bandeja."""
+
+    def test_junta_los_resultados_de_todas_las_paginas(self) -> None:
+        """Con 3 páginas de 2, listar_todo trae los 5 resultados reales."""
+        # Arrange
+        pagina_1 = [_resumen(id="rpt_1"), _resumen(id="rpt_2")]
+        pagina_2 = [_resumen(id="rpt_3"), _resumen(id="rpt_4")]
+        pagina_3 = [_resumen(id="rpt_5")]
+        cliente = _ClienteFalso([pagina_1, pagina_2, pagina_3], total=5)
+
+        # Act
+        resultados = listar_todo(cliente, FiltrosReportes(), tamano_pagina=2)
+
+        # Assert
+        assert [r.id for r in resultados] == ["rpt_1", "rpt_2", "rpt_3", "rpt_4", "rpt_5"]
+        assert cliente.pedidos == [1, 2, 3]
+
+    def test_no_pide_paginas_de_mas_una_vez_completado_el_total(self) -> None:
+        """Al alcanzar pagina.total no sigue pidiendo, aunque el tope sea mayor."""
+        # Arrange
+        cliente = _ClienteFalso([[_resumen(id="rpt_1")]], total=1)
+
+        # Act
+        listar_todo(cliente, FiltrosReportes(), tamano_pagina=50)
+
+        # Assert
+        assert cliente.pedidos == [1]
+
+    def test_sin_resultados_no_reventa(self) -> None:
+        """Un filtro sin resultados no dispara ninguna página de más."""
+        # Arrange
+        cliente = _ClienteFalso([], total=0)
+
+        # Act
+        resultados = listar_todo(cliente, FiltrosReportes())
+
+        # Assert
+        assert resultados == []
+        assert cliente.pedidos == [1]

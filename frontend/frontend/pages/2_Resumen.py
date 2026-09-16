@@ -6,7 +6,7 @@ pytest normal (ver `frontend/frontend/pages/1_Bandeja.py` para el mismo patrón)
 
 import streamlit as st
 
-from frontend.bandeja import cliente_de_sesion, usa_datos_de_ejemplo
+from frontend.cliente import cliente_de_sesion, usa_datos_de_ejemplo
 from frontend.resumen import (
     calcular_tasa_accionable,
     calcular_tasa_revision,

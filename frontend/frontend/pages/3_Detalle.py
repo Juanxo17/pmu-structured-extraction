@@ -7,7 +7,7 @@ normal (ver `frontend/frontend/pages/1_Bandeja.py` para el mismo patrón).
 import streamlit as st
 from streamlit_folium import st_folium
 
-from frontend.bandeja import cliente_de_sesion, usa_datos_de_ejemplo
+from frontend.cliente import cliente_de_sesion, usa_datos_de_ejemplo
 from frontend.bff_client import ErrorBFF
 from frontend.comunas import ubicar_en_mapa
 from frontend.detalle import construir_correccion, construir_mapa_punto
