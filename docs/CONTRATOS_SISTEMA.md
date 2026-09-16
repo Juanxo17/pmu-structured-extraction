@@ -142,7 +142,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/mensajes` | ver abajo | `202 {id_mensaje: str, estado: "recibido"}` | Recibe un mensaje desde `FuenteDeMensajes` (hoy: Telegram) y dispara `POST /procesar` en Process |
+| `POST` | `/mensajes` | ver abajo | `202 {id_mensaje: str, estado: "recibido"}` | Recibe un mensaje desde `FuenteDeMensajes` (hoy: Telegram) y dispara `POST /procesar` en Process. `id_mensaje` es el mismo valor de `id_externo` (no se genera un ID nuevo) |
 | `GET` | `/reportes` | filtros + paginación, ver CRUD | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Proxy directo a CRUD — consumido por la bandeja del tablero (T-22) |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` \| `404` | Proxy directo a CRUD — vista de detalle (T-23) |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Proxy directo a CRUD — mecanismo del triaje asistido (1.4): el operador marca "revisado" o corrige un campo mal extraído |
@@ -156,8 +156,9 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 | `id_externo` | `string` | sí | ID del mensaje en Telegram — usado para idempotencia |
 | `texto` | `string` | sí | Contenido crudo. La anonimización (T-10) ocurre dentro de Process, no en BFF |
 | `marca_temporal_origen` | `datetime ISO 8601` | sí | Hora del mensaje en Telegram, no la de recepción |
+| `autor_id_telegram` | `string` | sí | ID de la cuenta que envió el mensaje en Telegram. Necesario para que Process calcule `autor_anonimizado_id` (ver contrato extendido de `POST /procesar`, sección 3) — no estaba en la versión original de este contrato |
 
-**Errores de `POST /mensajes`:** `400` si falta `fuente`/`texto`/`marca_temporal_origen`; `409` si `id_externo` ya fue recibido antes (duplicado exacto); `503` si el pipeline está saturado (cuota de Groq agotada, 4.6) — el cliente reintenta con backoff.
+**Errores de `POST /mensajes`:** `400` si falta `fuente`/`texto`/`marca_temporal_origen`/`autor_id_telegram`; `409` si `fuente` + `id_externo` ya fueron recibidos antes (duplicado exacto de transporte — no confundir con la detección de duplicados por contenido de T-17, que es un problema distinto); `503` si el pipeline no está disponible — el cliente reintenta con backoff. **Implementación parcial**: como `POST /procesar` se dispara en segundo plano (fire-and-forget) sin esperar su resultado, BFF no puede saber si Inference está saturado (cuota de Groq agotada, 4.6) en el momento de responder — esa causa del `503` queda pendiente de definir junto con el equipo. Lo que sí verifica hoy la primera versión de BFF es que Process esté alcanzable (`GET /health`), respondiendo `503` si no lo está.
 
 Internamente implementa la interfaz:
 
@@ -181,7 +182,7 @@ class TelegramSource(FuenteDeMensajes): ...
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
 | `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Llamado por BFF |
 
-**Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
+**Filtros de `GET /reportes`:** `fuente`, `id_externo` (coincidencia exacta — usados por BFF para el chequeo de idempotencia de `POST /mensajes`, no estaban en la versión original de este contrato), `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
 
 ## 3. Process (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
 
