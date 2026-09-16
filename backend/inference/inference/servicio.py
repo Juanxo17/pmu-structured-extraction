@@ -6,12 +6,15 @@ LLM no genera una salida conforme, el servicio reintenta alimentando al
 modelo con el detalle del rechazo para que corrija la respuesta.
 """
 
+import logging
 from typing import Protocol
 
 from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
 
 from inference.prompts import sistema_compuerta, sistema_extraccion
 from inference.validador import RechazoSalida, validar_compuerta, validar_extraccion
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class _Proveedor(Protocol):
@@ -67,13 +70,24 @@ class ServicioInferencia:
 
         """
         retroalimentacion: str | None = None
-        for _ in range(self.intentos_maximos):
+        for intento in range(self.intentos_maximos):
             usuario = self._armar_usuario(texto, retroalimentacion)
             salida = self.proveedor.completar(sistema_compuerta(), usuario)
             try:
                 return validar_compuerta(salida)
             except RechazoSalida as error:
+                _LOGGER.warning(
+                    "Salida de compuerta rechazada (intento %s de %s): %s",
+                    intento + 1,
+                    self.intentos_maximos,
+                    error.detalle,
+                )
                 retroalimentacion = error.detalle
+        _LOGGER.error(
+            "Compuerta descartada tras %s intentos: %s",
+            self.intentos_maximos,
+            retroalimentacion,
+        )
         raise RechazoSalida(
             f"La salida de compuerta no conforma al esquema tras "
             f"{self.intentos_maximos} intentos"
@@ -94,13 +108,24 @@ class ServicioInferencia:
 
         """
         retroalimentacion: str | None = None
-        for _ in range(self.intentos_maximos):
+        for intento in range(self.intentos_maximos):
             usuario = self._armar_usuario(texto, retroalimentacion)
             salida = self.proveedor.completar(sistema_extraccion(), usuario)
             try:
                 return validar_extraccion(salida)
             except RechazoSalida as error:
+                _LOGGER.warning(
+                    "Salida de extraccion rechazada (intento %s de %s): %s",
+                    intento + 1,
+                    self.intentos_maximos,
+                    error.detalle,
+                )
                 retroalimentacion = error.detalle
+        _LOGGER.error(
+            "Extraccion descartada tras %s intentos: %s",
+            self.intentos_maximos,
+            retroalimentacion,
+        )
         raise RechazoSalida(
             f"La salida de extraccion no conforma al esquema tras "
             f"{self.intentos_maximos} intentos"
