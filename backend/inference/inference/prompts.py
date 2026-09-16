@@ -9,6 +9,8 @@ from typing import get_args
 from sirena_schema.ontologia import ONTOLOGIA
 from sirena_schema.schema import Compuerta
 
+VERSION_PROMPTS = "1.0"
+
 _ETIQUETAS_SERVICIO = (
     "A Busqueda y Rescate, B Extincion de Incendios, "
     "C Telecomunicaciones para la comunidad, D Manejo de Materiales Peligrosos, "
@@ -17,6 +19,72 @@ _ETIQUETAS_SERVICIO = (
     "K Energia y Gas, L Saneamiento Basico, M Reencuentro Familiar, "
     "N Fauna Domestica, O Fauna Silvestre, R Manejo de Residuos Solidos"
 )
+
+_EJEMPLOS_COMPUERTA = (
+    (
+        "Hay una inundacion en la carrera 5 con 12, el agua ya cubre la calle "
+        "y los carros no pueden pasar.",
+        '{"es_reporte_accionable": true, "temporalidad": "ocurriendo_ahora", '
+        '"intencion": "reporta_terceros"}',
+    ),
+    (
+        "El rio Cauca esta creciendo y puede desbordarse esta noche, por "
+        "favor preparense.",
+        '{"es_reporte_accionable": true, "temporalidad": "riesgo_previsto", '
+        '"intencion": "reporta_terceros"}',
+    ),
+    (
+        "Saben a que hora pasa el bus en el barrio El Poblado?",
+        '{"es_reporte_accionable": false, "temporalidad": "referencia_noticia", '
+        '"intencion": "solicita_informacion"}',
+    ),
+)
+
+_EJEMPLOS_EXTRACCION = (
+    (
+        "Se esta quemando un lote en el barrio El Poblado, cerca del parque "
+        "central; el humo se ve desde la avenida 3.",
+        '{"naturaleza": {"tipo_evento": "incendio_cobertura_vegetal", '
+        '"servicio_de_respuesta": ["B", "A"]}, "ubicacion": '
+        '{"ubicacion_texto_literal": "lote en el barrio El Poblado, cerca del '
+        'parque central", "barrio": "El Poblado", "comuna": null, '
+        '"punto_referencia": "parque central", "nivel_granularidad": "barrio"}}',
+    ),
+    (
+        "Deslizamiento de tierra en la via Cali-Yumbo, sector de la Buitrera; "
+        "la via quedo tapada.",
+        '{"naturaleza": {"tipo_evento": "movimiento_en_masa", '
+        '"servicio_de_respuesta": ["A", "F"]}, "ubicacion": '
+        '{"ubicacion_texto_literal": "via Cali-Yumbo, sector de la Buitrera", '
+        '"barrio": null, "comuna": null, "punto_referencia": "sector de la '
+        'Buitrera", "nivel_granularidad": "ciudad"}}',
+    ),
+    (
+        "Se sintio un fuerte sismo en el centro de la ciudad, varios "
+        "edificios se estan evacuando.",
+        '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": '
+        '["A", "G"]}, "ubicacion": {"ubicacion_texto_literal": "centro de la '
+        'ciudad", "barrio": null, "comuna": null, "punto_referencia": null, '
+        '"nivel_granularidad": "ciudad"}}',
+    ),
+)
+
+
+def _bloque_ejemplos(
+    ejemplos: tuple[tuple[str, str], ...],
+) -> str:
+    """Formatea pares mensaje-salida como ejemplos few-shot.
+
+    Args:
+        ejemplos: Secuencia de pares (mensaje, salida JSON esperada).
+
+    Returns:
+        Bloque de texto con cada ejemplo en lineas separadas.
+
+    """
+    return "\n\n".join(
+        f'Mensaje: "{mensaje}"\nSalida: {salida}' for mensaje, salida in ejemplos
+    )
 
 
 def _valores_literal(campo: str) -> str:
@@ -65,7 +133,9 @@ def sistema_compuerta() -> str:
         "- reporta_terceros: informa sobre afectaciones de otras personas.\n"
         "- ofrece_ayuda: pone a disposicion recursos o ayuda.\n"
         "- solicita_informacion: pide datos o aclaraciones sin reportar una "
-        "emergencia en curso."
+        "emergencia en curso.\n\n"
+        "Ejemplos:\n"
+        f"{_bloque_ejemplos(_EJEMPLOS_COMPUERTA)}"
     )
 
 
@@ -99,5 +169,7 @@ def sistema_extraccion() -> str:
         "- nivel_granularidad describe cuanto se puede ubicar el evento: "
         "exacta si hay direccion o punto, barrio, comuna, ciudad si el "
         "mensaje solo nombra la ciudad, o indeterminada si no hay datos.\n"
-        "- Las coordenadas no se piden aqui: solo texto y nombres de lugar."
+        "- Las coordenadas no se piden aqui: solo texto y nombres de lugar.\n\n"
+        "Ejemplos:\n"
+        f"{_bloque_ejemplos(_EJEMPLOS_EXTRACCION)}"
     )
