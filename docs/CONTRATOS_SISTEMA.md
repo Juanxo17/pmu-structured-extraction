@@ -142,7 +142,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/mensajes` | ver abajo | `202 {id_mensaje: str, estado: "recibido"}` | Recibe un mensaje desde `FuenteDeMensajes` (hoy: Telegram) y dispara `POST /procesar` en Process |
+| `POST` | `/mensajes` | ver abajo | `202 {id_mensaje: str, estado: "recibido"}` | Recibe un mensaje desde `FuenteDeMensajes` (hoy: Telegram) y dispara `POST /procesar` en Process. `id_mensaje` es el mismo valor de `id_externo` (no se genera un ID nuevo) |
 | `GET` | `/reportes` | filtros + paginación, ver CRUD | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Proxy directo a CRUD — consumido por la bandeja del tablero (T-22) |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` \| `404` | Proxy directo a CRUD — vista de detalle (T-23) |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Proxy directo a CRUD — mecanismo del triaje asistido (1.4): el operador marca "revisado" o corrige un campo mal extraído |
@@ -156,8 +156,9 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 | `id_externo` | `string` | sí | ID del mensaje en Telegram — usado para idempotencia |
 | `texto` | `string` | sí | Contenido crudo. La anonimización (T-10) ocurre dentro de Process, no en BFF |
 | `marca_temporal_origen` | `datetime ISO 8601` | sí | Hora del mensaje en Telegram, no la de recepción |
+| `autor_id_telegram` | `string` | sí | ID de la cuenta que envió el mensaje en Telegram. Necesario para que Process calcule `autor_anonimizado_id` (ver contrato extendido de `POST /procesar`, sección 3) — no estaba en la versión original de este contrato |
 
-**Errores de `POST /mensajes`:** `400` si falta `fuente`/`texto`/`marca_temporal_origen`; `409` si `id_externo` ya fue recibido antes (duplicado exacto); `503` si el pipeline está saturado (cuota de Groq agotada, 4.6) — el cliente reintenta con backoff.
+**Errores de `POST /mensajes`:** `400` si falta `fuente`/`texto`/`marca_temporal_origen`/`autor_id_telegram`; `409` si `fuente` + `id_externo` ya fueron recibidos antes (duplicado exacto de transporte — no confundir con la detección de duplicados por contenido de T-17, que es un problema distinto); `503` si el pipeline no está disponible — el cliente reintenta con backoff. **Implementación parcial**: como `POST /procesar` se dispara en segundo plano (fire-and-forget) sin esperar su resultado, BFF no puede saber si Inference está saturado (cuota de Groq agotada, 4.6) en el momento de responder — esa causa del `503` queda pendiente de definir junto con el equipo. Lo que sí verifica hoy la primera versión de BFF es que Process esté alcanzable (`GET /health`), respondiendo `503` si no lo está.
 
 Internamente implementa la interfaz:
 
@@ -181,15 +182,15 @@ class TelegramSource(FuenteDeMensajes): ...
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
 | `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200` agregados, ver abajo | Llamado por BFF |
 
-**Filtros de `GET /reportes`:** `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `accionable` (`true`/`false`), `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20 — se capa a 100).
+**Filtros de `GET /reportes`:** `fuente`, `id_externo` (coincidencia exacta — usados por BFF para el chequeo de idempotencia de `POST /mensajes`, no estaban en la versión original de este contrato), `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `accionable` (`true`/`false`), `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20 — se capa a 100).
 
-**Resumen (`GET /reportes/resumen`):** `{total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}`. `por_tipo_evento`, `por_comuna`, `por_nivel_granularidad` y `por_servicio_de_respuesta` solo cuentan reportes accionables (`naturaleza`/`ubicacion` no son `None`); `por_temporalidad`, `por_intencion`, `por_accionable` y `por_dia` cuentan todos. `por_servicio_de_respuesta` es multietiqueta: la suma de sus valores puede superar `total`.
+**Resumen (`GET /reportes/resumen`):** `{total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_daridad, por_dia}`. `por_tipo_evento`,`por_comuna`, `por_nivel_granularidad` y `por_servicio_de_respuesta` solo cuentan reportes accionables (`naturaleza`/`ubicacion` no son `None`); `por_`, `por_accionable` y `por_dia` cuentan todos.`por_servicio_de_respuesta` es multietiqueta: la suma de sus valores puede superar `total`.
 
 ## 3. Process (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado |
+| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17, aun no implementado) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado. `fuente`/`id_externo`/`autor_id_telegram` los reenvía BFF tal cual los recibio en `POST /mensajes`; Process calcula `autor_anonimizado_id` a partir de `autor_id_telegram`. `motivo` toma valores fijos: `"no_accionable"` (compuerta) o `"fallo_validacion_extraccion"` (Inference agoto reintentos) |
 
 Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Process decide el flujo interno.
 

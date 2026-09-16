@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "httpx>=0.27.0",
     "sirena-schema",
+    "spacy>=3.8.0",
 ]
 
 [tool.uv.sources]
