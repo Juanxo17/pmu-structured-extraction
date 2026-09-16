@@ -5,6 +5,7 @@
 
 install: gga-setup
 	uv sync --all-packages
+	uv run --package process python -m spacy download es_core_news_md
 	uv run pre-commit install
 
 # GGA revisa el diff staged contra AGENTS.md usando tu propio agente (Claude Code
