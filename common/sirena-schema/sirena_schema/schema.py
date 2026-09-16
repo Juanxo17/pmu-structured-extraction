@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from sirena_schema.ontologia import ONTOLOGIA
 
@@ -87,3 +87,20 @@ class ReporteEstructurado(BaseModel):
     naturaleza: Naturaleza | None
     ubicacion: Ubicacion | None
     creado_en: datetime
+
+    @model_validator(mode="after")
+    def _normalizar_no_accionable(self) -> "ReporteEstructurado":
+        """Limpia `naturaleza`/`ubicacion` en reportes descartados.
+
+        Un reporte con `es_reporte_accionable = False` no tiene naturaleza ni
+        ubicacion (Docs/CONTRATOS_SISTEMA.md): Process los deja en `None` y
+        este validador impone la regla aunque llegue un payload con datos.
+
+        Returns:
+            El reporte con las secciones vaciadas si no es accionable.
+
+        """
+        if not self.compuerta.es_reporte_accionable:
+            self.naturaleza = None
+            self.ubicacion = None
+        return self
