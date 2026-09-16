@@ -19,7 +19,7 @@ El modelo se usa zero/few-shot tal como se publica; no hay fine-tuning ni ajuste
 
 ## Restricciones de alcance
 
-No incluidos por principio, no por falta de tiempo: valoración de gravedad/prioridad, despacho automático de recursos, verificación factual del contenido del mensaje (el sistema estructura lo que dice el mensaje, no si es cierto). Datos personales (nombres, teléfonos, direcciones exactas) se anonimizan antes de llegar al modelo y antes de persistirse — nunca se envían a un proveedor externo ni se guardan en claro.
+No incluidos por principio, no por falta de tiempo: valoración de gravedad/prioridad, despacho automático de recursos, verificación factual del contenido del mensaje (el sistema estructura lo que dice el mensaje, no si es cierto). Datos personales (nombres, teléfonos) se anonimizan antes de llegar al modelo y antes de persistirse — nunca se envían a un proveedor externo ni se guardan en claro. Las menciones de ubicación o dirección, exactas o generales, se tratan como dato de entrada necesario para el pipeline (Inference/Geo) y no se anonimizan.
 
 ## Flujo de desarrollo
 
