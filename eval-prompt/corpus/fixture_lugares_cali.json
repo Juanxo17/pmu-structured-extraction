@@ -1,0 +1,26 @@
+{
+  "fuente": "Toponimia de Santiago de Cali tomada de listados oficiales de barrios por comuna (Departamento Administrativo de Planeacion Municipal, Alcaldia de Santiago de Cali; documento 'Comunas y Barrios de Cali') y catalogos publicos de puntos de referencia. Las coordenadas son aproximadas y se usan unicamente como referencias de anotacion del corpus sintetico.",
+  "barrios_por_comuna": {
+    "1": ["El Bajo Palermo", "Bajo Aguacatal", "Palmas I", "Palmas II", "La Legua", "Terron Colorado", "Villa del Mar"],
+    "2": ["Vipasa", "Altos de Menga", "Arboledas", "Versalles", "Normandia"],
+    "3": ["San Antonio", "El Calvario", "El Hoyo", "El Nacional", "El Penon", "El Piloto", "La Merced", "Navarro-La Chanca", "San Cayetano", "San Nicolas", "San Pascual", "San Pedro", "Santa Rosa", "Los Libertadores", "San Juan Bosco"],
+    "4": ["Jorge Isaacs", "Santander", "Porvenir", "Las Delicias", "Manzanares", "Salomia", "Fatima", "Sultana-Berlin", "Popular", "Ignacio Rengifo", "Guillermo Valencia", "La Isla", "Marco Fidel Suarez", "Evaristo Garcia", "La Esmeralda", "Bolivariano", "Olaya Herrera", "Bueno Madrid", "Flora Industrial", "Calima", "La Alianza", "Industria de Licores"],
+    "5": ["El Sena", "Palmeras del Norte", "Los Andes", "Los Guayacanes", "La Rivera II", "Chiminangos", "Metropolitano del Norte", "Plazas Verdes", "Villa del Sol", "Paseo de los Almendros", "Villas de Veracruz", "Torres de Comfandi", "Villa del Prado", "Santa Barbara", "Brisas del Guabito", "El Bosque", "Brisas de los Andes", "Bajo Salomia"],
+    "6": ["San Luis", "Jorge Eliecer Gaitan", "Paso del Comercio", "Los Alcazares I", "Los Alcazares II", "Petecuy", "La Rivera I", "Los Guaduales", "Oasis de Comfandi", "Floralia I", "Floralia II", "Fonaviemcali", "Calimio", "Alamos", "Popular"],
+    "7": ["Alfonso Lopez"],
+    "18": ["Buenos Aires", "Barrio Caldas", "Los Chorros", "Colinas del Sur", "Alferez Real"],
+    "20": ["Siloé", "Belisario Caicedo", "Vista Hermosa"]
+  },
+  "puntos_referencia": [
+    {"nombre": "Estadio Olimpico Pascual Guerrero", "comuna": "9", "lat": 3.4301, "lon": -76.5401, "nota": "coordenada aproximada"},
+    {"nombre": "Zoologico de Cali", "comuna": "2", "lat": 3.4518, "lon": -76.5493, "nota": "coordenada aproximada"},
+    {"nombre": "Plaza de Caicedo", "comuna": "3", "lat": 3.4516, "lon": -76.5320, "nota": "coordenada aproximada"},
+    {"nombre": "La Ermita", "comuna": "3", "lat": 3.4520, "lon": -76.5395, "nota": "coordenada aproximada"},
+    {"nombre": "Torre de Cali", "comuna": "3", "lat": 3.4478, "lon": -76.5378, "nota": "coordenada aproximada"},
+    {"nombre": "Centro Administrativo Municipal", "comuna": "8", "lat": 3.4455, "lon": -76.5280, "nota": "coordenada aproximada"},
+    {"nombre": "Universidad del Valle", "comuna": "19", "lat": 3.3750, "lon": -76.5350, "nota": "coordenada aproximada"},
+    {"nombre": "Unidad Deportiva San Fernando", "comuna": "9", "lat": 3.4090, "lon": -76.5310, "nota": "coordenada aproximada"},
+    {"nombre": "Centro Comercial Chipichape", "comuna": "2", "lat": 3.4565, "lon": -76.5280, "nota": "coordenada aproximada"},
+    {"nombre": "Centro Comercial Jardin Plaza", "comuna": "17", "lat": 3.3335, "lon": -76.5335, "nota": "coordenada aproximada"}
+  ]
+}
