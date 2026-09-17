@@ -11,14 +11,24 @@ from sirena_schema.schema import Compuerta
 
 VERSION_PROMPTS = "1.0"
 
-_ETIQUETAS_SERVICIO = (
-    "A Busqueda y Rescate, B Extincion de Incendios, "
-    "C Telecomunicaciones para la comunidad, D Manejo de Materiales Peligrosos, "
-    "E Seguridad y Convivencia, F Accesibilidad y Transporte, G Salud, "
-    "H Agua Potable, I Asistencia Humanitaria, J Alojamientos Temporales, "
-    "K Energia y Gas, L Saneamiento Basico, M Reencuentro Familiar, "
-    "N Fauna Domestica, O Fauna Silvestre, R Manejo de Residuos Solidos"
-)
+_NOMBRES_SERVICIO = {
+    "A": "Busqueda y Rescate",
+    "B": "Extincion de Incendios",
+    "C": "Telecomunicaciones para la comunidad",
+    "D": "Manejo de Materiales Peligrosos",
+    "E": "Seguridad y Convivencia",
+    "F": "Accesibilidad y Transporte",
+    "G": "Salud",
+    "H": "Agua Potable",
+    "I": "Asistencia Humanitaria",
+    "J": "Alojamientos Temporales",
+    "K": "Energia y Gas",
+    "L": "Saneamiento Basico",
+    "M": "Reencuentro Familiar",
+    "N": "Fauna Domestica",
+    "O": "Fauna Silvestre",
+    "R": "Manejo de Residuos Solidos",
+}
 
 _EJEMPLOS_COMPUERTA = (
     (
@@ -97,6 +107,24 @@ def _valores_literal(campo: str) -> str:
     return ", ".join(valores)
 
 
+def _etiquetas_servicio() -> str:
+    """Devuelve los servicios de respuesta admitidos por la ontologia.
+
+    Los codigos provienen de la ontologia vigente (config/ontologia.yaml); el
+    nombre legible de cada uno se toma de la tabla local, que reproduce la ERE
+    de Cali. Asi, agregar o quitar un codigo en la configuracion se refleja en
+    el prompt sin tocar el codigo.
+
+    Returns:
+        Codigos admitidos, cada uno con su nombre, separados por comas.
+
+    """
+    return ", ".join(
+        f"{codigo} {_NOMBRES_SERVICIO[codigo]}"
+        for codigo in sorted(ONTOLOGIA.servicios_de_respuesta)
+    )
+
+
 def sistema_compuerta() -> str:
     """Devuelve las instrucciones de sistema de la etapa de compuerta.
 
@@ -154,7 +182,7 @@ def sistema_extraccion() -> str:
         '"punto_referencia": null o "...", "nivel_granularidad": "..."}}.\n\n'
         f"Valores permitidos para tipo_evento: {tipos}.\n"
         f"Codigos permitidos para servicio_de_respuesta (uno o mas): "
-        f"{_ETIQUETAS_SERVICIO}.\n\n"
+        f"{_etiquetas_servicio()}.\n\n"
         "Reglas:\n"
         "- tipo_evento debe ser exactamente uno de los valores permitidos.\n"
         "- servicio_de_respuesta es una lista con los codigos de los servicios "

@@ -25,10 +25,10 @@ def _etiquetas_servicio() -> list[str]:
     """Devuelve las etiquetas formateadas de cada servicio de respuesta.
 
     Returns:
-        Lista con las etiquetas "Codigo Nombre" de la constante interna.
+        Lista con las etiquetas "Codigo Nombre" que arma el modulo.
 
     """
-    return prompts._ETIQUETAS_SERVICIO.split(", ")
+    return prompts._etiquetas_servicio().split(", ")
 
 
 class TestConsultasPrompts:
@@ -97,6 +97,20 @@ class TestConsultasPrompts:
         # Act & Assert
         for etiqueta in _etiquetas_servicio():
             assert etiqueta in prompt
+
+    def test_servicios_del_prompt_vienen_de_la_ontologia(self) -> None:
+        """Los codigos de servicio del prompt son los de la ontologia."""
+        # Arrange
+        prompt = prompts.sistema_extraccion()
+
+        # Act & Assert
+        for codigo in ONTOLOGIA.servicios_de_respuesta:
+            assert f"{codigo} " in prompt
+
+    def test_nombres_de_servicio_cubren_la_ontologia(self) -> None:
+        """Cada codigo de la ontologia tiene su nombre local."""
+        # Act & Assert
+        assert set(prompts._NOMBRES_SERVICIO) == ONTOLOGIA.servicios_de_respuesta
 
     def test_sistema_extraccion_incluye_ejemplos(self) -> None:
         """El prompt de extraccion trae al menos tres ejemplos few-shot."""
