@@ -180,6 +180,7 @@ class TelegramSource(FuenteDeMensajes): ...
 | `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`), para que la bandeja cargue rápido |
 
 **Propuesto:** que la versión resumida sí incluya `lat`/`lon` (float o `None`) — el mapa de la bandeja los necesita para plantar un punto exacto en vez de aproximar por el centroide de la comuna; hoy el frontend lo mockea con un centroide local mientras se confirma. Cuando `nivel_granularidad` no sea `"exacta"`, `lat`/`lon` pueden venir `None` igual que en `ReporteEstructurado.ubicacion`.
+
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
 | `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}` | Llamado por BFF |
@@ -205,9 +206,11 @@ class TelegramSource(FuenteDeMensajes): ...
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17, aun no implementado) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado. `fuente`/`id_externo`/`autor_id_telegram` los reenvía BFF tal cual los recibio en `POST /mensajes`; Process calcula `autor_anonimizado_id` a partir de `autor_id_telegram`. `motivo` toma valores fijos: `"no_accionable"` (compuerta) o `"fallo_validacion_extraccion"` (Inference agoto reintentos) |
+| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado, motivo?: "duplicado"}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → llama Inference (compuerta, y extracción si aplica) → llama Geo → detección básica de posible duplicado → persiste en CRUD → retorna resultado |
 
 Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Process decide el flujo interno.
+
+**Detección básica de posible duplicado (T-17):** antes de persistir, Process busca en CRUD (`GET /reportes`, filtrando por `tipo_evento` y `comuna`) si ya existe un reporte con el mismo `tipo_evento`, la misma ubicación (mismo `barrio` cuando ambos reportes lo tienen resuelto; `comuna` como respaldo si a alguno le falta) y `creado_en` dentro de una ventana de 15 minutos. **Nunca descarta el mensaje**: reportes distintos de personas distintas sobre el mismo evento real son corroboración, no ruido — el reporte se persiste igual que cualquier otro, y lo único que cambia es que la respuesta incluye `motivo: "duplicado"` junto al reporte guardado, como señal para el operador humano. Se usa `creado_en` (no `marca_temporal_origen`) como aproximación del momento del evento, porque este contrato no incluye hoy la hora original del mensaje del ciudadano.
 
 ## 4. Inference — puerto 8003 (Juan)
 
