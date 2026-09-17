@@ -146,7 +146,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 | `GET` | `/reportes` | filtros + paginación, ver CRUD | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Proxy directo a CRUD — consumido por la bandeja del tablero (T-22) |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` \| `404` | Proxy directo a CRUD — vista de detalle (T-23) |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Proxy directo a CRUD — mecanismo del triaje asistido (1.4): el operador marca "revisado" o corrige un campo mal extraído |
-| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}` | Proxy directo a CRUD — agregados para las tarjetas del encabezado del tablero |
+| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Proxy directo a CRUD — agregados para las tarjetas del encabezado del tablero |
 
 **`POST /mensajes` — request:**
 
@@ -177,37 +177,22 @@ class TelegramSource(FuenteDeMensajes): ...
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
 | `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
-| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`), para que la bandeja cargue rápido |
-
-**Propuesto:** que la versión resumida sí incluya `lat`/`lon` (float o `None`) — el mapa de la bandeja los necesita para plantar un punto exacto en vez de aproximar por el centroide de la comuna; hoy el frontend lo mockea con un centroide local mientras se confirma. Cuando `nivel_granularidad` no sea `"exacta"`, `lat`/`lon` pueden venir `None` igual que en `ReporteEstructurado.ubicacion`.
+| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`/coordenadas), para que la bandeja cargue rápido |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
-| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}` | Llamado por BFF |
+| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Llamado por BFF |
 
-**Filtros de `GET /reportes`:** `fuente`, `id_externo` (coincidencia exacta — usados por BFF para el chequeo de idempotencia de `POST /mensajes`, no estaban en la versión original de este contrato), `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `accionable` (`true`/`false`, sobre `compuerta.es_reporte_accionable` — sin este filtro el listado incluye los reportes descartados en la compuerta, con `tipo_evento`/`ubicación` vacíos), `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
-
-**Campos de `GET /reportes/resumen`** (todos sobre el rango `desde`/`hasta` si se da; si no, histórico completo):
-
-| Campo | Tipo | Fuente | Notas |
-|---|---|---|---|
-| `total` | `int` | — | Todos los reportes en el rango, accionables o no |
-| `pendientes` / `revisados` | `int` | `estado_revision` | — |
-| `por_tipo_evento` | `dict[str, int]` | `naturaleza.tipo_evento` | Solo reportes accionables (`naturaleza` no es `None`) |
-| `por_comuna` | `dict[str, int]` | `ubicacion.comuna` | Solo reportes accionables con `comuna` resuelta |
-| `por_accionable` | `dict[str, int]`, llaves `accionable`/`no_accionable` | `compuerta.es_reporte_accionable` | Suma `total` |
-| `por_temporalidad` | `dict[str, int]` | `compuerta.temporalidad` | Incluye no accionables — `compuerta` siempre existe |
-| `por_intencion` | `dict[str, int]` | `compuerta.intencion` | Incluye no accionables, mismo motivo |
-| `por_servicio_de_respuesta` | `dict[str, int]` | `naturaleza.servicio_de_respuesta` | Multietiqueta: la suma de los valores puede superar `total` |
-| `por_nivel_granularidad` | `dict[str, int]` | `ubicacion.nivel_granularidad` | Solo reportes accionables con `ubicacion`; indicador de calidad de la resolución geográfica, no de negocio |
-| `por_dia` | `dict[str, int]`, llave `YYYY-MM-DD` | `creado_en` | Conteo por día dentro de `desde`/`hasta`; base de la tendencia diaria del tablero |
+**Filtros de `GET /reportes`:** `fuente`, `id_externo` (coincidencia exacta — usados por BFF para el chequeo de idempotencia de `POST /mensajes`, no estaban en la versión original de este contrato), `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
 
 ## 3. Process (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → detecta duplicado (T-17, aun no implementado) → llama Inference (compuerta, y extracción si aplica) → llama Geo → persiste en CRUD → retorna resultado. `fuente`/`id_externo`/`autor_id_telegram` los reenvía BFF tal cual los recibio en `POST /mensajes`; Process calcula `autor_anonimizado_id` a partir de `autor_id_telegram`. `motivo` toma valores fijos: `"no_accionable"` (compuerta) o `"fallo_validacion_extraccion"` (Inference agoto reintentos) |
+| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado, motivo?: "duplicado"}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → llama Inference (compuerta, y extracción si aplica) → llama Geo → detección básica de posible duplicado → persiste en CRUD → retorna resultado |
 
 Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Process decide el flujo interno.
+
+**Detección básica de posible duplicado (T-17):** antes de persistir, Process busca en CRUD (`GET /reportes`, filtrando por `tipo_evento` y `comuna`) si ya existe un reporte con el mismo `tipo_evento`, la misma ubicación (mismo `barrio` cuando ambos reportes lo tienen resuelto; `comuna` como respaldo si a alguno le falta) y `creado_en` dentro de una ventana de 15 minutos. **Nunca descarta el mensaje**: reportes distintos de personas distintas sobre el mismo evento real son corroboración, no ruido — el reporte se persiste igual que cualquier otro, y lo único que cambia es que la respuesta incluye `motivo: "duplicado"` junto al reporte guardado, como señal para el operador humano. Se usa `creado_en` (no `marca_temporal_origen`) como aproximación del momento del evento, porque este contrato no incluye hoy la hora original del mensaje del ciudadano.
 
 ## 4. Inference — puerto 8003 (Juan)
 
