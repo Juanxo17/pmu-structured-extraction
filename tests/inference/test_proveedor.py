@@ -156,6 +156,28 @@ class TestProveedor:
         assert cliente._api_key == "clave-de-prueba"
         assert cliente._modelo == "llama-3.3-70b-versatile"
 
+    def test_modelo_por_defecto_es_el_documentado(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Sin INFERENCE_MODELO el default es openai/gpt-oss-20b."""
+        # Arrange
+        monkeypatch.delenv("INFERENCE_MODELO", raising=False)
+
+        # Act
+        cliente = proveedor.ProveedorGroq(api_key="clave-de-prueba")
+
+        # Assert
+        assert cliente._modelo == "openai/gpt-oss-20b"
+
+    def test_lee_modelo_de_la_variable_de_entorno(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """INFERENCE_MODELO define el modelo cuando no se pasa argumento."""
+        # Arrange
+        monkeypatch.setenv("INFERENCE_MODELO", "openai/gpt-oss-120b")
+
+        # Act
+        cliente = proveedor.ProveedorGroq(api_key="clave-de-prueba")
+
+        # Assert
+        assert cliente._modelo == "openai/gpt-oss-120b"
+
     def test_temperatura_por_defecto_es_cero(self) -> None:
         """La temperatura por defecto es 0 para salidas deterministas."""
         # Arrange

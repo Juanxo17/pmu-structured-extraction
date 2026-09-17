@@ -63,7 +63,7 @@ class ProveedorGroq:
             api_key: Clave de la API de Groq. Por defecto, la variable de
                 entorno GROQ_API_KEY.
             modelo: Modelo a usar. Por defecto, la variable de entorno
-                INFERENCE_MODELO o llama-3.1-8b-instant.
+                INFERENCE_MODELO o openai/gpt-oss-20b.
             temperatura: Temperatura de muestreo, entre 0 y 1.
             intentos: Numero maximo de llamadas por turno. Por defecto, la
                 variable de entorno INFERENCE_INTENTOS_LLM o 3.
@@ -80,7 +80,7 @@ class ProveedorGroq:
         if not clave:
             raise ValueError("GROQ_API_KEY no esta configurada")
         self._api_key = clave
-        self._modelo = modelo or os.environ.get("INFERENCE_MODELO", "llama-3.1-8b-instant")
+        self._modelo = modelo or os.environ.get("INFERENCE_MODELO", "openai/gpt-oss-20b")
         self.temperatura = temperatura
         self.intentos = (
             intentos if intentos is not None else int(os.environ.get("INFERENCE_INTENTOS_LLM", "3"))
