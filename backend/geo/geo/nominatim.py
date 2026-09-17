@@ -7,6 +7,7 @@ import re
 import threading
 from dataclasses import dataclass
 from typing import Protocol
+from urllib.parse import urlsplit
 
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Nominatim
@@ -99,6 +100,8 @@ class NominatimResolver(ResolverExterno):
 
         """
         self._url = url or os.environ.get(ENV_URL, _URL_POR_DEFECTO)
+        if "://" not in self._url:
+            self._url = f"https://{self._url}"
         self._user_agent = user_agent or os.environ.get(ENV_USER_AGENT, _USER_AGENT_POR_DEFECTO)
         self._country_codes = country_codes or os.environ.get(
             ENV_COUNTRY_CODES, _PAISES_POR_DEFECTO
@@ -113,6 +116,12 @@ class NominatimResolver(ResolverExterno):
         self._candado = threading.Lock()
         sin_limite = self._geocodificar_sin_limite
         self._con_limite = RateLimiter(sin_limite, min_delay_seconds=self._min_interval)
+        partes = urlsplit(self._url)
+        self._geolocalizador = Nominatim(
+            scheme=partes.scheme or "https",
+            domain=partes.netloc,
+            user_agent=self._user_agent,
+        )
 
     def geocodificar(self, texto: str) -> ResultadoExterno | None:
         """Resuelve un texto a coordenadas y comuna, consultando solo el cache.
@@ -148,7 +157,7 @@ class NominatimResolver(ResolverExterno):
             El resultado externo, o None si el servicio no encuentra nada.
 
         """
-        geolocalizador = Nominatim(user_agent=self._user_agent)
+        geolocalizador = self._geolocalizador
         ubicacion = geolocalizador.geocode(
             query=texto,
             addressdetails=True,
