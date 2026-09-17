@@ -28,8 +28,7 @@ _EJEMPLOS_COMPUERTA = (
         '"intencion": "reporta_terceros"}',
     ),
     (
-        "El rio Cauca esta creciendo y puede desbordarse esta noche, por "
-        "favor preparense.",
+        "El rio Cauca esta creciendo y puede desbordarse esta noche, por favor preparense.",
         '{"es_reporte_accionable": true, "temporalidad": "riesgo_previsto", '
         '"intencion": "reporta_terceros"}',
     ),
@@ -51,8 +50,7 @@ _EJEMPLOS_EXTRACCION = (
         '"punto_referencia": "parque central", "nivel_granularidad": "barrio"}}',
     ),
     (
-        "Deslizamiento de tierra en la via Cali-Yumbo, sector de la Buitrera; "
-        "la via quedo tapada.",
+        "Deslizamiento de tierra en la via Cali-Yumbo, sector de la Buitrera; la via quedo tapada.",
         '{"naturaleza": {"tipo_evento": "movimiento_en_masa", '
         '"servicio_de_respuesta": ["A", "F"]}, "ubicacion": '
         '{"ubicacion_texto_literal": "via Cali-Yumbo, sector de la Buitrera", '
@@ -60,8 +58,7 @@ _EJEMPLOS_EXTRACCION = (
         'Buitrera", "nivel_granularidad": "ciudad"}}',
     ),
     (
-        "Se sintio un fuerte sismo en el centro de la ciudad, varios "
-        "edificios se estan evacuando.",
+        "Se sintio un fuerte sismo en el centro de la ciudad, varios edificios se estan evacuando.",
         '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": '
         '["A", "G"]}, "ubicacion": {"ubicacion_texto_literal": "centro de la '
         'ciudad", "barrio": null, "comuna": null, "punto_referencia": null, '
@@ -82,9 +79,7 @@ def _bloque_ejemplos(
         Bloque de texto con cada ejemplo en lineas separadas.
 
     """
-    return "\n\n".join(
-        f'Mensaje: "{mensaje}"\nSalida: {salida}' for mensaje, salida in ejemplos
-    )
+    return "\n\n".join(f'Mensaje: "{mensaje}"\nSalida: {salida}' for mensaje, salida in ejemplos)
 
 
 def _valores_literal(campo: str) -> str:

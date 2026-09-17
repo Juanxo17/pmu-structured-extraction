@@ -89,8 +89,7 @@ class ServicioInferencia:
             retroalimentacion,
         )
         raise RechazoSalida(
-            f"La salida de compuerta no conforma al esquema tras "
-            f"{self.intentos_maximos} intentos"
+            f"La salida de compuerta no conforma al esquema tras {self.intentos_maximos} intentos"
         )
 
     def extraer(self, texto: str) -> tuple[Naturaleza, Ubicacion]:
@@ -127,8 +126,7 @@ class ServicioInferencia:
             retroalimentacion,
         )
         raise RechazoSalida(
-            f"La salida de extraccion no conforma al esquema tras "
-            f"{self.intentos_maximos} intentos"
+            f"La salida de extraccion no conforma al esquema tras {self.intentos_maximos} intentos"
         )
 
     @staticmethod

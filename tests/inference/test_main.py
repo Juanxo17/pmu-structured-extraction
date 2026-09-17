@@ -39,9 +39,7 @@ class TestCompuertaEndpoint:
             client = TestClient(app)
 
             # Act
-            respuesta = client.post(
-                "/compuerta", json={"texto": "hay un incendio"}
-            )
+            respuesta = client.post("/compuerta", json={"texto": "hay un incendio"})
 
             # Assert
             assert respuesta.status_code == 200
@@ -74,9 +72,7 @@ class TestCompuertaEndpoint:
             client = TestClient(app)
 
             # Act
-            respuesta = client.post(
-                "/compuerta", json={"texto": "hay un incendio"}
-            )
+            respuesta = client.post("/compuerta", json={"texto": "hay un incendio"})
 
             # Assert
             assert respuesta.status_code == 422
@@ -97,9 +93,7 @@ class TestExtraccionEndpoint:
             client = TestClient(app)
 
             # Act
-            respuesta = client.post(
-                "/extraccion", json={"texto": "tiembla en cali"}
-            )
+            respuesta = client.post("/extraccion", json={"texto": "tiembla en cali"})
 
             # Assert
             assert respuesta.status_code == 200
@@ -118,9 +112,7 @@ class TestExtraccionEndpoint:
             client = TestClient(app)
 
             # Act
-            respuesta = client.post(
-                "/extraccion", json={"texto": "tiembla en cali"}
-            )
+            respuesta = client.post("/extraccion", json={"texto": "tiembla en cali"})
 
             # Assert
             assert respuesta.status_code == 422

@@ -175,6 +175,4 @@ class TestRegistroRechazos:
         # Assert
         registros = [r for r in caplog.records if r.name == "inference.servicio"]
         assert any(r.levelname == "ERROR" for r in registros)
-        assert any(
-            "Compuerta descartada tras 3 intentos" in r.getMessage() for r in registros
-        )
+        assert any("Compuerta descartada tras 3 intentos" in r.getMessage() for r in registros)

@@ -85,9 +85,7 @@ def _error_api(status_code: int, cabeceras: dict[str, str] | None = None):
         Una excepcion RateLimitError (429) o APIStatusError (demas estados).
 
     """
-    peticion = httpx.Request(
-        "POST", "https://api.groq.com/openai/v1/chat/completions"
-    )
+    peticion = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
     respuesta = httpx.Response(status_code, request=peticion, headers=cabeceras or {})
     if status_code == 429:
         return RateLimitError("cuota excedida", response=respuesta, body=None)
@@ -199,9 +197,7 @@ class TestProveedor:
         monkeypatch.setenv("INFERENCE_ESPERA_BASE", "2.0")
 
         # Act
-        cliente = proveedor.ProveedorGroq(
-            api_key="clave-de-prueba", intentos=1, espera_base=0.0
-        )
+        cliente = proveedor.ProveedorGroq(api_key="clave-de-prueba", intentos=1, espera_base=0.0)
 
         # Assert
         assert cliente.intentos == 1
@@ -258,9 +254,7 @@ class TestReintentos:
     ) -> None:
         """Dos 500 consecutivos generan esperas de 1s y 2s (backoff)."""
         # Arrange
-        simulado = ClienteSimulado(
-            _levantar_error(500), _levantar_error(500), _devolver("reporte")
-        )
+        simulado = ClienteSimulado(_levantar_error(500), _levantar_error(500), _devolver("reporte"))
         cliente = _proveedor(simulado, intentos=3)
         esperas: list[float] = []
         monkeypatch.setattr(proveedor.time, "sleep", esperas.append)
@@ -292,9 +286,7 @@ class TestReintentos:
         assert resultado == "reporte"
         assert esperas == [2.5]
 
-    def test_agota_intentos_y_relanza_el_error(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_agota_intentos_y_relanza_el_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Si todos los intentos fallan, se propaga el ultimo error."""
         # Arrange
         simulado = ClienteSimulado(_levantar_error(429), _levantar_error(429))

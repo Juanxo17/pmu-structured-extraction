@@ -80,20 +80,19 @@ class ProveedorGroq:
         if not clave:
             raise ValueError("GROQ_API_KEY no esta configurada")
         self._api_key = clave
-        self._modelo = modelo or os.environ.get(
-            "INFERENCE_MODELO", "llama-3.1-8b-instant"
-        )
+        self._modelo = modelo or os.environ.get("INFERENCE_MODELO", "llama-3.1-8b-instant")
         self.temperatura = temperatura
         self.intentos = (
-            intentos if intentos is not None
-            else int(os.environ.get("INFERENCE_INTENTOS_LLM", "3"))
+            intentos if intentos is not None else int(os.environ.get("INFERENCE_INTENTOS_LLM", "3"))
         )
         self.espera_base = (
-            espera_base if espera_base is not None
+            espera_base
+            if espera_base is not None
             else float(os.environ.get("INFERENCE_ESPERA_BASE", "1.0"))
         )
         self.jitter_max = (
-            jitter_max if jitter_max is not None
+            jitter_max
+            if jitter_max is not None
             else float(os.environ.get("INFERENCE_JITTER_MAX", "0.5"))
         )
         self._cliente = Groq(api_key=clave)

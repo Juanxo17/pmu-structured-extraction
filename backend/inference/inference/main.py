@@ -109,9 +109,7 @@ def extraccion(
 
 
 @app.exception_handler(RechazoSalida)
-def manejar_rechazo_salida(
-    request: Request, exc: RechazoSalida
-) -> JSONResponse:
+def manejar_rechazo_salida(request: Request, exc: RechazoSalida) -> JSONResponse:
     """Convierte un rechazo de validacion en una respuesta 422.
 
     Args:
