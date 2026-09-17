@@ -266,6 +266,91 @@ class TestActualizarReporte:
         )
         assert respuesta.status_code == 422
 
+    def test_rechaza_tipo_evento_fuera_de_ontologia(
+        self, cliente: TestClient, datos: ReportesFabrica
+    ):
+        """Devuelve 422 (no 500) si la correccion viola la ontologia."""
+        client = cliente
+        payload = datos.reporte()
+        client.post("/reportes", json=payload)
+        respuesta = client.patch(
+            f"/reportes/{payload['id']}",
+            json={"correccion": {"tipo_evento": "no_existe"}},
+        )
+        assert respuesta.status_code == 422
+
+    def test_marcar_no_accionable_limpia_y_no_matchea_filtros(
+        self, cliente: TestClient, datos: ReportesFabrica
+    ):
+        """Poner accionable=false limpia secciones y las oculta de los filtros."""
+        client = cliente
+        payload = datos.reporte(tipo_evento="incendio_estructural")
+        client.post("/reportes", json=payload)
+        respuesta = client.patch(
+            f"/reportes/{payload['id']}",
+            json={"correccion": {"es_reporte_accionable": False}},
+        )
+        assert respuesta.status_code == 200
+        assert respuesta.json()["naturaleza"] is None
+        assert respuesta.json()["ubicacion"] is None
+        filtrados = client.get("/reportes", params={"accionable": "false"})
+        assert filtrados.json()["total"] == 1
+        por_tipo = client.get(
+            "/reportes",
+            params={"accionable": "false", "tipo_evento": ["incendio_estructural"]},
+        )
+        assert por_tipo.json()["total"] == 0
+
+    def test_convierte_no_accionable_a_accionable(
+        self, cliente: TestClient, datos: ReportesFabrica
+    ):
+        """Reconstruye naturaleza/ubicacion desde un PATCH completo."""
+        client = cliente
+        payload = datos.reporte(accionable=False)
+        client.post("/reportes", json=payload)
+        respuesta = client.patch(
+            f"/reportes/{payload['id']}",
+            json={
+                "correccion": {
+                    "es_reporte_accionable": True,
+                    "tipo_evento": "incendio_estructural",
+                    "servicio_de_respuesta": ["B", "G"],
+                    "ubicacion_texto_literal": "calle 5 con carrera 10",
+                    "nivel_granularidad": "barrio",
+                    "comuna": "5",
+                }
+            },
+        )
+        assert respuesta.status_code == 200
+        cuerpo = respuesta.json()
+        assert cuerpo["compuerta"]["es_reporte_accionable"] is True
+        assert cuerpo["naturaleza"]["tipo_evento"] == "incendio_estructural"
+        assert cuerpo["ubicacion"]["nivel_granularidad"] == "barrio"
+
+    def test_conversion_incompleta_devuelve_422(self, cliente: TestClient, datos: ReportesFabrica):
+        """Reconstruir sin los campos requeridos devuelve 422."""
+        client = cliente
+        payload = datos.reporte(accionable=False)
+        client.post("/reportes", json=payload)
+        respuesta = client.patch(
+            f"/reportes/{payload['id']}",
+            json={"correccion": {"tipo_evento": "sismo"}},
+        )
+        assert respuesta.status_code == 422
+
+    def test_estado_revision_invalido_devuelve_422(
+        self, cliente: TestClient, datos: ReportesFabrica
+    ):
+        """Un estado_revision fuera del Literal se rechaza en el body."""
+        client = cliente
+        payload = datos.reporte()
+        client.post("/reportes", json=payload)
+        respuesta = client.patch(
+            f"/reportes/{payload['id']}",
+            json={"estado_revision": "en_proceso"},
+        )
+        assert respuesta.status_code == 422
+
 
 class TestResumenReportes:
     """GET /reportes/resumen."""

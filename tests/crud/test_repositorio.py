@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 from sirena_schema.schema import ReporteEstructurado
 
 
@@ -178,6 +179,72 @@ class TestActualizar:
         repo.crear(reporte)
         with pytest.raises(CorreccionInvalida):
             repo.actualizar(reporte.id, estado_revision=None, correccion={"campo_raro": "x"})
+
+    def test_rechaza_tipo_evento_fuera_de_ontologia(
+        self, repo: RepositorioReportes, datos: ReportesFabrica
+    ):
+        """Un tipo_evento fuera de catalogo no se persiste; lanza validacion."""
+        reporte = _valido(datos.reporte())
+        repo.crear(reporte)
+        with pytest.raises(ValidationError):
+            repo.actualizar(
+                reporte.id, estado_revision=None, correccion={"tipo_evento": "no_existe"}
+            )
+
+    def test_rechaza_servicio_fuera_de_ontologia(
+        self, repo: RepositorioReportes, datos: ReportesFabrica
+    ):
+        """Un servicio_de_respuesta fuera de catalogo no se persiste."""
+        reporte = _valido(datos.reporte())
+        repo.crear(reporte)
+        with pytest.raises(ValidationError):
+            repo.actualizar(
+                reporte.id, estado_revision=None, correccion={"servicio_de_respuesta": ["Z"]}
+            )
+
+    def test_marcar_no_accionable_limpia_naturaleza_y_ubicacion(
+        self, repo: RepositorioReportes, datos: ReportesFabrica
+    ):
+        """Poner es_reporte_accionable=False vacia secciones y columnas espejo."""
+        reporte = _valido(datos.reporte(tipo_evento="incendio_estructural"))
+        repo.crear(reporte)
+        actualizado = repo.actualizar(
+            reporte.id, estado_revision=None, correccion={"es_reporte_accionable": False}
+        )
+        assert actualizado.naturaleza is None
+        assert actualizado.ubicacion is None
+        total, _ = repo.listar(
+            FiltrosReportes(accionable=False, tipo_evento=["incendio_estructural"])
+        )
+        assert total == 0
+
+    def test_convierte_no_accionable_a_accionable(
+        self, repo: RepositorioReportes, datos: ReportesFabrica
+    ):
+        """Reconstruye naturaleza/ubicacion en un reporte no accionable."""
+        reporte = _valido(datos.reporte(accionable=False))
+        repo.crear(reporte)
+        correccion = {
+            "es_reporte_accionable": True,
+            "tipo_evento": "incendio_estructural",
+            "servicio_de_respuesta": ["B", "G"],
+            "ubicacion_texto_literal": "calle 5 con carrera 10",
+            "nivel_granularidad": "barrio",
+            "comuna": "5",
+        }
+        actualizado = repo.actualizar(reporte.id, estado_revision=None, correccion=correccion)
+        assert actualizado.compuerta.es_reporte_accionable is True
+        assert actualizado.naturaleza.tipo_evento == "incendio_estructural"
+        assert actualizado.ubicacion.nivel_granularidad == "barrio"
+
+    def test_reconstruccion_incompleta_lanza_validacion(
+        self, repo: RepositorioReportes, datos: ReportesFabrica
+    ):
+        """Al reconstruir una seccion falta un campo requerido."""
+        reporte = _valido(datos.reporte(accionable=False))
+        repo.crear(reporte)
+        with pytest.raises(ValidationError):
+            repo.actualizar(reporte.id, estado_revision=None, correccion={"tipo_evento": "sismo"})
 
     def test_lanza_404_si_no_existe(self, repo: RepositorioReportes):
         """Lanza ReporteNoEncontrado si el id no existe."""
