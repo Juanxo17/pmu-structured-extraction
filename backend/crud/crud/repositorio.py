@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
 
-from sirena_schema.schema import ReporteEstructurado
+from sirena_schema.schema import Compuerta, Naturaleza, ReporteEstructurado, Ubicacion
 
 from crud.modelo import Reporte, TAMANO_PAGINA_DEFAULT, TAMANO_PAGINA_MAXIMO
 
@@ -21,12 +21,32 @@ _CAMPOS_POR_SECCION = {
     "compuerta": {"es_reporte_accionable", "temporalidad", "intencion"},
     "naturaleza": {"tipo_evento", "servicio_de_respuesta"},
     "ubicacion": {
+        "ubicacion_texto_literal",
         "comuna",
         "barrio",
         "punto_referencia",
         "nivel_granularidad",
         "lat",
         "lon",
+    },
+}
+
+_SECCIONES_POR_CAMPO = {
+    "compuerta": Compuerta,
+    "naturaleza": Naturaleza,
+    "ubicacion": Ubicacion,
+}
+
+# Campos anulables que, al reconstruir una seccion desde cero, se asumen en
+# `None` salvo que la correccion los provea (el esquema exige pasarlos aunque
+# valgan None).
+_NULOS_POR_SECCION = {
+    "ubicacion": {
+        "barrio": None,
+        "comuna": None,
+        "punto_referencia": None,
+        "lat": None,
+        "lon": None,
     },
 }
 
@@ -227,6 +247,10 @@ class RepositorioReportes:
         Raises:
             ReporteNoEncontrado: Si el id no existe.
             CorreccionInvalida: Si la correccion referencia campos no conocidos.
+            pydantic.ValidationError: Si el resultado de la correccion no
+                conforma al esquema (ontologia fuera de catalogo, seccion
+                incompleta) o no se impone el invariante de reportes no
+                accionables. La app la traduce a HTTP 422.
 
         """
         modelo = self._sesion.get(Reporte, id_reporte)
@@ -237,6 +261,10 @@ class RepositorioReportes:
             reporte = reporte.model_copy(update={"estado_revision": estado_revision})
         if correccion:
             reporte = _aplicar_correccion(reporte, correccion)
+        # `model_copy` no re-valida (Pydantic v2); se fuerza la validacion
+        # completa para que la ontologia, los campos requeridos y el invariante
+        # "no accionable => secciones vacias" se cumplan antes de persistir.
+        reporte = ReporteEstructurado.model_validate(reporte.model_dump())
         actualizado = Reporte.desde_pydantic(reporte)
         modelo.payload = actualizado.payload
         modelo.fuente = actualizado.fuente
@@ -361,6 +389,11 @@ def _aplicar_correccion(
 ) -> ReporteEstructurado:
     """Aplica una correccion parcial plana sobre compuerta/naturaleza/ubicacion.
 
+    Si la seccion ya existe se actualiza con `model_copy` (la validacion
+    completa se fuerza luego en `actualizar`); si la seccion es `None` (un
+    reporte no accionable que se vuelve accionable) se reconstruye desde los
+    campos provistos, validando sus campos requeridos al instante.
+
     Args:
         reporte: Reporte original.
         correccion: Dict plano; cada llave debe pertenecer a exactamente una
@@ -383,9 +416,11 @@ def _aplicar_correccion(
             continue
         actual = getattr(actualizado, seccion)
         if actual is None:
-            continue
-        nuevo = actual.model_copy(update=cambios_seccion)
-        actualizado = actualizado.model_copy(update={seccion: nuevo})
+            campos_completos = {**_NULOS_POR_SECCION.get(seccion, {}), **cambios_seccion}
+            actual = _SECCIONES_POR_CAMPO[seccion](**campos_completos)
+        else:
+            actual = actual.model_copy(update=cambios_seccion)
+        actualizado = actualizado.model_copy(update={seccion: actual})
     desconocidas = set(correccion) - conocidas
     if desconocidas:
         raise CorreccionInvalida(f"campos de correccion desconocidos: {sorted(desconocidas)}")

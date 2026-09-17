@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Query
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -247,7 +248,9 @@ def actualizar_reporte(
 
     Raises:
         HTTPException 404: Si el reporte no existe.
-        HTTPException 422: Si la correccion referencia campos desconocidos.
+        HTTPException 422: Si la correccion referencia campos desconocidos o el
+            resultado no conforma al esquema (ontologia fuera de catalogo,
+            seccion incompleta, estado invalido).
 
     """
     try:
@@ -260,3 +263,6 @@ def actualizar_reporte(
         raise HTTPException(status_code=404, detail="reporte no encontrado") from None
     except CorreccionInvalida as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from None
+    except ValidationError as exc:
+        mensajes = "; ".join(error["msg"] for error in exc.errors())
+        raise HTTPException(status_code=422, detail=mensajes) from None

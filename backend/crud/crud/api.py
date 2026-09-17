@@ -9,6 +9,7 @@ este mismo modulo.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -65,7 +66,7 @@ class ResumenReportes(BaseModel):
 class CorreccionRequest(BaseModel):
     """Cuerpo de `PATCH /reportes/{id}`."""
 
-    estado_revision: str | None = None
+    estado_revision: Literal["pendiente", "revisado"] | None = None
     correccion: dict[str, object] | None = None
 
 
