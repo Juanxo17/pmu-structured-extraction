@@ -56,11 +56,15 @@ class FiltrosReportes:
     """Filtros de `GET /reportes` (mismas claves y semantica que el Frontend).
 
     `desde`/`hasta` son fechas `YYYY-MM-DD` (sin huso) que se interpretan en
-    medianoche UTC, igual que en el mock del Frontend.
+    medianoche UTC, igual que en el mock del Frontend. `fuente` e `id_externo`
+    son coincidencia exacta; los usa BFF para el chequeo de idempotencia del
+    transporte (`POST /mensajes`, ver docs/CONTRATOS_SISTEMA.md).
     """
 
     tipo_evento: list[str] = field(default_factory=list)
     servicio_de_respuesta: list[str] = field(default_factory=list)
+    fuente: str | None = None
+    id_externo: str | None = None
     comuna: str | None = None
     barrio: str | None = None
     temporalidad: str | None = None
@@ -169,6 +173,10 @@ class RepositorioReportes:
 
         """
         consulta = select(Reporte)
+        if filtros.fuente:
+            consulta = consulta.where(Reporte.fuente == filtros.fuente)
+        if filtros.id_externo:
+            consulta = consulta.where(Reporte.id_externo == filtros.id_externo)
         if filtros.tipo_evento:
             consulta = consulta.where(Reporte.tipo_evento.in_(filtros.tipo_evento))
         if filtros.servicio_de_respuesta:

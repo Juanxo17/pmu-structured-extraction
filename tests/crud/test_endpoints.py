@@ -165,6 +165,23 @@ class TestListarReportes:
         assert len(p2["resultados"]) == 1
         assert p2["total"] == 3
 
+    def test_filtro_fuente_e_id_externo(self, cliente: TestClient, datos: ReportesFabrica):
+        """Filtra por fuente e id_externo exactos (chequeo de idempotencia de BFF)."""
+        client = cliente
+        _post(client, datos, id_fijo="rpt-1")
+        _post(client, datos, id_fijo="rpt-2")
+        respuesta = client.get("/reportes", params={"fuente": "telegram", "id_externo": "rpt-1"})
+        cuerpo = respuesta.json()
+        assert cuerpo["total"] == 1
+        assert cuerpo["resultados"][0]["id"] == "rpt-1"
+
+    def test_filtro_sin_coincidencia_devuelve_0(self, cliente: TestClient, datos: ReportesFabrica):
+        """Un id_externo desconocido no matchea (regresion del chequeo de duplicado BFF)."""
+        client = cliente
+        _post(client, datos)
+        respuesta = client.get("/reportes", params={"fuente": "telegram", "id_externo": "tg-999"})
+        assert respuesta.json()["total"] == 0
+
 
 class TestObtenerReporte:
     """GET /reportes/{id_reporte}."""

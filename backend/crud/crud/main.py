@@ -117,6 +117,8 @@ def crear_reporte(
 def listar_reportes(
     tipo_evento: Annotated[list[str] | None, Query()] = None,
     servicio_de_respuesta: Annotated[list[str] | None, Query()] = None,
+    fuente: str | None = Query(default=None),
+    id_externo: str | None = Query(default=None),
     comuna: str | None = Query(default=None),
     barrio: str | None = Query(default=None),
     temporalidad: str | None = Query(default=None),
@@ -139,6 +141,8 @@ def listar_reportes(
     Args:
         tipo_evento: Tipo(s) de evento a incluir (OR).
         servicio_de_respuesta: Servicio(s) de respuesta (OR sobre la lista).
+        fuente: Fuente de origen (coincidencia exacta).
+        id_externo: Id externo recibido (coincidencia exacta).
         comuna: Comuna a incluir.
         barrio: Barrio a incluir.
         temporalidad: Temporalidad de la compuerta.
@@ -160,6 +164,8 @@ def listar_reportes(
     filtros = FiltrosReportes(
         tipo_evento=tipo_evento or [],
         servicio_de_respuesta=servicio_de_respuesta or [],
+        fuente=fuente,
+        id_externo=id_externo,
         comuna=comuna,
         barrio=barrio,
         temporalidad=temporalidad,

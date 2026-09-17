@@ -144,6 +144,22 @@ class TestListar:
         ids = [r.id for r in reportes]
         assert ids == ["rpt-2", "rpt-1"]
 
+    def test_filtro_fuente_e_id_externo(self, repo: RepositorioReportes, datos: ReportesFabrica):
+        """Filtra por fuente e id_externo exactos (chequeo de idempotencia de BFF)."""
+        repo.crear(_valido(datos.reporte(id_fijo="rpt-1")))
+        repo.crear(_valido(datos.reporte(id_fijo="rpt-2")))
+        total, reportes = repo.listar(FiltrosReportes(fuente="telegram", id_externo="rpt-2"))
+        assert total == 1
+        assert reportes[0].id == "rpt-2"
+
+    def test_filtro_fuente_e_id_externo_sin_coincidencia(
+        self, repo: RepositorioReportes, datos: ReportesFabrica
+    ):
+        """Un id_externo desconocido devuelve 0 incluso con reportes en la base."""
+        repo.crear(_valido(datos.reporte(id_fijo="rpt-1")))
+        total, _ = repo.listar(FiltrosReportes(fuente="telegram", id_externo="tg-999"))
+        assert total == 0
+
     def test_filtros_combinados(self, repo: RepositorioReportes, datos: ReportesFabrica):
         """Filtra por tipo_evento Y accionable a la vez."""
         repo.crear(_valido(datos.reporte(tipo_evento="sismo", accionable=True)))
