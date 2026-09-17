@@ -150,7 +150,7 @@ class ProveedorGroq:
                 self.intentos,
             )
             return respuesta.choices[0].message.content or ""
-        raise RuntimeError("Bucle de reintentos sin salida")  # noqa: TRY300
+        raise RuntimeError("Bucle de reintentos sin salida")
 
     def _admite_reintento(self, error: APIStatusError) -> bool:
         """Indica si un error de la API admite reintento.
