@@ -146,7 +146,7 @@ BFF es *gateway* puro hacia `reportes`: reenvía a CRUD sin lógica propia. El F
 | `GET` | `/reportes` | filtros + paginación, ver CRUD | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Proxy directo a CRUD — consumido por la bandeja del tablero (T-22) |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` \| `404` | Proxy directo a CRUD — vista de detalle (T-23) |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Proxy directo a CRUD — mecanismo del triaje asistido (1.4): el operador marca "revisado" o corrige un campo mal extraído |
-| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Proxy directo a CRUD — agregados para las tarjetas del encabezado del tablero |
+| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}` | Proxy directo a CRUD — agregados para las tarjetas del encabezado del tablero |
 
 **`POST /mensajes` — request:**
 
@@ -177,12 +177,30 @@ class TelegramSource(FuenteDeMensajes): ...
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
 | `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
-| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`/coordenadas), para que la bandeja cargue rápido |
+| `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`), para que la bandeja cargue rápido |
+
+**Propuesto:** que la versión resumida sí incluya `lat`/`lon` (float o `None`) — el mapa de la bandeja los necesita para plantar un punto exacto en vez de aproximar por el centroide de la comuna; hoy el frontend lo mockea con un centroide local mientras se confirma. Cuando `nivel_granularidad` no sea `"exacta"`, `lat`/`lon` pueden venir `None` igual que en `ReporteEstructurado.ubicacion`.
+
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` |
-| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna}` | Llamado por BFF |
+| `GET` | `/reportes/resumen` | `desde?`, `hasta?` | `200 {total, pendientes, revisados, por_tipo_evento, por_comuna, por_accionable, por_temporalidad, por_intencion, por_servicio_de_respuesta, por_nivel_granularidad, por_dia}` | Llamado por BFF |
 
-**Filtros de `GET /reportes`:** `fuente`, `id_externo` (coincidencia exacta — usados por BFF para el chequeo de idempotencia de `POST /mensajes`, no estaban en la versión original de este contrato), `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
+**Filtros de `GET /reportes`:** `fuente`, `id_externo` (coincidencia exacta — usados por BFF para el chequeo de idempotencia de `POST /mensajes`, no estaban en la versión original de este contrato), `tipo_evento`, `servicio_de_respuesta` (repetible, OR), `comuna`, `barrio`, `temporalidad`, `intencion`, `estado_revision`, `nivel_granularidad`, `accionable` (`true`/`false`, sobre `compuerta.es_reporte_accionable` — sin este filtro el listado incluye los reportes descartados en la compuerta, con `tipo_evento`/`ubicación` vacíos), `desde`/`hasta` (por `creado_en`), `q` (búsqueda libre sobre `mensaje_anonimizado`), `pagina` (≥1, default 1), `tamano_pagina` (máx. 100, default 20).
+
+**Campos de `GET /reportes/resumen`** (todos sobre el rango `desde`/`hasta` si se da; si no, histórico completo):
+
+| Campo | Tipo | Fuente | Notas |
+|---|---|---|---|
+| `total` | `int` | — | Todos los reportes en el rango, accionables o no |
+| `pendientes` / `revisados` | `int` | `estado_revision` | — |
+| `por_tipo_evento` | `dict[str, int]` | `naturaleza.tipo_evento` | Solo reportes accionables (`naturaleza` no es `None`) |
+| `por_comuna` | `dict[str, int]` | `ubicacion.comuna` | Solo reportes accionables con `comuna` resuelta |
+| `por_accionable` | `dict[str, int]`, llaves `accionable`/`no_accionable` | `compuerta.es_reporte_accionable` | Suma `total` |
+| `por_temporalidad` | `dict[str, int]` | `compuerta.temporalidad` | Incluye no accionables — `compuerta` siempre existe |
+| `por_intencion` | `dict[str, int]` | `compuerta.intencion` | Incluye no accionables, mismo motivo |
+| `por_servicio_de_respuesta` | `dict[str, int]` | `naturaleza.servicio_de_respuesta` | Multietiqueta: la suma de los valores puede superar `total` |
+| `por_nivel_granularidad` | `dict[str, int]` | `ubicacion.nivel_granularidad` | Solo reportes accionables con `ubicacion`; indicador de calidad de la resolución geográfica, no de negocio |
+| `por_dia` | `dict[str, int]`, llave `YYYY-MM-DD` | `creado_en` | Conteo por día dentro de `desde`/`hasta`; base de la tendencia diaria del tablero |
 
 ## 3. Process (Preprocesamiento + Extracción) — puerto 8002 (Cesar)
 
