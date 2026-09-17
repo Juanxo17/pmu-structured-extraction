@@ -50,14 +50,6 @@ Registro de puntos identificados en revisiones de PR que se aceptan conscienteme
 - **Por qué se deja así:** no bloquea el prototipo; es un caso de borde de infraestructura, no de lógica de negocio.
 - **Qué revisar después:** capturar el error de parseo y responder un 502/503 explícito indicando que CRUD no está respondiendo correctamente.
 
-## Desempate de barrios ambiguos no es realmente determinista
-
-- **Origen:** PR #45 (`feat: servicio Geo - resolver determinista con gazetteer del IDESC y respaldo Nominatim`)
-- **Dónde:** `backend/geo/geo/geocodificador.py`, `Geocodificador._elegir_barrio`
-- **Problema:** `nombre = max(nombres, key=len)` opera sobre `nombres = {barrio.nombre for barrio in barrios}`, un `set` de strings. Cuando dos nombres de barrio *distintos* empatan en longitud y ambos aparecen en el mismo texto, cuál gana depende del orden de iteración del `set`, sujeto al hash aleatorizado por proceso de Python (`PYTHONHASHSEED` no fijado) — el mismo texto podría resolver a un barrio distinto entre un reinicio del servicio y otro. Contradice el objetivo de determinismo que el propio PR destaca como diseño central. Ningún test cubre un empate real de longitud.
-- **Por qué se deja así:** tráfico bajo esperado para este prototipo; la probabilidad de que dos nombres de barrio de igual longitud aparezcan juntos en el mismo texto es baja.
-- **Qué revisar después:** ordenar de forma determinista antes de elegir (ej. `sorted(nombres, key=lambda n: (-len(n), n))[0]`, o fijar `PYTHONHASHSEED` del proceso), con un test que fuerce un empate real de longitud.
-
 ## Inicialización no perezosa del gazetteer y el resolutor externo en Geo
 
 - **Origen:** PR #45 (`feat: servicio Geo - resolver determinista con gazetteer del IDESC y respaldo Nominatim`)
@@ -66,10 +58,15 @@ Registro de puntos identificados en revisiones de PR que se aceptan conscienteme
 - **Por qué se deja así:** el archivo es de solo lectura (a diferencia de la base de datos de CRUD, que sí se bloquea al escribir), así que el riesgo práctico es menor.
 - **Qué revisar después:** mover la construcción de `_gazetteer_inicial`/`_externo_inicial` a una función lazy, igual que `FabricaSesiones` en CRUD, si en algún momento da problemas al importar en algún entorno.
 
-## `NominatimResolver` crea un cliente nuevo en cada llamada
+## `NominatimResolver` duplica configuración si se instancia más de una vez
 
 - **Origen:** PR #45 (`feat: servicio Geo - resolver determinista con gazetteer del IDESC y respaldo Nominatim`)
-- **Dónde:** `backend/geo/geo/nominatim.py`, `NominatimResolver._geocodificar_sin_limite`
-- **Problema:** cada llamada construye un `Nominatim(user_agent=self._user_agent)` nuevo en vez de reutilizar un cliente — no es incorrecto, solo innecesariamente costoso.
-- **Por qué se deja así:** el `RateLimiter` (mínimo 1s entre llamadas) y el cache en memoria ya limitan cuántas veces se ejecuta esto en la práctica; el costo extra de crear el cliente es marginal frente a la llamada de red.
-- **Qué revisar después:** reutilizar una sola instancia de `Nominatim` como atributo de `NominatimResolver`, creada una vez en `__init__`.
+- **Dónde:** `backend/geo/geo/nominatim.py`, `NominatimResolver.__init__`
+- **Problema:** cada resolutor arma su propio `Nominatim` (esquema, dominio, `user_agent`) y su propio `RateLimiter`. Hoy se instancia exactamente uno por proceso, así que no es incorrecto; solo repite configuración si algún día hubiera varios resolutores.
+- **Por qué se deja así:** el `RateLimiter` (mínimo 1s entre llamadas) y el cache en memoria ya limitan el tráfico real; duplicar la construcción de un cliente por resolutor es marginal frente a las llamadas de red.
+- **Qué revisar después:** si llegan a existir múltiples resolutores, compartir el `Nominatim` y el `RateLimiter` a nivel de módulo en vez de por instancia.
+
+## El desempate de barrios ambiguos fue determinista en la revisión (resuelto)
+
+- **Origen:** PR #45 (`feat: servicio Geo - resolver determinista con gazetteer del IDESC y respaldo Nominatim`)
+- **Estado:** resuelto en la revisión — `Geocodificador._elegir_barrio` ahora elige con `max(nombres, key=lambda candidato: (len(candidato), candidato))`, sin depender del orden de iteración de un `set` (`PYTHONHASHSEED`). Se registra aquí solo para no perder la trazabilidad; no vuelve como deuda mientras se use esa clave.

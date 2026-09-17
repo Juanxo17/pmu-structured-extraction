@@ -222,7 +222,16 @@ Internamente incluye el validador/reparador (T-13): si la salida cruda del model
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/resolver` | `{ubicacion_texto_literal: str, punto_referencia: str \| None}` | `200 {barrio: str \| None, comuna: str \| None, nivel_granularidad: str}` | Determinista, no invoca al LLM. Ante ambigüedad retorna el nivel más específico defendible; ante irresolubilidad, `nivel_granularidad = "indeterminada"` — nunca inventa un valor |
+| `POST` | `/resolver` | `{ubicacion_texto_literal: str, punto_referencia: str \| None}` | `200 {barrio: str \| None, comuna: str \| None, nivel_granularidad: str, lat: float \| None, lon: float \| None}` | Determinista, no invoca al LLM. Ante ambigüedad retorna el nivel más específico defendible; ante irresolubilidad, `nivel_granularidad = "indeterminada"` — nunca inventa un valor |
+
+`nivel_granularidad` usa los mismos valores que `Ubicacion:` `"exacta"`, `"barrio"`, `"comuna"`, `"ciudad"`, `"indeterminada"`.
+
+**Resolución (determinista, sin LLM):**
+1. **Gazetteer local del IDESC** (22 comunas, 324 barrios y 18 sectores, con centroides EPSG:4326 — `backend/geo/data/gazetteer.json`): gana el nombre de barrio/sector más largo que aparezca completo en el texto; si no hay barrio, vale una `comuna N` explícita; si solo se menciona Cali, `"ciudad"`.
+2. **Respaldo externo** (Nominatim vía geopy, acotado a Colombia y a la caja urbana de Cali; cache y tasa mínima de 1 s; configurable con `NOMINATIM_URL`, `NOMINATIM_USER_AGENT`, `NOMINATIM_COUNTRY_CODES`, `NOMINATIM_TIMEOUT`, `NOMINATIM_MIN_INTERVAL`): solo si el gazetteer no resolvió; si entrega coordenadas, `nivel_granularidad = "exacta"`.
+3. Si ninguno convence, `{barrio: null, comuna: null, nivel_granularidad: "indeterminada", lat: null, lon: null}`.
+
+`lat`/`lon` acompañan la resolución cuando el nivel lo permite (centroide del barrio, de la comuna o de la ciudad). El nombre canónico de la comuna es `"Comuna N"` sin ceros a la izquierda (ej. `"Comuna 13"`); el formato lo usa también el Frontend (`frontend/frontend/comunas.py`).
 
 ---
 
