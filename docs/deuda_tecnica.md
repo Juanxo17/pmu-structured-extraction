@@ -73,3 +73,19 @@ Registro de puntos identificados en revisiones de PR que se aceptan conscienteme
 - **Problema:** cada llamada construye un `Nominatim(user_agent=self._user_agent)` nuevo en vez de reutilizar un cliente — no es incorrecto, solo innecesariamente costoso.
 - **Por qué se deja así:** el `RateLimiter` (mínimo 1s entre llamadas) y el cache en memoria ya limitan cuántas veces se ejecuta esto en la práctica; el costo extra de crear el cliente es marginal frente a la llamada de red.
 - **Qué revisar después:** reutilizar una sola instancia de `Nominatim` como atributo de `NominatimResolver`, creada una vez en `__init__`.
+
+## Bucle de polling de Telegram sin manejo de errores (riesgo de filtrar el token)
+
+- **Origen:** PR #54 (`feat: fuente de mensajes de Telegram via long polling`)
+- **Dónde:** `backend/bff/bff/telegram_source.py`, `ejecutar()` / `_leer_actualizaciones`
+- **Problema:** `ejecutar()` llama a `_leer_actualizaciones` dentro de un `while True` sin ningún `try/except`. Cualquier falla transitoria (hipo de red, 5xx momentáneo de Telegram, token revocado) lanza una excepción no capturada que tumba el proceso completo — como esta es la única fuente de mensajes reales hoy, un fallo transitorio deja a SIRENA sin recibir reportes hasta que alguien note que el proceso murió y lo reinicie a mano, sin reintento ni backoff. Además, como Telegram mete el token del bot directamente en la URL (`https://api.telegram.org/bot<TOKEN>/getUpdates`), el traceback de una excepción no capturada (`httpx.HTTPStatusError` incluye la URL completa en su mensaje) dejaría el token en texto plano en consola/logs.
+- **Por qué se deja así:** aceptable para este prototipo, donde el proceso corre supervisado manualmente durante desarrollo; la verificación en vivo contra un bot real también quedó pendiente en este mismo PR.
+- **Qué revisar después:** agregar `try/except` con backoff alrededor de `_leer_actualizaciones` en `ejecutar()`, y asegurarse de que cualquier log de error trunque o excluya la URL completa (para no exponer el token) antes de cualquier despliegue con tráfico real.
+
+## Offset de Telegram solo vive en memoria
+
+- **Origen:** PR #54 (`feat: fuente de mensajes de Telegram via long polling`)
+- **Dónde:** `backend/bff/bff/telegram_source.py`, `ejecutar()`
+- **Problema:** `offset` es una variable local que se pierde si el proceso se reinicia, así que tras un reinicio se vuelven a pedir actualizaciones ya procesadas.
+- **Por qué se deja así:** el chequeo de idempotencia de BFF (`_existe_duplicado`, fuente+id_externo) ya rechaza esos reenvíos con 409, así que el impacto real es bajo.
+- **Qué revisar después:** si se vuelve un problema en la práctica, persistir el último `offset` confirmado (archivo o CRUD) para no depender solo de la idempotencia de BFF.
