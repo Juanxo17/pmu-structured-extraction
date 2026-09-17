@@ -1,5 +1,5 @@
 .PHONY: install lint format format-check test test-cov clean \
-	run-bff run-crud run-process run-inference run-geo run-frontend \
+	run-bff run-crud run-process run-inference run-geo run-frontend run-telegram-source \
 	docker-build docker-up docker-down \
 	gga-install gga-setup
 
@@ -61,6 +61,9 @@ run-geo:
 
 run-frontend:
 	uv run --package frontend streamlit run frontend/frontend/streamlit_app.py
+
+run-telegram-source:
+	uv run --package bff python -m bff.telegram_source
 
 docker-build:
 	docker compose build
