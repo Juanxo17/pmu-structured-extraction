@@ -4,7 +4,9 @@ El esquema se crea automaticamente al arrancar el servicio (`create_all`); en
 pruebas se usa SQLite en memoria. La ruta del archivo se configura con la
 variable de entorno `CRUD_DATABASE_PATH` y la ruta por defecto es `data/sirena.db`
 bajo `backend/crud/`. La conexion se abre de forma perezosa (al primer uso), de
-modo que importar el modulo no toca el sistema de archivos.
+modo que importar el modulo no toca el sistema de archivos. Toda la
+configuracion vive en `FabricaSesiones`; no hay estado ni funciones a nivel de
+modulo.
 """
 
 from __future__ import annotations
@@ -18,78 +20,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from crud.repositorio import RepositorioReportes
-
-_ESTADO = {"engine": None, "factory": None}
-
-
-def _engine_global() -> Engine:
-    """Crea una sola vez el engine SQLite global (lazy).
-
-    Returns:
-        El engine listo para crear el esquema y abrir sesiones.
-
-    """
-    if _ESTADO["engine"] is None:
-        ruta = os.environ.get("CRUD_DATABASE_PATH")
-        if ruta:
-            url = f"sqlite:///{ruta}"
-        else:
-            carpeta = Path(__file__).resolve().parent.parent / "data"
-            carpeta.mkdir(parents=True, exist_ok=True)
-            url = f"sqlite:///{(carpeta / 'sirena.db').as_posix()}"
-        _ESTADO["engine"] = create_engine(url, connect_args={"check_same_thread": False})
-    return _ESTADO["engine"]
-
-
-def _factory_global() -> sessionmaker[Session]:
-    """Crea una sola vez el sessionmaker global (lazy).
-
-    Returns:
-        La factory de sesiones vinculada al engine global.
-
-    """
-    if _ESTADO["factory"] is None:
-        _ESTADO["factory"] = sessionmaker(bind=_engine_global(), expire_on_commit=False)
-    return _ESTADO["factory"]
-
-
-def fabrica_sesiones() -> Generator[Session, None, None]:
-    """Generador de sesiones para FastAPI `Depends`.
-
-    Yields:
-        Una sesion con autocommit en la operacion; cierra al terminar la
-        peticion.
-
-    """
-    sesion = _factory_global()()
-    try:
-        yield sesion
-        sesion.commit()
-    except Exception:
-        sesion.rollback()
-        raise
-    finally:
-        sesion.close()
-
-
-def crear_esquema() -> None:
-    """Crea las tablas faltantes (idempotente) sobre el engine global."""
-    from crud.modelo import Base
-
-    Base.metadata.create_all(bind=_engine_global())
-
-
-def repositorio(sesion: Session) -> RepositorioReportes:
-    """Crea un repositorio sobre la sesion de la peticion.
-
-    Args:
-        sesion: Sesion inyectada por `fabrica_sesiones`.
-
-    Returns:
-        Repositorio listo para la peticion.
-
-    """
-    return RepositorioReportes(sesion)
 
 
 class FabricaSesiones:
