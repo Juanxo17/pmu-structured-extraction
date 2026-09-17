@@ -2,7 +2,7 @@
 
 import pytest
 
-from geo.gazetteer import Gazetteer
+from geo.gazetteer import Barrio, Comuna, Gazetteer
 from geo.geocodificador import Geocodificador
 from geo.nominatim import ResultadoExterno, ResolverExterno
 
@@ -23,6 +23,25 @@ class ExternoFalso(ResolverExterno):
 def gazetteer() -> Gazetteer:
     """Gazetteer real con los datos del IDESC."""
     return Gazetteer()
+
+
+class GazetteerFijo:
+    """Gazetteer de prueba que devuelve candidatos prefijados."""
+
+    def __init__(self, barrios: list[Barrio]) -> None:
+        self._barrios = barrios
+
+    def barrios_en_texto(self, texto_norm: str) -> list[Barrio]:
+        return self._barrios
+
+    def comuna(self, codigo: int) -> Comuna:
+        return Comuna(codigo=codigo, lat=3.4, lon=-76.5)
+
+    def comunas_por_numero(self, texto_norm: str) -> list[Comuna]:
+        return []
+
+    def menciona_ciudad(self, texto_norm: str) -> bool:
+        return False
 
 
 class TestResolucionPorGazetteer:
@@ -93,6 +112,32 @@ class TestResolucionPorGazetteer:
         resultado = geocodificador.resolver("choque entre El Vergel y Rodrigo Lara Bonilla")
 
         assert resultado.barrio == "Rodrigo Lara Bonilla"
+
+    def test_desempata_empate_de_longitud_de_forma_determinista(self) -> None:
+        """Candidatos de igual longitud: gana el lexicograficamente menor."""
+        candidatos = [
+            Barrio(
+                codigo=1,
+                nombre="Bombona",
+                comuna_codigo=1,
+                categoria="barrio",
+                lat=3.4,
+                lon=-76.5,
+            ),
+            Barrio(
+                codigo=2,
+                nombre="Alborada",
+                comuna_codigo=2,
+                categoria="barrio",
+                lat=3.45,
+                lon=-76.52,
+            ),
+        ]
+        geocodificador = Geocodificador(GazetteerFijo(candidatos), externo=None)
+
+        resultado = geocodificador.resolver("Bombona Alborada")
+
+        assert resultado.barrio == "Alborada"
 
 
 class TestResolucionPorExterno:

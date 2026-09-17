@@ -141,9 +141,11 @@ class Geocodificador:
     def _elegir_barrio(self, barrios: list[Barrio], texto_norm: str) -> Barrio:
         """Elige el barrio mas especifico y determinista entre los candidatos.
 
-        El nombre mas largo es el mas especifico; si persiste una ambiguedad de
-        comuna (mismo nombre en varias comunas) se prefiere la mencionada en el
-        texto y, en ultima instancia, la de codigo menor.
+        El nombre mas largo es el mas especifico; si dos nombres distintos
+        empatan en longitud, gana el lexicograficamente menor (decidido, nunca
+        aleatorio); si persiste una ambiguedad de comuna (mismo nombre en varias
+        comunas) se prefiere la mencionada en el texto y, en ultima instancia,
+        la de codigo menor.
 
         Args:
             barrios: Candidatos hallados por el gazetteer.
@@ -154,7 +156,7 @@ class Geocodificador:
 
         """
         nombres = {barrio.nombre for barrio in barrios}
-        nombre = max(nombres, key=len)
+        nombre = max(nombres, key=lambda candidato: (len(candidato), candidato))
         candidatos = sorted(
             (barrio for barrio in barrios if barrio.nombre == nombre),
             key=lambda barrio: barrio.comuna_codigo,
