@@ -17,7 +17,7 @@ Proyecto de curso — **Desarrollo de Proyectos de Inteligencia Artificial**, Un
 
 **SIRENA** apoya al Puesto de Mando Unificado (PMU) de Santiago de Cali en la gestión de emergencias, tomando mensajes ciudadanos crudos (hoy, por Telegram) y convirtiéndolos en registros estructurados que un operador humano puede revisar rápidamente: qué tipo de evento es, qué servicio de respuesta se necesita y dónde ocurre.
 
-El sistema nace del reto real que dejó la tragedia del 10 de agosto en Cali: durante una emergencia masiva, los reportes ciudadanos llegan en texto libre, dispersos y sin estructura, lo que hace lento y propenso a errores el trabajo manual de triaje. SIRENA usa un modelo de lenguaje (Llama, vía Groq) en dos etapas — primero decide si un mensaje amerita procesarse, luego extrae qué pasó y dónde — combinado con un resolutor geográfico determinista que nunca inventa una ubicación.
+El sistema nace del reto real que dejó la tragedia del 10 de agosto en Cali: durante una emergencia masiva, los reportes ciudadanos llegan en texto libre, dispersos y sin estructura, lo que hace lento y propenso a errores el trabajo manual de triaje. SIRENA usa un modelo de lenguaje (GPT-OSS 20B vía Groq) en dos etapas — primero decide si un mensaje amerita procesarse, luego extrae qué pasó y dónde — combinado con un resolutor geográfico determinista que nunca inventa una ubicación.
 
 Un principio de diseño gobierna todo el sistema: **SIRENA es un copiloto, nunca un decisor.** Estructura hechos para que un humano decida; nunca valora gravedad, nunca prioriza, nunca despacha recursos por sí mismo. Cada registro se presenta siempre junto al mensaje original (anonimizado) que lo produjo, para que el operador pueda verificar la fuente.
 
@@ -29,7 +29,7 @@ SIRENA está compuesto por 5 microservicios independientes (cada uno con su prop
 |---|---|---|
 | **BFF** | 8000 | Puerta de entrada: recibe mensajes de las fuentes (Telegram), expone la API que consume el Frontend, hace de proxy hacia CRUD |
 | **Process** | 8002 | Orquesta el pipeline: anonimiza, llama a Inference y Geo, detecta posibles duplicados, persiste el resultado |
-| **Inference** | 8003 | Llama al LLM (Groq · Llama 3.1) en dos etapas: compuerta de accionabilidad + extracción estructurada |
+| **Inference** | 8003 | Llama al LLM (Groq · GPT-OSS 20B) en dos etapas: compuerta de accionabilidad + extracción estructurada |
 | **Geo** | 8004 | Resuelve una ubicación en texto libre a barrio/comuna de forma determinista (gazetteer propio + respaldo Nominatim), sin usar el LLM |
 | **CRUD** | 8001 | Único servicio que toca la base de datos (SQLite); persiste y consulta los reportes estructurados |
 | **Frontend** | 8501 | Tablero Streamlit donde el operador humano revisa, filtra y corrige los reportes |
@@ -60,7 +60,7 @@ Un mensaje ciudadano recorre el sistema en varias etapas, con puntos de decisió
 |---|---|
 | Lenguaje y gestor de paquetes | Python 3.12+, [uv](https://docs.astral.sh/uv/) (workspace de 5 servicios + paquete compartido + frontend) |
 | Framework web | FastAPI, Pydantic |
-| Modelo de lenguaje | Llama 3.1 (8B) vía [Groq](https://groq.com/) API |
+| Modelo de lenguaje | GPT-OSS 20B (`openai/gpt-oss-20b`) vía [Groq](https://groq.com/) API |
 | Interfaz de operador | Streamlit |
 | Base de datos | SQLite |
 | Pruebas y calidad | pytest, Ruff (lint + formato), pre-commit |
