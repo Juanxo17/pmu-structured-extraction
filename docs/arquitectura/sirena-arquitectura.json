@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SIRENA — Arquitectura de 5 servicios",
+    "output": "sirena-arquitectura.html",
+    "quality_profile": "showcase",
+    "viewBox": [1360, 600],
+    "views": [
+      {
+        "id": "camino-del-mensaje",
+        "label": "Camino del mensaje",
+        "focus": ["telegram", "bff", "process", "inference", "groq"],
+        "note": "Un mensaje entra por Telegram, BFF dispara el pipeline y Process decide el flujo interno: compuerta y luego extraccion."
+      },
+      {
+        "id": "triaje",
+        "label": "Triaje del operador",
+        "focus": ["operador", "frontend", "bff", "crud", "sqlite"],
+        "note": "El operador consulta y corrige el registro estructurado; Frontend nunca habla con el LLM."
+      },
+      {
+        "id": "resolucion-geografica",
+        "label": "Resolucion geografica",
+        "focus": ["inference", "process", "geo", "crud"],
+        "note": "El LLM solo transcribe ubicacion textual; Geo la resuelve de forma determinista y Process persiste la version completa."
+      }
+    ]
+  },
+  "components": [
+    { "id": "operador", "type": "external", "label": "Operador PMU", "sublabel": "mesa de triaje", "pos": [40, 40], "size": [150, 64] },
+    { "id": "frontend", "type": "frontend", "label": "Frontend", "sublabel": "Streamlit :8501", "pos": [250, 40], "size": [150, 64] },
+    { "id": "mlflow", "type": "external", "label": "MLflow", "sublabel": "evaluaciones", "pos": [1200, 40], "size": [150, 64] },
+    { "id": "telegram", "type": "external", "label": "Ciudadania", "sublabel": "Telegram", "pos": [40, 250], "size": [150, 64] },
+    { "id": "bff", "type": "backend", "label": "BFF", "sublabel": "FastAPI :8000", "tag": "gateway", "pos": [250, 250], "size": [150, 64] },
+    { "id": "process", "type": "backend", "label": "Process", "sublabel": "FastAPI :8002", "tag": "orquestador", "pos": [540, 250], "size": [150, 64] },
+    { "id": "inference", "type": "backend", "label": "Inference", "sublabel": "FastAPI :8003", "tag": "validador + reparador", "pos": [840, 250], "size": [150, 64] },
+    { "id": "groq", "type": "external", "label": "Groq API", "sublabel": "openai/gpt-oss-20b", "pos": [1140, 250], "size": [150, 64] },
+    { "id": "crud", "type": "backend", "label": "CRUD", "sublabel": "FastAPI :8001", "tag": "SQLAlchemy", "pos": [250, 480], "size": [150, 64] },
+    { "id": "sqlite", "type": "database", "label": "SQLite", "sublabel": "sirena.db", "pos": [470, 480], "size": [150, 64] },
+    { "id": "geo", "type": "backend", "label": "Geo", "sublabel": "FastAPI :8004", "tag": "determinista", "pos": [840, 480], "size": [150, 64] }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "5 servicios FastAPI (HTTP/REST, un proceso por servicio)",
+      "wraps": ["bff", "crud", "process", "inference", "geo"]
+    }
+  ],
+  "connections": [
+    { "id": "operador-frontend", "from": "operador", "to": "frontend", "label": "consulta y corrige", "labelAt": [220, 125] },
+    { "id": "frontend-bff", "from": "frontend", "to": "bff", "label": "GET/PATCH /reportes", "labelAt": [325, 177] },
+    { "id": "telegram-bff", "from": "telegram", "to": "bff", "label": "POST /mensajes", "variant": "emphasis", "labelAt": [220, 335] },
+    { "id": "bff-process", "from": "bff", "to": "process", "label": "POST /procesar", "labelAt": [470, 282] },
+    { "id": "bff-crud", "from": "bff", "to": "crud", "label": "proxy /reportes", "fromSide": "bottom", "toSide": "left", "via": [[325, 370], [190, 370], [190, 512]], "labelAt": [255, 370] },
+    { "id": "crud-sqlite", "from": "crud", "to": "sqlite", "label": "SQL", "labelAt": [435, 512] },
+    { "id": "process-inference", "from": "process", "to": "inference", "label": "compuerta y extraccion", "labelAt": [700, 355] },
+    { "id": "inference-groq", "from": "inference", "to": "groq", "label": "HTTPS", "labelAt": [1065, 282] },
+    { "id": "inference-mlflow", "from": "inference", "to": "mlflow", "label": "registro pendiente (T-24)", "variant": "dashed", "fromSide": "top", "toSide": "bottom", "labelAt": [1045, 130] },
+    { "id": "process-geo", "from": "process", "to": "geo", "label": "POST /resolver", "labelAt": [760, 388] },
+    { "id": "process-crud", "from": "process", "to": "crud", "label": "POST /reportes", "fromSide": "bottom", "toSide": "top", "via": [[615, 400], [325, 400]], "labelAt": [470, 425] }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "5 servicios independientes",
+      "items": [
+        "BFF :8000 — gateway unico hacia lo externo (Telegram, Frontend)",
+        "Process :8002 — anonimiza, orquesta, resuelve y persiste",
+        "Inference :8003 — LLM, prompts y validador/reparador",
+        "Geo :8004 — gazetteer determinista, nunca invoca al LLM",
+        "CRUD :8001 — unico componente que toca SQLite"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Contrato central",
+      "items": [
+        "ReporteEstructurado (Pydantic v2) en common/sirena-schema",
+        "tipo_evento y servicio_de_respuesta validados contra config/ontologia.yaml",
+        "Cambiar la ontologia no requiere tocar codigo de los servicios",
+        "UbicacionExtraida es lo unico que produce el LLM: sin barrio, comuna ni coordenadas"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Stack y operacion",
+      "items": [
+        "Workspace de uv con un unico uv.lock en la raiz",
+        "Docker Compose levanta los 5 servicios + Frontend + MLflow",
+        "Make install / lint / test / run-<servicio> / docker-up",
+        "Groq via API remota: sin GPU local ni fine-tuning"
+      ]
+    }
+  ]
+}
