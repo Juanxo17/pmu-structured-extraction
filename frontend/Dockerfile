@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 COPY common/sirena-schema ./common/sirena-schema
+COPY config ./config
 COPY frontend ./frontend
 
 RUN uv sync --package frontend --frozen --no-dev

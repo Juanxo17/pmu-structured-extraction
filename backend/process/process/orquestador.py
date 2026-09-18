@@ -13,6 +13,13 @@ procesando y persistiendo igual; lo unico que cambia es que la respuesta
 puede incluir `motivo=MOTIVO_DUPLICADO` junto al reporte ya guardado -- una
 senal para el operador humano, no una decision automatica de descarte.
 
+"Descarte" no significa "no se guarda": un mensaje descartado se persiste
+igual (con `naturaleza`/`ubicacion` en `None`), solo que la respuesta trae
+`estado="descartado"` en vez de `"estructurado"` -- filtrarlo de la bandeja
+por defecto es responsabilidad del frontend (campo `accionable`), no de
+Process, para que un operador pueda revisar manualmente lo que el modelo
+descarto y detectar falsos negativos.
+
 Motivos de descarte (valores fijos, no texto libre improvisado en cada
 punto del codigo -- asi se puede filtrar o contar descartes por causa):
 - "no_accionable": la compuerta de Inference determino que el mensaje no
@@ -27,6 +34,7 @@ filtrar o contar casos por causa sin depender de texto libre.
 
 import hashlib
 import os
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -155,10 +163,12 @@ async def _persistir_reporte(cliente: httpx.AsyncClient, reporte: dict) -> dict:
 
     Args:
         cliente: Cliente HTTP async reutilizado para todo el pipeline.
-        reporte: ReporteEstructurado sin id ni creado_en (los asigna CRUD).
+        reporte: ReporteEstructurado completo, con `id` (uuid4) y `creado_en`
+            (momento de persistencia) ya asignados por Process -- CRUD no
+            genera estos campos, solo los guarda tal como llegan.
 
     Returns:
-        El JSON de respuesta: el ReporteEstructurado completo, con id y creado_en.
+        El JSON de respuesta: el ReporteEstructurado tal como quedo persistido.
 
     """
     respuesta = await cliente.post(f"{_url_crud()}/reportes", json=reporte)
@@ -184,7 +194,7 @@ def _misma_ubicacion(barrio_nuevo: str | None, candidato: dict) -> bool:
         True si ambos reportes se consideran la misma ubicacion.
 
     """
-    barrio_candidato = candidato["ubicacion"]["barrio"]
+    barrio_candidato = candidato["barrio"]
     if barrio_nuevo is not None and barrio_candidato is not None:
         return barrio_nuevo == barrio_candidato
     return True
@@ -285,22 +295,54 @@ async def procesar_mensaje(
         mensaje se proceso completo (con `"motivo": MOTIVO_DUPLICADO`
         agregado si ademas se detecto un posible duplicado -- el reporte se
         persiste igual, esto es solo una senal para el operador), o
-        `{"estado": "descartado", "motivo": str}` si no era accionable o si
-        Inference no logro validar su extraccion.
+        `{"estado": "descartado", "motivo": str, "reporte": ReporteEstructurado}`
+        si no era accionable o si Inference no logro validar su extraccion.
+        En ambos casos el reporte se persiste: los mensajes no accionables o
+        no estructurables no se filtran aqui, quedan en la bandeja con
+        `naturaleza`/`ubicacion` en `None` (ver
+        `ReporteEstructurado._normalizar_no_accionable`) para que el
+        operador los descarte desde el frontend, que ya filtra por
+        `accionable`.
 
     """
     texto_anonimizado = anonimizar_texto(texto_crudo)
     autor_anonimizado_id = _anonimizar_autor(autor_id_telegram)
 
+    reporte_base = {
+        "id": uuid.uuid4().hex,
+        "fuente": fuente,
+        "id_externo": id_externo,
+        "autor_anonimizado_id": autor_anonimizado_id,
+        "mensaje_anonimizado": texto_anonimizado,
+        "estado_revision": "pendiente",
+        "creado_en": datetime.now(timezone.utc).isoformat(),
+    }
+
     async with httpx.AsyncClient() as cliente:
         compuerta = await _llamar_compuerta(cliente, texto_anonimizado)
 
         if not compuerta["es_reporte_accionable"]:
-            return {"estado": "descartado", "motivo": MOTIVO_NO_ACCIONABLE}
+            reporte_persistido = await _persistir_reporte(
+                cliente,
+                {**reporte_base, "compuerta": compuerta, "naturaleza": None, "ubicacion": None},
+            )
+            return {
+                "estado": "descartado",
+                "motivo": MOTIVO_NO_ACCIONABLE,
+                "reporte": reporte_persistido,
+            }
 
         extraccion = await _llamar_extraccion(cliente, texto_anonimizado)
         if extraccion is None:
-            return {"estado": "descartado", "motivo": MOTIVO_FALLO_VALIDACION_EXTRACCION}
+            reporte_persistido = await _persistir_reporte(
+                cliente,
+                {**reporte_base, "compuerta": compuerta, "naturaleza": None, "ubicacion": None},
+            )
+            return {
+                "estado": "descartado",
+                "motivo": MOTIVO_FALLO_VALIDACION_EXTRACCION,
+                "reporte": reporte_persistido,
+            }
 
         naturaleza = extraccion["naturaleza"]
         ubicacion_extraida = extraccion["ubicacion"]
@@ -325,18 +367,15 @@ async def procesar_mensaje(
             cliente, naturaleza["tipo_evento"], geo["comuna"], geo["barrio"]
         )
 
-        reporte_sin_id = {
-            "fuente": fuente,
-            "id_externo": id_externo,
-            "autor_anonimizado_id": autor_anonimizado_id,
-            "mensaje_anonimizado": texto_anonimizado,
-            "estado_revision": "pendiente",
-            "compuerta": compuerta,
-            "naturaleza": naturaleza,
-            "ubicacion": ubicacion,
-        }
-
-        reporte_persistido = await _persistir_reporte(cliente, reporte_sin_id)
+        reporte_persistido = await _persistir_reporte(
+            cliente,
+            {
+                **reporte_base,
+                "compuerta": compuerta,
+                "naturaleza": naturaleza,
+                "ubicacion": ubicacion,
+            },
+        )
 
     resultado = {"estado": "estructurado", "reporte": reporte_persistido}
     if es_posible_duplicado:

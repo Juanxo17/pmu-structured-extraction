@@ -62,8 +62,15 @@ class TestAnonimizarAutor:
 class TestProcesarMensaje:
     """Pruebas del pipeline completo, con Inference/Geo/CRUD simulados."""
 
-    def test_mensaje_no_accionable_se_descarta(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Si la compuerta dice que no es accionable, se descarta sin llamar a extraccion."""
+    def test_mensaje_no_accionable_se_descarta_pero_se_persiste(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Si la compuerta dice que no es accionable, se descarta sin llamar a extraccion,
+
+        pero el reporte se persiste igual (naturaleza/ubicacion en None) -- el
+        filtro por accionable lo aplica el frontend, no Process.
+        """
+        llamadas_a_crud: list[dict] = []
 
         # Arrange
         async def _compuerta_no_accionable(cliente, texto):  # noqa: ARG001
@@ -76,8 +83,13 @@ class TestProcesarMensaje:
         async def _extraccion_no_deberia_llamarse(cliente, texto):  # noqa: ARG001
             raise AssertionError("no deberia llamarse a extraccion si no es accionable")
 
+        async def _crud_persiste(cliente, reporte):  # noqa: ARG001
+            llamadas_a_crud.append(reporte)
+            return {**reporte, "id": "rep_1", "creado_en": "2026-09-15T10:00:00"}
+
         monkeypatch.setattr(orquestador, "_llamar_compuerta", _compuerta_no_accionable)
         monkeypatch.setattr(orquestador, "_llamar_extraccion", _extraccion_no_deberia_llamarse)
+        monkeypatch.setattr(orquestador, "_persistir_reporte", _crud_persiste)
 
         # Act
         resultado = _ejecutar(
@@ -91,12 +103,21 @@ class TestProcesarMensaje:
         )
 
         # Assert
-        assert resultado == {"estado": "descartado", "motivo": MOTIVO_NO_ACCIONABLE}
+        assert resultado["estado"] == "descartado"
+        assert resultado["motivo"] == MOTIVO_NO_ACCIONABLE
+        assert resultado["reporte"]["id"] == "rep_1"
+        assert len(llamadas_a_crud) == 1
+        assert llamadas_a_crud[0]["naturaleza"] is None
+        assert llamadas_a_crud[0]["ubicacion"] is None
 
-    def test_fallo_de_validacion_en_extraccion_se_descarta(
+    def test_fallo_de_validacion_en_extraccion_se_descarta_pero_se_persiste(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Si Inference agota sus reintentos (422), se descarta con motivo distinto."""
+        """Si Inference agota sus reintentos (422), se descarta con motivo distinto,
+
+        pero tambien se persiste igual que el caso no accionable.
+        """
+        llamadas_a_crud: list[dict] = []
 
         # Arrange
         async def _compuerta_accionable(cliente, texto):  # noqa: ARG001
@@ -109,8 +130,13 @@ class TestProcesarMensaje:
         async def _extraccion_falla_validacion(cliente, texto):  # noqa: ARG001
             return None
 
+        async def _crud_persiste(cliente, reporte):  # noqa: ARG001
+            llamadas_a_crud.append(reporte)
+            return {**reporte, "id": "rep_2", "creado_en": "2026-09-15T10:00:00"}
+
         monkeypatch.setattr(orquestador, "_llamar_compuerta", _compuerta_accionable)
         monkeypatch.setattr(orquestador, "_llamar_extraccion", _extraccion_falla_validacion)
+        monkeypatch.setattr(orquestador, "_persistir_reporte", _crud_persiste)
 
         # Act
         resultado = _ejecutar(
@@ -124,10 +150,12 @@ class TestProcesarMensaje:
         )
 
         # Assert
-        assert resultado == {
-            "estado": "descartado",
-            "motivo": MOTIVO_FALLO_VALIDACION_EXTRACCION,
-        }
+        assert resultado["estado"] == "descartado"
+        assert resultado["motivo"] == MOTIVO_FALLO_VALIDACION_EXTRACCION
+        assert resultado["reporte"]["id"] == "rep_2"
+        assert len(llamadas_a_crud) == 1
+        assert llamadas_a_crud[0]["naturaleza"] is None
+        assert llamadas_a_crud[0]["ubicacion"] is None
 
     def test_mensaje_accionable_se_estructura_y_persiste(
         self, monkeypatch: pytest.MonkeyPatch
@@ -269,7 +297,7 @@ class TestMismaUbicacion:
     def test_mismo_barrio_es_la_misma_ubicacion(self) -> None:
         """Si ambos reportes tienen barrio y coincide, es la misma ubicacion."""
         # Arrange
-        candidato = {"ubicacion": {"barrio": "Siloe"}}
+        candidato = {"barrio": "Siloe"}
 
         # Act / Assert
         assert _misma_ubicacion("Siloe", candidato) is True
@@ -277,7 +305,7 @@ class TestMismaUbicacion:
     def test_barrio_distinto_no_es_la_misma_ubicacion(self) -> None:
         """Si ambos reportes tienen barrio pero es distinto, no coinciden."""
         # Arrange
-        candidato = {"ubicacion": {"barrio": "San Antonio"}}
+        candidato = {"barrio": "San Antonio"}
 
         # Act / Assert
         assert _misma_ubicacion("Siloe", candidato) is False
@@ -285,7 +313,7 @@ class TestMismaUbicacion:
     def test_usa_comuna_como_respaldo_si_al_nuevo_le_falta_barrio(self) -> None:
         """Si el reporte nuevo no tiene barrio resuelto, se confia en la comuna ya filtrada."""
         # Arrange
-        candidato = {"ubicacion": {"barrio": "Siloe"}}
+        candidato = {"barrio": "Siloe"}
 
         # Act / Assert
         assert _misma_ubicacion(None, candidato) is True
@@ -293,7 +321,7 @@ class TestMismaUbicacion:
     def test_usa_comuna_como_respaldo_si_al_candidato_le_falta_barrio(self) -> None:
         """Si el candidato no tiene barrio resuelto, se confia en la comuna ya filtrada."""
         # Arrange
-        candidato = {"ubicacion": {"barrio": None}}
+        candidato = {"barrio": None}
 
         # Act / Assert
         assert _misma_ubicacion("Siloe", candidato) is True
@@ -364,7 +392,7 @@ class TestBuscarPosibleDuplicado:
                     "pagina": 1,
                     "tamano_pagina": 20,
                     "resultados": [
-                        {"ubicacion": {"barrio": "Siloe"}, "creado_en": ahora_iso},
+                        {"barrio": "Siloe", "creado_en": ahora_iso},
                     ],
                 }
 
@@ -398,7 +426,7 @@ class TestBuscarPosibleDuplicado:
                 ahora_iso = datetime.now(timezone.utc).isoformat()
                 return {
                     "resultados": [
-                        {"ubicacion": {"barrio": "San Antonio"}, "creado_en": ahora_iso},
+                        {"barrio": "San Antonio", "creado_en": ahora_iso},
                     ]
                 }
 
@@ -424,7 +452,7 @@ class TestBuscarPosibleDuplicado:
                 hace_una_hora = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
                 return {
                     "resultados": [
-                        {"ubicacion": {"barrio": "Siloe"}, "creado_en": hace_una_hora},
+                        {"barrio": "Siloe", "creado_en": hace_una_hora},
                     ]
                 }
 

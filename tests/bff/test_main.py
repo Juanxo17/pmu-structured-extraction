@@ -1,5 +1,8 @@
 """Pruebas de los endpoints del servicio BFF."""
 
+import asyncio
+
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -319,3 +322,80 @@ class TestCorregirReporte:
 
         # Assert
         assert respuesta.status_code == 422
+
+
+class TestDispararProcesamiento:
+    """Pruebas de `_disparar_procesamiento` (reenvio en segundo plano a Process)."""
+
+    def test_usa_el_timeout_de_procesamiento_y_reenvia_el_contrato(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """El cliente usa el timeout largo y envia los campos que espera Process."""
+
+        # Arrange
+        capturado: dict = {}
+
+        class _ClienteFalso:
+            def __init__(self, timeout: float) -> None:
+                capturado["timeout"] = timeout
+
+            async def __aenter__(self) -> "_ClienteFalso":
+                return self
+
+            async def __aexit__(self, *argumentos: object) -> bool:
+                return False
+
+            async def post(self, url: str, json: dict) -> None:
+                capturado["url"] = url
+                capturado["json"] = json
+
+        monkeypatch.setattr(main.httpx, "AsyncClient", _ClienteFalso)
+        mensaje = main.MensajeEntrante(**MENSAJE_VALIDO)
+
+        # Act
+        asyncio.run(main._disparar_procesamiento(mensaje))
+
+        # Assert
+        assert capturado["timeout"] == main._TIMEOUT_PROCESAMIENTO_SEGUNDOS
+        assert capturado["url"].endswith("/procesar")
+        assert capturado["json"] == {
+            "mensaje_id": "msg_1",
+            "texto_crudo": "Hay un incendio en Siloe",
+            "fuente": "telegram",
+            "id_externo": "msg_1",
+            "autor_id_telegram": "user_1",
+        }
+
+    def test_un_error_http_no_propaga_la_excepcion(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+    ) -> None:
+        """Un fallo al llamar a Process se registra pero no se propaga.
+
+        La tarea corre despues de responder el 202: si la excepcion escapara,
+        nadie la recogeria (el cliente ya tiene su respuesta).
+        """
+
+        # Arrange
+        class _ClienteFalso:
+            def __init__(self, timeout: float) -> None:
+                pass
+
+            async def __aenter__(self) -> "_ClienteFalso":
+                return self
+
+            async def __aexit__(self, *argumentos: object) -> bool:
+                return False
+
+            async def post(self, url: str, json: dict) -> None:
+                raise httpx.ConnectError("Process inalcanzable")
+
+        monkeypatch.setattr(main.httpx, "AsyncClient", _ClienteFalso)
+        mensaje = main.MensajeEntrante(**MENSAJE_VALIDO)
+
+        # Act
+        asyncio.run(main._disparar_procesamiento(mensaje))
+
+        # Assert
+        salida = capsys.readouterr().out
+        assert "msg_1" in salida
+        assert "Process inalcanzable" in salida

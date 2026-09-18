@@ -183,7 +183,7 @@ class TelegramSource(FuenteDeMensajes): ...
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/reportes` | `ReporteEstructurado` (sin `id`/`creado_en`) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
+| `POST` | `/reportes` | `ReporteEstructurado` completo (Process asigna `id` como uuid4 y `creado_en` al momento de persistir) | `201 ReporteEstructurado` | Llamado por Process al final del pipeline |
 | `GET` | `/reportes` | ver filtros abajo | `200 {total, pagina, tamano_pagina, resultados: [...]}` | Llamado por BFF. Devuelve la **versión resumida** (sin `mensaje_anonimizado` ni `punto_referencia`), para que la bandeja cargue rápido |
 | `GET` | `/reportes/{id}` | — | `200 ReporteEstructurado` (completo) \| `404` | Llamado por BFF |
 | `PATCH` | `/reportes/{id}` | `{estado_revision, correccion?}` | `200 ReporteEstructurado` \| `404` \| `422` | Llamado por BFF. `correccion` es un objeto parcial con cualquier campo de `compuerta`/`naturaleza`/`ubicacion` (incl. `ubicacion_texto_literal`). La corrección **siempre re-valida** contra el esquema: ontología fuera de catálogo, sección incompleta o `estado_revision` inválido → `422`. En un reporte no accionable (`naturaleza`/`ubicacion` `None`), la corrección puede **reconstruir** esas secciones si entrega sus campos requeridos (triaje de falsos negativos de la compuerta); marcar `es_reporte_accionable=false` limpia naturaleza/ubicación |
@@ -212,9 +212,11 @@ class TelegramSource(FuenteDeMensajes): ...
 
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
-| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado, motivo?: "duplicado"}` \| `200 {estado: "descartado", motivo: str}` | Orquesta: anonimiza → llama Inference (compuerta, y extracción si aplica) → llama Geo → detección básica de posible duplicado → persiste en CRUD → retorna resultado |
+| `POST` | `/procesar` | `{mensaje_id: str, texto_crudo: str, fuente: str, id_externo: str, autor_id_telegram: str}` | `200 {estado: "estructurado", reporte: ReporteEstructurado, motivo?: "duplicado"}` \| `200 {estado: "descartado", motivo: str, reporte: ReporteEstructurado}` | Orquesta: anonimiza → llama Inference (compuerta, y extracción si aplica) → llama Geo → detección básica de posible duplicado → persiste en CRUD → retorna resultado |
 
 Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invoca este endpoint** (BFF) — Process decide el flujo interno.
+
+**Un mensaje descartado (`no_accionable` o `fallo_validacion_extraccion`) también se persiste** — con `naturaleza`/`ubicacion` en `None` (ver `ReporteEstructurado._normalizar_no_accionable`) — en vez de descartarse sin guardar. Process no filtra: el filtro por `accionable` vive en el frontend, para que un operador humano pueda revisar lo que el modelo descartó y detectar falsos negativos.
 
 **Detección básica de posible duplicado (T-17):** antes de persistir, Process busca en CRUD (`GET /reportes`, filtrando por `tipo_evento` y `comuna`) si ya existe un reporte con el mismo `tipo_evento`, la misma ubicación (mismo `barrio` cuando ambos reportes lo tienen resuelto; `comuna` como respaldo si a alguno le falta) y `creado_en` dentro de una ventana de 15 minutos. **Nunca descarta el mensaje**: reportes distintos de personas distintas sobre el mismo evento real son corroboración, no ruido — el reporte se persiste igual que cualquier otro, y lo único que cambia es que la respuesta incluye `motivo: "duplicado"` junto al reporte guardado, como señal para el operador humano. Se usa `creado_en` (no `marca_temporal_origen`) como aproximación del momento del evento, porque este contrato no incluye hoy la hora original del mensaje del ciudadano.
 
