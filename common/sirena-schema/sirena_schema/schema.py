@@ -62,8 +62,20 @@ class Naturaleza(BaseModel):
         return v
 
 
+class UbicacionExtraida(BaseModel):
+    """Capa 3 (extraccion): ubicacion tal como la nombra el mensaje.
+
+    Solo contiene texto: la resolucion a barrio, comuna, nivel de granularidad
+    y coordenadas la hace Geo de forma determinista. El modelo nunca geocodifica
+    ni decide territorio.
+    """
+
+    ubicacion_texto_literal: str
+    punto_referencia: str | None = None
+
+
 class Ubicacion(BaseModel):
-    """Capa 3: ubicacion extraida y su resolucion geografica."""
+    """Capa 3 (resuelta): ubicacion con la resolucion geografica de Geo."""
 
     ubicacion_texto_literal: str
     barrio: str | None

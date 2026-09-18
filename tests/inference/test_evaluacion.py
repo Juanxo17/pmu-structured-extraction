@@ -1,0 +1,408 @@
+"""Pruebas del evaluador de prompts con un proveedor sin red."""
+
+import json
+
+import pytest
+
+from inference.evaluacion import (
+    EvaluacionEjemplo,
+    EvaluadorPrompts,
+    EjemploGold,
+    cargar_corpus,
+    generar_informe,
+    metricas_por_campo,
+)
+from inference.servicio import ServicioInferencia
+from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
+
+
+class ProveedorProgramado:
+    """Proveedor sin red con respuestas JSON segun la etapa del prompt.
+
+    Detecta la etapa por el texto de sistema ("extractor" identifica la
+    extraccion) y agota primero las respuestas de la cola de cada etapa.
+
+    Attributes:
+        compuertas: Respuestas de la etapa de compuerta.
+        extracciones: Respuestas de la etapa de extraccion.
+
+    """
+
+    def __init__(self, compuertas: list[str], extracciones: list[str] | None = None) -> None:
+        """Guarda las respuestas preprogramadas de cada etapa.
+
+        Args:
+            compuertas: Respuestas crudas de la compuerta, en orden.
+            extracciones: Respuestas crudas de la extraccion, en orden.
+
+        """
+        self.compuertas = compuertas
+        self.extracciones = list(extracciones or [])
+
+    def completar(self, sistema: str, usuario: str) -> str:
+        """Devuelve la siguiente respuesta de la etapa correspondiente.
+
+        Args:
+            sistema: Instrucciones de sistema de la etapa.
+            usuario: Mensaje de usuario (se ignora en la prueba).
+
+        Returns:
+            Ultima respuesta programada de la etapa o la siguiente de la cola.
+
+        """
+        cola = self.extracciones if "extractor" in sistema else self.compuertas
+        if len(cola) > 1:
+            return cola.pop(0)
+        return cola[0]
+
+
+COMPUERTA_ACCIONABLE = (
+    '{"es_reporte_accionable": true, "temporalidad": "ocurriendo_ahora", '
+    '"intencion": "solicita_ayuda"}'
+)
+COMPUERTA_NO_ACCIONABLE = (
+    '{"es_reporte_accionable": false, '
+    '"temporalidad": "referencia_noticia", '
+    '"intencion": "solicita_informacion"}'
+)
+EXTRACCION_SISMO = (
+    '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": ["A"]}, '
+    '"ubicacion": {"ubicacion_texto_literal": "Calle 5", '
+    '"punto_referencia": null}}'
+)
+EXTRACCION_INCENDIO = (
+    '{"naturaleza": {"tipo_evento": "incendio_estructural", '
+    '"servicio_de_respuesta": ["B", "G"]}, "ubicacion": '
+    '{"ubicacion_texto_literal": "Calle 1", "punto_referencia": "Parque"}}'
+)
+
+
+def _ejemplo_sismo() -> EjemploGold:
+    """Construye un ejemplo gold accionable de tipo sismo.
+
+    Returns:
+        Ejemplo gold con naturaleza y ubicacion completas.
+
+    """
+    return EjemploGold(
+        texto="temblor en el centro, me estoy quedando sin oxigeno",
+        compuerta=Compuerta.model_validate(
+            {
+                "es_reporte_accionable": True,
+                "temporalidad": "ocurriendo_ahora",
+                "intencion": "solicita_ayuda",
+            }
+        ),
+        naturaleza=Naturaleza.model_validate(
+            {
+                "tipo_evento": "sismo",
+                "servicio_de_respuesta": ["A"],
+            }
+        ),
+        ubicacion=Ubicacion.model_validate(
+            {
+                "ubicacion_texto_literal": "Calle 5",
+                "barrio": "Centro",
+                "comuna": "3",
+                "punto_referencia": "Plaza de Caycedo",
+                "nivel_granularidad": "exacta",
+                "lat": None,
+                "lon": None,
+            }
+        ),
+    )
+
+
+def _ejemplo_incendio() -> EjemploGold:
+    """Construye un ejemplo gold accionable de incendio.
+
+    Returns:
+        Ejemplo gold con naturaleza y ubicacion completas.
+
+    """
+    return EjemploGold(
+        texto="se quema una casa en el penon",
+        compuerta=Compuerta.model_validate(
+            {
+                "es_reporte_accionable": False,
+                "temporalidad": "ya_ocurrio",
+                "intencion": "reporta_terceros",
+            }
+        ),
+        naturaleza=Naturaleza.model_validate(
+            {
+                "tipo_evento": "incendio_estructural",
+                "servicio_de_respuesta": ["B", "G"],
+            }
+        ),
+        ubicacion=Ubicacion.model_validate(
+            {
+                "ubicacion_texto_literal": "Calle 1",
+                "barrio": "El Pefion",
+                "comuna": "7",
+                "punto_referencia": "Parque",
+                "nivel_granularidad": "barrio",
+                "lat": None,
+                "lon": None,
+            }
+        ),
+    )
+
+
+def _ejemplo_noticia() -> EjemploGold:
+    """Construye un ejemplo gold no accionable.
+
+    Returns:
+        Ejemplo gold sin naturaleza ni ubicacion.
+
+    """
+    return EjemploGold(
+        texto="vi en las noticias una alerta del clima",
+        compuerta=Compuerta.model_validate(
+            {
+                "es_reporte_accionable": False,
+                "temporalidad": "referencia_noticia",
+                "intencion": "solicita_informacion",
+            }
+        ),
+    )
+
+
+class TestCargarCorpus:
+    """Pruebas de cargar_corpus."""
+
+    def test_lee_ejemplos_jsonl_con_gold(self, tmp_path) -> None:
+        """Construye EjemploGold a partir de las lineas del corpus."""
+        # Arrange
+        ruta = tmp_path / "corpus.jsonl"
+        ruta.write_text(
+            json.dumps(
+                {
+                    "texto": "temblor en el centro",
+                    "compuerta": {
+                        "es_reporte_accionable": True,
+                        "temporalidad": "ocurriendo_ahora",
+                        "intencion": "solicita_ayuda",
+                    },
+                    "naturaleza": {
+                        "tipo_evento": "sismo",
+                        "servicio_de_respuesta": ["A"],
+                    },
+                    "ubicacion": {
+                        "ubicacion_texto_literal": "Calle 5",
+                        "barrio": "Centro",
+                        "comuna": "3",
+                        "punto_referencia": None,
+                        "nivel_granularidad": "exacta",
+                        "lat": None,
+                        "lon": None,
+                    },
+                }
+            )
+            + "\n"
+            + json.dumps(
+                {
+                    "texto": "vi una noticia",
+                    "compuerta": {
+                        "es_reporte_accionable": False,
+                        "temporalidad": "referencia_noticia",
+                        "intencion": "solicita_informacion",
+                    },
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        # Act
+        ejemplos = cargar_corpus(ruta)
+
+        # Assert
+        assert len(ejemplos) == 2
+        assert ejemplos[0].naturaleza is not None
+        assert ejemplos[0].ubicacion is not None
+        assert ejemplos[0].ubicacion.barrio == "Centro"
+        assert ejemplos[1].naturaleza is None
+        assert ejemplos[1].ubicacion is None
+
+    def test_salta_lineas_vacias(self, tmp_path) -> None:
+        """Ignora lineas en blanco del archivo del corpus."""
+        # Arrange
+        ruta = tmp_path / "corpus.jsonl"
+        ruta.write_text(
+            json.dumps(
+                {
+                    "texto": "temblor",
+                    "compuerta": {
+                        "es_reporte_accionable": True,
+                        "temporalidad": "ocurriendo_ahora",
+                        "intencion": "solicita_ayuda",
+                    },
+                }
+            )
+            + "\n\n",
+            encoding="utf-8",
+        )
+
+        # Act
+        ejemplos = cargar_corpus(ruta)
+
+        # Assert
+        assert len(ejemplos) == 1
+
+    def test_ruta_inexistente_levanta_error(self, tmp_path) -> None:
+        """Falla con FileNotFoundError cuando no existe el archivo."""
+        # Arrange & Act & Assert
+        with pytest.raises(FileNotFoundError):
+            cargar_corpus(tmp_path / "no_existe.jsonl")
+
+    def test_linea_invalida_levanta_error(self, tmp_path) -> None:
+        """Propaga el error de decodificado de una linea corrupta."""
+        # Arrange
+        ruta = tmp_path / "corpus.jsonl"
+        ruta.write_text("{no valido}\n", encoding="utf-8")
+
+        # Act & Assert
+        with pytest.raises(json.JSONDecodeError):
+            cargar_corpus(ruta)
+
+
+class TestEvaluadorPrompts:
+    """Pruebas de EvaluadorPrompts.evaluar."""
+
+    def test_evalua_accionables_y_no_accionables(self) -> None:
+        """Procesa cada ejemplo y respeta la etapa de compuerta."""
+        # Arrange
+        proveedor = ProveedorProgramado(
+            compuertas=[
+                COMPUERTA_ACCIONABLE,
+                COMPUERTA_NO_ACCIONABLE,
+                COMPUERTA_NO_ACCIONABLE,
+            ],
+            extracciones=[EXTRACCION_SISMO],
+        )
+        evaluador = EvaluadorPrompts(ServicioInferencia(proveedor))
+
+        # Act
+        resultados = evaluador.evaluar([_ejemplo_sismo(), _ejemplo_incendio(), _ejemplo_noticia()])
+
+        # Assert
+        assert len(resultados) == 3
+        assert resultados[0].error is None
+        assert resultados[0].compuerta is not None
+        assert resultados[0].naturaleza is not None
+        assert resultados[0].ubicacion is not None
+        assert resultados[1].naturaleza is None  # no accionable en la etapa 1
+        assert resultados[2].naturaleza is None
+
+    def test_registra_rechazo_de_validacion(self) -> None:
+        """Captura el rechazo del esquema como error del ejemplo."""
+        # Arrange
+        proveedor = ProveedorProgramado(compuertas=['{"es_reporte_accionable": "si"}'])
+        evaluador = EvaluadorPrompts(ServicioInferencia(proveedor))
+
+        # Act
+        resultados = evaluador.evaluar([_ejemplo_sismo()])
+
+        # Assert
+        assert resultados[0].error is not None
+        assert "compuerta" in resultados[0].error
+
+
+class TestMetricas:
+    """Pruebas de metricas_por_campo."""
+
+    def test_corrida_perfecta_da_exactitud_y_f1_plenos(self) -> None:
+        """Un desempeno identico al gold alcanza 1.0 en todo campo."""
+        # Arrange
+        gold = _ejemplo_sismo()
+        resultado = EvaluacionEjemplo(
+            texto=gold.texto,
+            compuerta=gold.compuerta,
+            naturaleza=gold.naturaleza,
+            ubicacion=gold.ubicacion,
+            latencia_ms=100.0,
+        )
+
+        # Act
+        metricas = metricas_por_campo([gold], [resultado])
+
+        # Assert
+        for campo in metricas.campos:
+            assert campo.exactitud == 1.0
+            assert campo.f1 == 1.0
+        assert metricas.errores_validacion == 0
+
+    def test_f1_parcial_en_servicio_de_respuesta(self) -> None:
+        """Un servicio faltante baja el F1 sin anular la exactitud del resto."""
+        # Arrange
+        gold = _ejemplo_incendio()
+        resultado = EvaluacionEjemplo(
+            texto=gold.texto,
+            compuerta=gold.compuerta,
+            naturaleza=Naturaleza.model_validate(
+                {
+                    "tipo_evento": "incendio_estructural",
+                    "servicio_de_respuesta": ["B"],
+                }
+            ),
+            ubicacion=gold.ubicacion,
+        )
+
+        # Act
+        metricas = metricas_por_campo([gold], [resultado])
+
+        # Assert
+        servicios = next(
+            campo for campo in metricas.campos if campo.campo == "servicio_de_respuesta"
+        )
+        assert servicios.exactitud == 0.0
+        assert servicios.f1 == pytest.approx(2 / 3)
+
+    def test_gold_sin_campo_no_penaliza(self) -> None:
+        """Los campos opcionales sin gold no se evaluan."""
+        # Arrange
+        gold = _ejemplo_noticia()
+        resultado = EvaluacionEjemplo(texto=gold.texto, compuerta=gold.compuerta)
+
+        # Act
+        metricas = metricas_por_campo([gold], [resultado])
+
+        # Assert
+        tipo_evento = next(campo for campo in metricas.campos if campo.campo == "tipo_evento")
+        assert tipo_evento.evaluados == 0
+
+
+class TestGenerarInforme:
+    """Pruebas de generar_informe."""
+
+    def test_escribe_informe_con_metricas(self, tmp_path) -> None:
+        """Genera el archivo Markdown con las secciones esperadas."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=50.0)
+        metricas = metricas_por_campo([_ejemplo_noticia()], [resultado])
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(metricas, [resultado], ruta)
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "## Metricas por campo" in contenido
+        assert "## Latencia" in contenido
+        assert "| Campo | Evaluados | Exactitud | F1 |" in contenido
+
+    def test_incluye_ejemplos_con_error(self, tmp_path) -> None:
+        """Lista la seccion de errores cuando hay rechazos."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", error="salida invalida", latencia_ms=10.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(metricas, [resultado], ruta)
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "## Ejemplos con error" in contenido
+        assert "'temblor': salida invalida" in contenido

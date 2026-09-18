@@ -109,6 +109,11 @@ Vocabulario vigente hoy en `config/ontologia.yaml` (Anexo C, fuente: ERE de Cali
 Un mensaje puede salirse de esta tabla — es guía para anotadores, no una regla de validación del esquema.
 
 ```python
+class UbicacionExtraida(BaseModel):
+    ubicacion_texto_literal: str
+    punto_referencia: str | None = None
+
+
 class Ubicacion(BaseModel):
     ubicacion_texto_literal: str
     barrio: str | None
@@ -131,6 +136,8 @@ class ReporteEstructurado(BaseModel):
     ubicacion: Ubicacion | None  # None si es_reporte_accionable = False
     creado_en: datetime
 ```
+
+`UbicacionExtraida` es lo único que produce la etapa de extracción de Inference: el LLM transcribe el texto y los puntos de referencia del mensaje, y nunca decide barrio, comuna, nivel de granularidad ni coordenadas (`Principio III`). `Ubicacion` es la versión completa que arma Process con la respuesta de Geo y la que persiste CRUD.
 
 `pii_removida` no se persiste ni viaja en el esquema.
 
@@ -216,7 +223,7 @@ Las llamadas 1/2 a Inference y la llamada a Geo son **invisibles para quien invo
 | Método | Ruta | Request | Response | Descripción |
 |---|---|---|---|---|
 | `POST` | `/compuerta` | `{texto: str}` | `200 Compuerta` | Llamada 1 — clasifica si el mensaje es accionable |
-| `POST` | `/extraccion` | `{texto: str}` | `200 {naturaleza: Naturaleza, ubicacion: Ubicacion}` | Llamada 2 — solo se invoca si `compuerta.es_reporte_accionable = true` |
+| `POST` | `/extraccion` | `{texto: str}` | `200 {naturaleza: Naturaleza, ubicacion: UbicacionExtraida}` | Llamada 2 — solo se invoca si `compuerta.es_reporte_accionable = true` |
 
 Internamente incluye el validador/reparador (T-13): si la salida cruda del modelo no conforma al esquema, reintenta (máx. 3) antes de responder; si tras los reintentos sigue sin conformar, responde `422` con el detalle del rechazo.
 
