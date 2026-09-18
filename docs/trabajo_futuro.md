@@ -70,7 +70,7 @@ Se escribe a partir de una revisión del repositorio del 2026-09-17. El objetivo
 ### 9. Cobertura de pruebas
 
 - **Origen:** `AGENTS.md` §Pruebas ("mínimo 120 pruebas unitarias").
-- **Estado:** la suite colecciona 84 pruebas. Falta cubrir el registro en MLflow (parámetros, métricas, artefactos, tags y el modo "sin `MLFLOW_TRACKING_URI`").
+- **Estado:** la suite colecciona 322 pruebas (por encima del mínimo de 120 exigido en `AGENTS.md`). Falta cubrir el registro en MLflow (parámetros, métricas, artefactos, tags y el modo "sin `MLFLOW_TRACKING_URI`").
 
 ## Contradicciones por resolver antes de implementar
 
