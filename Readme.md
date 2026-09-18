@@ -36,7 +36,7 @@ SIRENA está compuesto por 5 microservicios independientes (cada uno con su prop
 
 Cada servicio habla con los demás únicamente por HTTP, usando URLs inyectadas por variable de entorno — nunca hardcodeadas — lo que permite reemplazar cualquier servicio real por un mock durante el desarrollo sin tocar el código de quien lo consume.
 
-> 🚧 *Diagrama de arquitectura pendiente — el equipo está definiendo la herramienta para generarlo (posiblemente Archify). Se agrega aquí en cuanto esté listo.*
+![Arquitectura de SIRENA: 5 servicios FastAPI y el camino de un mensaje de punta a punta](docs/arquitectura/sirena-arquitectura.svg)
 
 ## Flujo de un mensaje, de punta a punta
 
@@ -129,8 +129,9 @@ pmu-structured-extraction/
 ├── frontend/           # Tablero Streamlit del operador
 ├── tests/             # Pruebas unitarias, un directorio por servicio
 ├── docs/
+│   ├── arquitectura/      # Diagrama de arquitectura de los 5 servicios (este README)
 │   ├── CONTRATOS_SISTEMA.md   # Contrato HTTP de cada endpoint
-│   ├── diagramas/         # Diagramas de arquitectura y flujo (este README)
+│   ├── diagramas/         # Diagrama de flujo de un mensaje (este README)
 │   └── propuesta/         # Propuesta formal del proyecto
 ├── eval-prompt/          # Corpus, anotación y evaluación del modelo
 ├── config/ontologia.yaml    # Taxonomía de tipo_evento / servicio_de_respuesta (ERE de Cali)
