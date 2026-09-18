@@ -121,6 +121,19 @@ class TestConsultasPrompts:
         assert prompt.count("Mensaje:") >= 3
         assert prompt.count("Salida:") >= 3
 
+    def test_sistema_extraccion_no_pide_campos_geograficos(self) -> None:
+        """El prompt solo pide ubicacion textual, no territorio ni coordenadas."""
+        # Act
+        prompt = prompts.sistema_extraccion()
+
+        # Assert
+        assert '"punto_referencia"' in prompt
+        assert '"barrio"' not in prompt
+        assert '"comuna"' not in prompt
+        assert '"nivel_granularidad"' not in prompt
+        assert '"lat"' not in prompt
+        assert '"lon"' not in prompt
+
 
 class TestVersionadoPrompts:
     """Pruebas del versionado de los prompts."""

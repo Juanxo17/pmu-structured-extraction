@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
+from sirena_schema.schema import Compuerta, Naturaleza, UbicacionExtraida
 
 from inference.proveedor import ProveedorGroq, ProveedorLLM
 from inference.servicio import ServicioInferencia
@@ -34,12 +34,12 @@ class ExtraccionResultado(BaseModel):
 
     Attributes:
         naturaleza: Naturaleza validada del evento.
-        ubicacion: Ubicacion validada del evento.
+        ubicacion: Ubicacion textual validada del evento.
 
     """
 
     naturaleza: Naturaleza
-    ubicacion: Ubicacion
+    ubicacion: UbicacionExtraida
 
 
 def obtener_proveedor() -> ProveedorLLM:

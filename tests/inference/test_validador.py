@@ -3,6 +3,7 @@
 import pytest
 
 from inference.validador import RechazoSalida, validar_compuerta, validar_extraccion
+from sirena_schema.schema import UbicacionExtraida
 
 COMPUERTA_VALIDA = (
     '{"es_reporte_accionable": true, "temporalidad": "ocurriendo_ahora", '
@@ -11,9 +12,8 @@ COMPUERTA_VALIDA = (
 
 EXTRACCION_VALIDA = (
     '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": ["A", "G"]}, '
-    '"ubicacion": {"ubicacion_texto_literal": "Calle 5 con 10", "barrio": "Centro", '
-    '"comuna": "3", "punto_referencia": null, "nivel_granularidad": "exacta", '
-    '"lat": null, "lon": null}}'
+    '"ubicacion": {"ubicacion_texto_literal": "Calle 5 con 10", '
+    '"punto_referencia": "Parque Central"}}'
 )
 
 
@@ -89,8 +89,30 @@ class TestValidarExtraccion:
         # Assert
         assert naturaleza.tipo_evento == "sismo"
         assert naturaleza.servicio_de_respuesta == ["A", "G"]
-        assert ubicacion.barrio == "Centro"
-        assert ubicacion.nivel_granularidad == "exacta"
+        assert isinstance(ubicacion, UbicacionExtraida)
+        assert ubicacion.ubicacion_texto_literal == "Calle 5 con 10"
+        assert ubicacion.punto_referencia == "Parque Central"
+
+    def test_no_expone_campos_geograficos(self) -> None:
+        """Descarta barrio, comuna, granularidad y coordenadas del modelo."""
+        # Arrange
+        crudo = (
+            '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": ["A"]}, '
+            '"ubicacion": {"ubicacion_texto_literal": "Calle 5 con 10", '
+            '"barrio": "Centro", "comuna": "3", "punto_referencia": null, '
+            '"nivel_granularidad": "exacta", "lat": 3.4, "lon": -76.5}}'
+        )
+
+        # Act
+        _, ubicacion = validar_extraccion(crudo)
+
+        # Assert
+        assert isinstance(ubicacion, UbicacionExtraida)
+        assert not hasattr(ubicacion, "barrio")
+        assert not hasattr(ubicacion, "comuna")
+        assert not hasattr(ubicacion, "nivel_granularidad")
+        assert not hasattr(ubicacion, "lat")
+        assert not hasattr(ubicacion, "lon")
 
     def test_rechaza_falta_de_bloque(self) -> None:
         """Lanza RechazoSalida cuando falta el bloque naturaleza."""
@@ -116,9 +138,8 @@ class TestValidarExtraccion:
         crudo = (
             '{"naturaleza": {"tipo_evento": "terremoto_apocalipsis", '
             '"servicio_de_respuesta": ["A"]}, '
-            '"ubicacion": {"ubicacion_texto_literal": "Centro", "barrio": null, '
-            '"comuna": null, "punto_referencia": null, '
-            '"nivel_granularidad": "indeterminada", "lat": null, "lon": null}}'
+            '"ubicacion": {"ubicacion_texto_literal": "Centro", '
+            '"punto_referencia": null}}'
         )
 
         # Act / Assert

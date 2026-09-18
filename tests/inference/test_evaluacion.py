@@ -67,16 +67,13 @@ COMPUERTA_NO_ACCIONABLE = (
 )
 EXTRACCION_SISMO = (
     '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": ["A"]}, '
-    '"ubicacion": {"ubicacion_texto_literal": "Calle 5", "barrio": "Centro", '
-    '"comuna": "3", "punto_referencia": null, "nivel_granularidad": "exacta", '
-    '"lat": null, "lon": null}}'
+    '"ubicacion": {"ubicacion_texto_literal": "Calle 5", '
+    '"punto_referencia": null}}'
 )
 EXTRACCION_INCENDIO = (
     '{"naturaleza": {"tipo_evento": "incendio_estructural", '
     '"servicio_de_respuesta": ["B", "G"]}, "ubicacion": '
-    '{"ubicacion_texto_literal": "Calle 1", "barrio": "El Pefion", '
-    '"comuna": "7", "punto_referencia": "Parque", '
-    '"nivel_granularidad": "aproximada", "lat": null, "lon": null}}'
+    '{"ubicacion_texto_literal": "Calle 1", "punto_referencia": "Parque"}}'
 )
 
 

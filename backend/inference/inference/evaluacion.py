@@ -24,17 +24,11 @@ from typing import Sequence
 from inference.proveedor import ProveedorGroq
 from inference.servicio import ServicioInferencia
 from inference.validador import RechazoSalida
-from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
+from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion, UbicacionExtraida
 
 CAMPOS_COMPUERTA = ("es_reporte_accionable", "temporalidad", "intencion")
 CAMPOS_NATURALEZA = ("tipo_evento", "servicio_de_respuesta")
-CAMPOS_UBICACION = (
-    "ubicacion_texto_literal",
-    "barrio",
-    "comuna",
-    "punto_referencia",
-    "nivel_granularidad",
-)
+CAMPOS_UBICACION = ("ubicacion_texto_literal", "punto_referencia")
 CAMPOS_EVALUADOS = CAMPOS_COMPUERTA + CAMPOS_NATURALEZA + CAMPOS_UBICACION
 
 
@@ -94,7 +88,7 @@ class EvaluacionEjemplo:
         texto: Mensaje ciudadano evaluado.
         compuerta: Compuerta predicha, si no hubo error.
         naturaleza: Naturaleza predicha, si el mensaje es accionable.
-        ubicacion: Ubicacion predicha, si el mensaje es accionable.
+        ubicacion: Ubicacion textual predicha, si el mensaje es accionable.
         error: Detalle del rechazo de validacion, si ocurrio.
         latencia_ms: Tiempo total de la evaluacion en milisegundos.
 
@@ -103,7 +97,7 @@ class EvaluacionEjemplo:
     texto: str
     compuerta: Compuerta | None = None
     naturaleza: Naturaleza | None = None
-    ubicacion: Ubicacion | None = None
+    ubicacion: UbicacionExtraida | None = None
     error: str | None = None
     latencia_ms: float = 0.0
 
@@ -216,7 +210,7 @@ class EvaluadorPrompts:
         try:
             compuerta = self._servicio.clasificar(ejemplo.texto)
             naturaleza: Naturaleza | None = None
-            ubicacion: Ubicacion | None = None
+            ubicacion: UbicacionExtraida | None = None
             if compuerta.es_reporte_accionable:
                 naturaleza, ubicacion = self._servicio.extraer(ejemplo.texto)
         except RechazoSalida as error:

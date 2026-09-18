@@ -100,6 +100,8 @@ class TestExtraccionEndpoint:
             cuerpo = respuesta.json()
             assert cuerpo["naturaleza"]["tipo_evento"] == "sismo"
             assert "ubicacion" in cuerpo
+            assert "ubicacion_texto_literal" in cuerpo["ubicacion"]
+            assert "barrio" not in cuerpo["ubicacion"]
         finally:
             app.dependency_overrides.clear()
 

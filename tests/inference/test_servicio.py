@@ -6,7 +6,7 @@ import pytest
 
 from inference.servicio import ServicioInferencia
 from inference.validador import RechazoSalida
-from sirena_schema.schema import Compuerta, Ubicacion
+from sirena_schema.schema import Compuerta, UbicacionExtraida
 
 
 class ProveedorFalso:
@@ -52,9 +52,8 @@ COMPUERTA_OK = (
 COMPUERTA_MALA = '{"es_reporte_accionable": "si"}'
 EXTRACCION_OK = (
     '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": ["A"]}, '
-    '"ubicacion": {"ubicacion_texto_literal": "Calle 5", "barrio": "Centro", '
-    '"comuna": "3", "punto_referencia": null, "nivel_granularidad": "exacta", '
-    '"lat": null, "lon": null}}'
+    '"ubicacion": {"ubicacion_texto_literal": "Calle 5", '
+    '"punto_referencia": "Parque Central"}}'
 )
 
 
@@ -103,7 +102,7 @@ class TestExtraer:
     """Pruebas de ServicioInferencia.extraer."""
 
     def test_retorna_naturaleza_y_ubicacion(self) -> None:
-        """Devuelve Naturaleza y Ubicacion cuando la salida es conforme."""
+        """Devuelve Naturaleza y Ubicacion textual cuando la salida es conforme."""
         # Arrange
         proveedor = ProveedorFalso(EXTRACCION_OK)
         servicio = ServicioInferencia(proveedor)
@@ -113,7 +112,8 @@ class TestExtraer:
 
         # Assert
         assert naturaleza.tipo_evento == "sismo"
-        assert isinstance(ubicacion, Ubicacion)
+        assert isinstance(ubicacion, UbicacionExtraida)
+        assert ubicacion.punto_referencia == "Parque Central"
 
     def test_agota_intentos_y_lanza_rechazo(self) -> None:
         """Lanza RechazoSalida cuando ninguna salida conforma."""

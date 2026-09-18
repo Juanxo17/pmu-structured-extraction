@@ -10,7 +10,7 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
+from sirena_schema.schema import Compuerta, Naturaleza, UbicacionExtraida
 
 _Modelo = TypeVar("_Modelo", bound=BaseModel)
 
@@ -104,14 +104,14 @@ def validar_compuerta(texto: str) -> Compuerta:
     return _validar(Compuerta, datos)
 
 
-def validar_extraccion(texto: str) -> tuple[Naturaleza, Ubicacion]:
+def validar_extraccion(texto: str) -> tuple[Naturaleza, UbicacionExtraida]:
     """Valida la salida cruda de la etapa de extraccion.
 
     Args:
         texto: Salida cruda del modelo.
 
     Returns:
-        Tupla con la Naturaleza y la Ubicacion validadas.
+        Tupla con la Naturaleza y la UbicacionExtraida validadas.
 
     Raises:
         RechazoSalida: Si la salida no conforma al esquema o no es JSON.
@@ -126,5 +126,5 @@ def validar_extraccion(texto: str) -> tuple[Naturaleza, Ubicacion]:
     if not isinstance(naturaleza, dict) or not isinstance(ubicacion, dict):
         raise RechazoSalida("Los bloques naturaleza y ubicacion deben ser objetos JSON")
     naturaleza_valida = _validar(Naturaleza, naturaleza)
-    ubicacion_valida = _validar(Ubicacion, ubicacion)
+    ubicacion_valida = _validar(UbicacionExtraida, ubicacion)
     return naturaleza_valida, ubicacion_valida

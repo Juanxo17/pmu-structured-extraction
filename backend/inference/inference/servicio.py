@@ -9,7 +9,7 @@ modelo con el detalle del rechazo para que corrija la respuesta.
 import logging
 from typing import Protocol
 
-from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
+from sirena_schema.schema import Compuerta, Naturaleza, UbicacionExtraida
 
 from inference.prompts import sistema_compuerta, sistema_extraccion
 from inference.validador import RechazoSalida, validar_compuerta, validar_extraccion
@@ -92,14 +92,14 @@ class ServicioInferencia:
             f"La salida de compuerta no conforma al esquema tras {self.intentos_maximos} intentos"
         )
 
-    def extraer(self, texto: str) -> tuple[Naturaleza, Ubicacion]:
+    def extraer(self, texto: str) -> tuple[Naturaleza, UbicacionExtraida]:
         """Aplica la etapa de extraccion sobre un texto de reporte.
 
         Args:
             texto: Texto crudo del mensaje ciudadano.
 
         Returns:
-            Tupla con la Naturaleza y la Ubicacion validadas.
+            Tupla con la Naturaleza y la UbicacionExtraida validadas.
 
         Raises:
             RechazoSalida: Si ninguna salida del proveedor conforma al

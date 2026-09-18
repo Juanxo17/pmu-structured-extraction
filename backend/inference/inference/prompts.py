@@ -9,7 +9,7 @@ from typing import get_args
 from sirena_schema.ontologia import ONTOLOGIA
 from sirena_schema.schema import Compuerta
 
-VERSION_PROMPTS = "1.0"
+VERSION_PROMPTS = "1.1"
 
 _NOMBRES_SERVICIO = {
     "A": "Busqueda y Rescate",
@@ -56,23 +56,20 @@ _EJEMPLOS_EXTRACCION = (
         '{"naturaleza": {"tipo_evento": "incendio_cobertura_vegetal", '
         '"servicio_de_respuesta": ["B", "A"]}, "ubicacion": '
         '{"ubicacion_texto_literal": "lote en el barrio El Poblado, cerca del '
-        'parque central", "barrio": "El Poblado", "comuna": null, '
-        '"punto_referencia": "parque central", "nivel_granularidad": "barrio"}}',
+        'parque central", "punto_referencia": "parque central"}}',
     ),
     (
         "Deslizamiento de tierra en la via Cali-Yumbo, sector de la Buitrera; la via quedo tapada.",
         '{"naturaleza": {"tipo_evento": "movimiento_en_masa", '
         '"servicio_de_respuesta": ["A", "F"]}, "ubicacion": '
         '{"ubicacion_texto_literal": "via Cali-Yumbo, sector de la Buitrera", '
-        '"barrio": null, "comuna": null, "punto_referencia": "sector de la '
-        'Buitrera", "nivel_granularidad": "ciudad"}}',
+        '"punto_referencia": "sector de la Buitrera"}}',
     ),
     (
         "Se sintio un fuerte sismo en el centro de la ciudad, varios edificios se estan evacuando.",
         '{"naturaleza": {"tipo_evento": "sismo", "servicio_de_respuesta": '
         '["A", "G"]}, "ubicacion": {"ubicacion_texto_literal": "centro de la '
-        'ciudad", "barrio": null, "comuna": null, "punto_referencia": null, '
-        '"nivel_granularidad": "ciudad"}}',
+        'ciudad", "punto_referencia": null}}',
     ),
 )
 
@@ -166,8 +163,8 @@ def sistema_extraccion() -> str:
     """Devuelve las instrucciones de sistema de la etapa de extraccion.
 
     Returns:
-        Instrucciones que piden el JSON de naturaleza y ubicacion, con la
-        ontologia vigente de tipo_evento y servicio_de_respuesta.
+        Instrucciones que piden el JSON de naturaleza y ubicacion textual, con
+        la ontologia vigente de tipo_evento y servicio_de_respuesta.
 
     """
     tipos = ", ".join(sorted(ONTOLOGIA.tipos_evento))
@@ -178,8 +175,7 @@ def sistema_extraccion() -> str:
         "Responde SOLO con un JSON valido, sin texto adicional, con la forma: "
         '{"naturaleza": {"tipo_evento": "...", "servicio_de_respuesta": '
         '["..."]}, "ubicacion": {"ubicacion_texto_literal": "...", '
-        '"barrio": null o "...", "comuna": null o "...", '
-        '"punto_referencia": null o "...", "nivel_granularidad": "..."}}.\n\n'
+        '"punto_referencia": null o "..."}}.\n\n'
         f"Valores permitidos para tipo_evento: {tipos}.\n"
         f"Codigos permitidos para servicio_de_respuesta (uno o mas): "
         f"{_etiquetas_servicio()}.\n\n"
@@ -187,12 +183,14 @@ def sistema_extraccion() -> str:
         "- tipo_evento debe ser exactamente uno de los valores permitidos.\n"
         "- servicio_de_respuesta es una lista con los codigos de los servicios "
         "que el mensaje justifica; usa cero o mas, no inventes codigos.\n"
-        "- Completa TODOS los campos de ubicacion que el mensaje aporte; "
-        "si algo no se menciona, usa null.\n"
-        "- nivel_granularidad describe cuanto se puede ubicar el evento: "
-        "exacta si hay direccion o punto, barrio, comuna, ciudad si el "
-        "mensaje solo nombra la ciudad, o indeterminada si no hay datos.\n"
-        "- Las coordenadas no se piden aqui: solo texto y nombres de lugar.\n\n"
+        "- ubicacion_texto_literal copia el lugar tal como lo nombra el "
+        "mensaje, sin corregirlo, completarlo ni traducirlo a barrio o comuna.\n"
+        "- punto_referencia es el lugar conocido que el mensaje usa para "
+        "ubicar el evento, por ejemplo un parque, una via o un sector; usa "
+        "null si el mensaje no lo aporta.\n"
+        "- No decidas barrio, comuna, nivel de granularidad ni coordenadas: la "
+        "resolucion geografica la hace otro servicio de forma determinista. "
+        "Limitate a copiar los nombres de lugar que el mensaje menciona.\n\n"
         "Ejemplos:\n"
         f"{_bloque_ejemplos(_EJEMPLOS_EXTRACCION)}"
     )
