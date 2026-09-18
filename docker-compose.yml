@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: backend/bff/Dockerfile
+    image: sirena-bff
     ports:
       - "8000:8000"
     environment:
@@ -11,6 +12,18 @@ services:
     depends_on:
       - crud
       - process
+
+  telegram-source:
+    build:
+      context: .
+      dockerfile: backend/bff/Dockerfile
+    image: sirena-bff
+    command: ["uv", "run", "--package", "bff", "python", "-m", "bff.telegram_source"]
+    environment:
+      - BFF_URL=http://bff:8000
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    depends_on:
+      - bff
 
   crud:
     build:

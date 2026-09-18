@@ -38,7 +38,9 @@ async def procesar(peticion: PeticionProcesar) -> dict:
 
     Returns:
         `{"estado": "estructurado", "reporte": ...}` o
-        `{"estado": "descartado", "motivo": ...}`, segun el resultado del pipeline.
+        `{"estado": "descartado", "motivo": ..., "reporte": ...}`, segun el
+        resultado del pipeline -- en ambos casos el reporte queda
+        persistido en CRUD.
 
     """
     return await procesar_mensaje(

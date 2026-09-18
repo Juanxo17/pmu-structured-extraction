@@ -29,6 +29,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError
 
 _TIMEOUT_CHEQUEO_SALUD_SEGUNDOS = 2.0
+_TIMEOUT_PROCESAMIENTO_SEGUNDOS = 120.0
 
 app = FastAPI(title="SIRENA - BFF")
 
@@ -161,21 +162,30 @@ async def _disparar_procesamiento(mensaje: MensajeEntrante) -> None:
     cliente (ya recibio su 202) -- por eso el chequeo de duplicado y la
     validacion del cuerpo se hacen ANTES de responder, no aqui.
 
+    El timeout es generoso (`_TIMEOUT_PROCESAMIENTO_SEGUNDOS`) porque
+    `POST /procesar` en Process es sincrono: espera el pipeline completo
+    (compuerta + extraccion, cada una con reintentos contra Groq) antes de
+    responder -- el default de 5s de httpx cortaba la conexion en medio de
+    un procesamiento que seguia corriendo del lado de Process.
+
     Args:
         mensaje: El mensaje ya validado, listo para reenviar a Process.
 
     """
-    async with httpx.AsyncClient() as cliente:
-        await cliente.post(
-            f"{_url_process()}/procesar",
-            json={
-                "mensaje_id": mensaje.id_externo,
-                "texto_crudo": mensaje.texto,
-                "fuente": mensaje.fuente,
-                "id_externo": mensaje.id_externo,
-                "autor_id_telegram": mensaje.autor_id_telegram,
-            },
-        )
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT_PROCESAMIENTO_SEGUNDOS) as cliente:
+            await cliente.post(
+                f"{_url_process()}/procesar",
+                json={
+                    "mensaje_id": mensaje.id_externo,
+                    "texto_crudo": mensaje.texto,
+                    "fuente": mensaje.fuente,
+                    "id_externo": mensaje.id_externo,
+                    "autor_id_telegram": mensaje.autor_id_telegram,
+                },
+            )
+    except httpx.HTTPError as error:
+        print(f"Fallo al reenviar el mensaje {mensaje.id_externo} a Process: {error}")
 
 
 @app.get("/health")

@@ -9,6 +9,7 @@ COPY config ./config
 COPY backend/process ./backend/process
 
 RUN uv sync --package process --frozen --no-dev
+RUN uv run --package process python -m spacy download es_core_news_md
 
 EXPOSE 8002
 CMD ["uv", "run", "--package", "process", "uvicorn", "process.main:app", "--host", "0.0.0.0", "--port", "8002"]

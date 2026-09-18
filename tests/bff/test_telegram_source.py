@@ -235,6 +235,9 @@ class TestTokenBot:
         """Sin la variable definida, se lanza un error explicito (no un fallo silencioso)."""
         # Arrange
         monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+        # El .env real del repo no debe repoblar la variable que acabamos de
+        # borrar -- de lo contrario esta prueba dependeria del filesystem.
+        monkeypatch.setattr(telegram_source, "load_dotenv", lambda: None)
 
         # Act / Assert
         with pytest.raises(RuntimeError, match="TELEGRAM_BOT_TOKEN"):

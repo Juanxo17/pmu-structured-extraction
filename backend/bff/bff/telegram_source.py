@@ -17,12 +17,18 @@ import os
 from datetime import datetime, timezone
 
 import httpx
+from dotenv import load_dotenv
 
 _INTERVALO_LARGO_POLLING_SEGUNDOS = 30.0
 
 
 def _token_bot() -> str:
     """Lee el token del bot de Telegram desde el entorno.
+
+    Antes de leer la variable, carga el `.env` de la raiz del repo (si
+    existe) mediante `load_dotenv`, que no sobreescribe una variable ya
+    definida en el entorno -- asi un valor exportado a mano sigue teniendo
+    prioridad sobre el `.env`.
 
     Returns:
         El token entregado por BotFather al crear el bot.
@@ -31,6 +37,7 @@ def _token_bot() -> str:
         RuntimeError: si la variable de entorno no esta definida.
 
     """
+    load_dotenv()
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if not token:
         raise RuntimeError(

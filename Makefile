@@ -69,7 +69,7 @@ docker-build:
 	docker compose build
 
 docker-up:
-	docker compose up --build
+	docker compose up --build bff crud process inference geo telegram-source frontend
 
 docker-down:
 	docker compose down
