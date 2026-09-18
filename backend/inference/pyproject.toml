@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "groq>=0.11.0",
     "sirena-schema",
+    "mlflow>=3.16.1",
 ]
 
 [tool.uv.sources]

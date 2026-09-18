@@ -280,6 +280,38 @@ def metricas_por_campo(
     )
 
 
+def matriz_confusion(
+    ejemplos: Sequence[EjemploGold],
+    resultados: Sequence[EvaluacionEjemplo],
+    campo: str,
+) -> dict[str, dict[str, int]]:
+    """Cuenta las coincidencias por valor entre lo predicho y el gold.
+
+    Desnormaliza los campos multivaluados expandiendo cada valor de la
+    lista como una entrada independiente en la matriz.
+
+    Args:
+        ejemplos: Ejemplos gold evaluados en orden de entrada.
+        resultados: Resultados del servicio en el mismo orden.
+        campo: Nombre del campo del esquema.
+
+    Returns:
+        Diccionario anidado valor_gold -> valor_predicho -> cantidad.
+
+    """
+    cuentas: dict[str, dict[str, int]] = {}
+    for ejemplo, resultado in zip(ejemplos, resultados, strict=True):
+        gold = _valor_gold(ejemplo, campo)
+        if gold is None:
+            continue
+        predicho = _valor_predicho(resultado, campo)
+        for valor_gold in _a_conjunto(gold):
+            fila = cuentas.setdefault(valor_gold, {})
+            for valor_predicho in _a_conjunto(predicho):
+                fila[valor_predicho] = fila.get(valor_predicho, 0) + 1
+    return cuentas
+
+
 def generar_informe(
     metricas: Metricas,
     resultados: Sequence[EvaluacionEjemplo],
@@ -526,7 +558,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     metricas = metricas_por_campo(ejemplos, resultados)
     ruta = args.report if args.report is not None else _ruta_informe_por_defecto()
     generar_informe(metricas, resultados, ruta)
+    matrices = {
+        campo: matriz_confusion(ejemplos, resultados, campo)
+        for campo in CAMPOS_EVALUADOS
+    }
+    from inference.registro import registrar_corrida
+
+    run_id = registrar_corrida(
+        metricas=metricas,
+        ejemplos=ejemplos,
+        resultados=resultados,
+        ruta_informe=ruta,
+        corpus=args.corpus,
+        matrices_confusion=matrices,
+    )
     print(f"Informe generado en {ruta}")
+    if run_id:
+        print(f"Corrida registrada en MLflow: {run_id}")
     print(
         "Ejemplos: "
         f"{metricas.total_ejemplos} | Errores de validacion: "

@@ -11,6 +11,7 @@ from inference.evaluacion import (
     cargar_corpus,
     generar_informe,
     metricas_por_campo,
+    matriz_confusion,
 )
 from inference.servicio import ServicioInferencia
 from sirena_schema.schema import Compuerta, Naturaleza, Ubicacion
@@ -406,3 +407,80 @@ class TestGenerarInforme:
         contenido = ruta.read_text(encoding="utf-8")
         assert "## Ejemplos con error" in contenido
         assert "'temblor': salida invalida" in contenido
+
+
+class TestMatrizConfusion:
+    """Pruebas de matriz_confusion."""
+
+    def test_cuenta_aciertos_por_valor(self) -> None:
+        """Cruza cada valor con su par exacto cuando no hay diferencias."""
+        # Arrange
+        gold = _ejemplo_sismo()
+        resultado = EvaluacionEjemplo(
+            texto=gold.texto,
+            compuerta=gold.compuerta,
+            naturaleza=gold.naturaleza,
+            ubicacion=gold.ubicacion,
+        )
+
+        # Act
+        matriz = matriz_confusion([gold], [resultado], "tipo_evento")
+
+        # Assert
+        assert matriz == {"sismo": {"sismo": 1}}
+
+    def test_registra_valores_distintos(self) -> None:
+        """Coloca en la fila del gold la columna del valor predicho."""
+        # Arrange
+        gold = _ejemplo_incendio()
+        resultado = EvaluacionEjemplo(
+            texto=gold.texto,
+            compuerta=gold.compuerta,
+            naturaleza=Naturaleza.model_validate(
+                {
+                    "tipo_evento": "sismo",
+                    "servicio_de_respuesta": ["B"],
+                }
+            ),
+            ubicacion=gold.ubicacion,
+        )
+
+        # Act
+        matriz = matriz_confusion([gold], [resultado], "tipo_evento")
+
+        # Assert
+        assert matriz == {"incendio_estructural": {"sismo": 1}}
+
+    def test_expande_campos_multivaluados(self) -> None:
+        """Cuenta una celda por cada valor del servicio esperado."""
+        # Arrange
+        gold = _ejemplo_incendio()
+        resultado = EvaluacionEjemplo(
+            texto=gold.texto,
+            compuerta=gold.compuerta,
+            naturaleza=Naturaleza.model_validate(
+                {
+                    "tipo_evento": "incendio_estructural",
+                    "servicio_de_respuesta": ["B"],
+                }
+            ),
+            ubicacion=gold.ubicacion,
+        )
+
+        # Act
+        matriz = matriz_confusion([gold], [resultado], "servicio_de_respuesta")
+
+        # Assert
+        assert matriz == {"b": {"b": 1}, "g": {"b": 1}}
+
+    def test_ignora_ejemplos_sin_campo(self) -> None:
+        """Deja fuera los ejemplos cuyo gold no tiene el campo evaluado."""
+        # Arrange
+        gold = _ejemplo_noticia()
+        resultado = EvaluacionEjemplo(texto=gold.texto, compuerta=gold.compuerta)
+
+        # Act
+        matriz = matriz_confusion([gold], [resultado], "tipo_evento")
+
+        # Assert
+        assert matriz == {}
