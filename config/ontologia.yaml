@@ -1,0 +1,62 @@
+# Ontologia operativa del dominio — fuente: ERE de Cali.
+# Sustituir este archivo por el de otro dominio no requiere tocar codigo.
+
+tipo_evento:
+  - sismo
+  - movimiento_en_masa
+  - inundacion_subita
+  - inundacion_lenta
+  - incendio_cobertura_vegetal
+  - incendio_estructural
+  - aglomeracion_publico
+  - salud_ambiental
+
+# Nombre legible por cada tipo_evento, para mostrar en tableros/reportes.
+tipo_evento_nombres:
+  sismo: Sismo
+  movimiento_en_masa: Movimiento en masa
+  inundacion_subita: Inundación súbita
+  inundacion_lenta: Inundación lenta
+  incendio_cobertura_vegetal: Incendio de cobertura vegetal
+  incendio_estructural: Incendio estructural
+  aglomeracion_publico: Aglomeración pública
+  salud_ambiental: Salud ambiental
+
+# Codigo: nombre (ERE de Cali, Tabla 8, p. 44). P y Q son funciones institucionales, no reportables.
+servicio_de_respuesta:
+  - A  # Busqueda y Rescate
+  - B  # Extincion de Incendios
+  - C  # Telecomunicaciones para la comunidad
+  - D  # Manejo de Materiales Peligrosos
+  - E  # Seguridad y Convivencia
+  - F  # Accesibilidad y Transporte
+  - G  # Salud
+  - H  # Agua Potable
+  - I  # Asistencia Humanitaria
+  - J  # Alojamientos Temporales
+  - K  # Energia y Gas
+  - L  # Saneamiento Basico
+  - M  # Reencuentro Familiar
+  - N  # Fauna Domestica
+  - O  # Fauna Silvestre
+  - R  # Manejo de Residuos Solidos
+
+# Nombre legible por cada servicio_de_respuesta (mismos nombres que los
+# comentarios de arriba, aquí estructurados para poder mostrarlos en tableros).
+servicio_de_respuesta_nombres:
+  A: Búsqueda y Rescate
+  B: Extinción de Incendios
+  C: Telecomunicaciones para la comunidad
+  D: Manejo de Materiales Peligrosos
+  E: Seguridad y Convivencia
+  F: Accesibilidad y Transporte
+  G: Salud
+  H: Agua Potable
+  I: Asistencia Humanitaria
+  J: Alojamientos Temporales
+  K: Energía y Gas
+  L: Saneamiento Básico
+  M: Reencuentro Familiar
+  N: Fauna Doméstica
+  O: Fauna Silvestre
+  R: Manejo de Residuos Sólidos

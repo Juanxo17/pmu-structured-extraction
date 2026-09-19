@@ -1,0 +1,3604 @@
+{
+ "fuente": "IDESC - DIVIPOLA Acuerdo 0636 de 2026",
+ "sistema_referencia": "EPSG:4326 (lat, lon)",
+ "comunas": [
+  {
+   "codigo": 1,
+   "nombre": "Comuna 01",
+   "centroide": [
+    3.454822,
+    -76.565398
+   ]
+  },
+  {
+   "codigo": 2,
+   "nombre": "Comuna 02",
+   "centroide": [
+    3.475003,
+    -76.524862
+   ]
+  },
+  {
+   "codigo": 3,
+   "nombre": "Comuna 03",
+   "centroide": [
+    3.449568,
+    -76.532882
+   ]
+  },
+  {
+   "codigo": 4,
+   "nombre": "Comuna 04",
+   "centroide": [
+    3.469562,
+    -76.509294
+   ]
+  },
+  {
+   "codigo": 5,
+   "nombre": "Comuna 05",
+   "centroide": [
+    3.472032,
+    -76.49531
+   ]
+  },
+  {
+   "codigo": 6,
+   "nombre": "Comuna 06",
+   "centroide": [
+    3.485563,
+    -76.487916
+   ]
+  },
+  {
+   "codigo": 7,
+   "nombre": "Comuna 07",
+   "centroide": [
+    3.456428,
+    -76.488208
+   ]
+  },
+  {
+   "codigo": 8,
+   "nombre": "Comuna 08",
+   "centroide": [
+    3.446345,
+    -76.505977
+   ]
+  },
+  {
+   "codigo": 9,
+   "nombre": "Comuna 09",
+   "centroide": [
+    3.441298,
+    -76.526131
+   ]
+  },
+  {
+   "codigo": 10,
+   "nombre": "Comuna 10",
+   "centroide": [
+    3.41923,
+    -76.527672
+   ]
+  },
+  {
+   "codigo": 11,
+   "nombre": "Comuna 11",
+   "centroide": [
+    3.423027,
+    -76.514727
+   ]
+  },
+  {
+   "codigo": 12,
+   "nombre": "Comuna 12",
+   "centroide": [
+    3.434534,
+    -76.501822
+   ]
+  },
+  {
+   "codigo": 13,
+   "nombre": "Comuna 13",
+   "centroide": [
+    3.427603,
+    -76.493053
+   ]
+  },
+  {
+   "codigo": 14,
+   "nombre": "Comuna 14",
+   "centroide": [
+    3.425215,
+    -76.47729
+   ]
+  },
+  {
+   "codigo": 15,
+   "nombre": "Comuna 15",
+   "centroide": [
+    3.40485,
+    -76.500461
+   ]
+  },
+  {
+   "codigo": 16,
+   "nombre": "Comuna 16",
+   "centroide": [
+    3.404118,
+    -76.513869
+   ]
+  },
+  {
+   "codigo": 17,
+   "nombre": "Comuna 17",
+   "centroide": [
+    3.385593,
+    -76.529922
+   ]
+  },
+  {
+   "codigo": 18,
+   "nombre": "Comuna 18",
+   "centroide": [
+    3.38185,
+    -76.552991
+   ]
+  },
+  {
+   "codigo": 19,
+   "nombre": "Comuna 19",
+   "centroide": [
+    3.42074,
+    -76.546442
+   ]
+  },
+  {
+   "codigo": 20,
+   "nombre": "Comuna 20",
+   "centroide": [
+    3.42001,
+    -76.559202
+   ]
+  },
+  {
+   "codigo": 21,
+   "nombre": "Comuna 21",
+   "centroide": [
+    3.423894,
+    -76.470888
+   ]
+  },
+  {
+   "codigo": 22,
+   "nombre": "Comuna 22",
+   "centroide": [
+    3.350719,
+    -76.536819
+   ]
+  }
+ ],
+ "barrios": [
+  {
+   "codigo": 101,
+   "nombre": "Terrón Colorado",
+   "comuna": 1,
+   "categoria": "Barrio",
+   "centroide": [
+    3.453072,
+    -76.560832
+   ]
+  },
+  {
+   "codigo": 102,
+   "nombre": "Vista Hermosa",
+   "comuna": 1,
+   "categoria": "Barrio",
+   "centroide": [
+    3.454858,
+    -76.576409
+   ]
+  },
+  {
+   "codigo": 103,
+   "nombre": "Patio Bonito",
+   "comuna": 1,
+   "categoria": "Barrio",
+   "centroide": [
+    3.461906,
+    -76.586617
+   ]
+  },
+  {
+   "codigo": 104,
+   "nombre": "Aguacatal",
+   "comuna": 1,
+   "categoria": "Barrio",
+   "centroide": [
+    3.458093,
+    -76.557915
+   ]
+  },
+  {
+   "codigo": 201,
+   "nombre": "Santa Rita",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.451994,
+    -76.552759
+   ]
+  },
+  {
+   "codigo": 202,
+   "nombre": "Santa Teresita",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.450979,
+    -76.549824
+   ]
+  },
+  {
+   "codigo": 203,
+   "nombre": "Arboledas",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.448994,
+    -76.549632
+   ]
+  },
+  {
+   "codigo": 204,
+   "nombre": "Normandía",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.45394,
+    -76.544871
+   ]
+  },
+  {
+   "codigo": 205,
+   "nombre": "Juanambú",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.45623,
+    -76.5376
+   ]
+  },
+  {
+   "codigo": 206,
+   "nombre": "Centenario",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.453202,
+    -76.53665
+   ]
+  },
+  {
+   "codigo": 207,
+   "nombre": "Granada",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.458849,
+    -76.533439
+   ]
+  },
+  {
+   "codigo": 208,
+   "nombre": "Versalles",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.460866,
+    -76.528597
+   ]
+  },
+  {
+   "codigo": 209,
+   "nombre": "San Vicente",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.466561,
+    -76.525876
+   ]
+  },
+  {
+   "codigo": 210,
+   "nombre": "Santa Mónica",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.468188,
+    -76.5312
+   ]
+  },
+  {
+   "codigo": 211,
+   "nombre": "Prados del Norte",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.470763,
+    -76.520321
+   ]
+  },
+  {
+   "codigo": 212,
+   "nombre": "La Flora",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.482253,
+    -76.523659
+   ]
+  },
+  {
+   "codigo": 213,
+   "nombre": "La Campiña",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.481549,
+    -76.528163
+   ]
+  },
+  {
+   "codigo": 214,
+   "nombre": "La Paz",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.482811,
+    -76.526765
+   ]
+  },
+  {
+   "codigo": 215,
+   "nombre": "El Bosque",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.485929,
+    -76.529638
+   ]
+  },
+  {
+   "codigo": 216,
+   "nombre": "Menga",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.492834,
+    -76.526132
+   ]
+  },
+  {
+   "codigo": 217,
+   "nombre": "Ciudad Los Álamos",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.48575,
+    -76.50826
+   ]
+  },
+  {
+   "codigo": 218,
+   "nombre": "Chipichape",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.477054,
+    -76.527963
+   ]
+  },
+  {
+   "codigo": 219,
+   "nombre": "Brisas de los Álamos",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.493015,
+    -76.503413
+   ]
+  },
+  {
+   "codigo": 220,
+   "nombre": "Urbanización La Merced",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.480122,
+    -76.512788
+   ]
+  },
+  {
+   "codigo": 221,
+   "nombre": "Vipasa",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.478992,
+    -76.517883
+   ]
+  },
+  {
+   "codigo": 222,
+   "nombre": "Urbanización La Flora",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.487944,
+    -76.515371
+   ]
+  },
+  {
+   "codigo": 223,
+   "nombre": "Sector Altos de Menga",
+   "comuna": 2,
+   "categoria": "Sector",
+   "centroide": [
+    3.489582,
+    -76.532808
+   ]
+  },
+  {
+   "codigo": 224,
+   "nombre": "Alto Normandía",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.454017,
+    -76.541812
+   ]
+  },
+  {
+   "codigo": 225,
+   "nombre": "Senderos de La Flora",
+   "comuna": 2,
+   "categoria": "Barrio",
+   "centroide": [
+    3.491122,
+    -76.521103
+   ]
+  },
+  {
+   "codigo": 301,
+   "nombre": "El Nacional",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.443685,
+    -76.545192
+   ]
+  },
+  {
+   "codigo": 302,
+   "nombre": "El Peñón",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.450068,
+    -76.541413
+   ]
+  },
+  {
+   "codigo": 303,
+   "nombre": "San Antonio",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.446747,
+    -76.542133
+   ]
+  },
+  {
+   "codigo": 304,
+   "nombre": "San Cayetano",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.444382,
+    -76.539924
+   ]
+  },
+  {
+   "codigo": 305,
+   "nombre": "Los Libertadores",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.44142,
+    -76.539053
+   ]
+  },
+  {
+   "codigo": 306,
+   "nombre": "San Juan Bosco",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.443488,
+    -76.533674
+   ]
+  },
+  {
+   "codigo": 307,
+   "nombre": "Santa Rosa",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.446868,
+    -76.53375
+   ]
+  },
+  {
+   "codigo": 308,
+   "nombre": "La Merced",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.450078,
+    -76.53582
+   ]
+  },
+  {
+   "codigo": 309,
+   "nombre": "San Pascual",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.444156,
+    -76.528138
+   ]
+  },
+  {
+   "codigo": 310,
+   "nombre": "Ciudad Paraíso",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.447592,
+    -76.529455
+   ]
+  },
+  {
+   "codigo": 311,
+   "nombre": "San Pedro",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.452051,
+    -76.531641
+   ]
+  },
+  {
+   "codigo": 312,
+   "nombre": "San Nicolás",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.455067,
+    -76.524083
+   ]
+  },
+  {
+   "codigo": 313,
+   "nombre": "El Manantial",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.457145,
+    -76.528389
+   ]
+  },
+  {
+   "codigo": 314,
+   "nombre": "El Piloto",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.460609,
+    -76.523805
+   ]
+  },
+  {
+   "codigo": 315,
+   "nombre": "Navarro - La Chanca",
+   "comuna": 3,
+   "categoria": "Barrio",
+   "centroide": [
+    3.442424,
+    -76.545059
+   ]
+  },
+  {
+   "codigo": 401,
+   "nombre": "Jorge Isaacs",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.4573,
+    -76.517808
+   ]
+  },
+  {
+   "codigo": 402,
+   "nombre": "Santander",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.462831,
+    -76.515174
+   ]
+  },
+  {
+   "codigo": 403,
+   "nombre": "Porvenir",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.458907,
+    -76.513758
+   ]
+  },
+  {
+   "codigo": 404,
+   "nombre": "Las Delicias",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.461947,
+    -76.509087
+   ]
+  },
+  {
+   "codigo": 405,
+   "nombre": "Manzanares",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.466365,
+    -76.509791
+   ]
+  },
+  {
+   "codigo": 406,
+   "nombre": "Salomia",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.465732,
+    -76.505798
+   ]
+  },
+  {
+   "codigo": 407,
+   "nombre": "Fátima",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.463566,
+    -76.518363
+   ]
+  },
+  {
+   "codigo": 408,
+   "nombre": "Sultana - Berlín - San Francisco",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.465451,
+    -76.517194
+   ]
+  },
+  {
+   "codigo": 410,
+   "nombre": "Popular",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.469635,
+    -76.511791
+   ]
+  },
+  {
+   "codigo": 411,
+   "nombre": "Ignacio Rengifo",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.471342,
+    -76.512785
+   ]
+  },
+  {
+   "codigo": 412,
+   "nombre": "Guillermo Valencia",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.472908,
+    -76.510126
+   ]
+  },
+  {
+   "codigo": 413,
+   "nombre": "La Isla",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.473541,
+    -76.513306
+   ]
+  },
+  {
+   "codigo": 414,
+   "nombre": "Marco Fidel Suárez",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.474093,
+    -76.508905
+   ]
+  },
+  {
+   "codigo": 415,
+   "nombre": "Evaristo García",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.475872,
+    -76.506592
+   ]
+  },
+  {
+   "codigo": 416,
+   "nombre": "La Esmeralda",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.459323,
+    -76.5079
+   ]
+  },
+  {
+   "codigo": 417,
+   "nombre": "Bolivariano",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.467657,
+    -76.514394
+   ]
+  },
+  {
+   "codigo": 418,
+   "nombre": "Olaya Herrera",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.477719,
+    -76.50893
+   ]
+  },
+  {
+   "codigo": 419,
+   "nombre": "Unidad Residencial Bueno Madrid",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.467925,
+    -76.516007
+   ]
+  },
+  {
+   "codigo": 420,
+   "nombre": "Flora Industrial",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.480583,
+    -76.503888
+   ]
+  },
+  {
+   "codigo": 421,
+   "nombre": "Calima",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.484987,
+    -76.500015
+   ]
+  },
+  {
+   "codigo": 422,
+   "nombre": "La Alianza",
+   "comuna": 4,
+   "categoria": "Barrio",
+   "centroide": [
+    3.47279,
+    -76.505359
+   ]
+  },
+  {
+   "codigo": 423,
+   "nombre": "Sector Industria de Licores",
+   "comuna": 4,
+   "categoria": "Sector",
+   "centroide": [
+    3.462411,
+    -76.519809
+   ]
+  },
+  {
+   "codigo": 501,
+   "nombre": "El Sena",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.46559,
+    -76.501078
+   ]
+  },
+  {
+   "codigo": 502,
+   "nombre": "Los Andes",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.471122,
+    -76.498572
+   ]
+  },
+  {
+   "codigo": 503,
+   "nombre": "Los Guayacanes",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.472495,
+    -76.489641
+   ]
+  },
+  {
+   "codigo": 504,
+   "nombre": "Chiminangos Segunda Etapa",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.478175,
+    -76.493313
+   ]
+  },
+  {
+   "codigo": 505,
+   "nombre": "Chiminangos Primera Etapa",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.477015,
+    -76.490606
+   ]
+  },
+  {
+   "codigo": 506,
+   "nombre": "Metropolitano del Norte",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.481983,
+    -76.491836
+   ]
+  },
+  {
+   "codigo": 507,
+   "nombre": "Los Parques - Barranquilla",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.477111,
+    -76.496629
+   ]
+  },
+  {
+   "codigo": 508,
+   "nombre": "Villa del Sol",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.481458,
+    -76.495923
+   ]
+  },
+  {
+   "codigo": 509,
+   "nombre": "Paseo de Los Almendros",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.472609,
+    -76.493764
+   ]
+  },
+  {
+   "codigo": 510,
+   "nombre": "Los Andes B - La Riviera",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.468903,
+    -76.495098
+   ]
+  },
+  {
+   "codigo": 511,
+   "nombre": "Torres de Comfandi",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.475486,
+    -76.500753
+   ]
+  },
+  {
+   "codigo": 512,
+   "nombre": "Villa del Prado - El Guabito",
+   "comuna": 5,
+   "categoria": "Barrio",
+   "centroide": [
+    3.466066,
+    -76.491141
+   ]
+  },
+  {
+   "codigo": 601,
+   "nombre": "San Luis",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.480608,
+    -76.486455
+   ]
+  },
+  {
+   "codigo": 602,
+   "nombre": "Jorge Eliécer Gaitán",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.470735,
+    -76.481219
+   ]
+  },
+  {
+   "codigo": 603,
+   "nombre": "Paso del Comercio",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.493584,
+    -76.487626
+   ]
+  },
+  {
+   "codigo": 604,
+   "nombre": "Los Alcázares Primera Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.486974,
+    -76.491987
+   ]
+  },
+  {
+   "codigo": 605,
+   "nombre": "Petecuy Primera Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.474197,
+    -76.479019
+   ]
+  },
+  {
+   "codigo": 606,
+   "nombre": "Petecuy Segunda Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.480668,
+    -76.48157
+   ]
+  },
+  {
+   "codigo": 607,
+   "nombre": "La Rivera Primera Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.47415,
+    -76.486018
+   ]
+  },
+  {
+   "codigo": 608,
+   "nombre": "Los Guaduales",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.491019,
+    -76.499323
+   ]
+  },
+  {
+   "codigo": 609,
+   "nombre": "Petecuy Tercera Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.477166,
+    -76.48046
+   ]
+  },
+  {
+   "codigo": 610,
+   "nombre": "Ciudadela Floralia",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.497405,
+    -76.493227
+   ]
+  },
+  {
+   "codigo": 611,
+   "nombre": "Los Alcázares Segunda Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.486448,
+    -76.490136
+   ]
+  },
+  {
+   "codigo": 612,
+   "nombre": "Los Alcázares Tercera Etapa",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.488961,
+    -76.491761
+   ]
+  },
+  {
+   "codigo": 613,
+   "nombre": "Fonaviemcali",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.484364,
+    -76.489043
+   ]
+  },
+  {
+   "codigo": 614,
+   "nombre": "San Luis II",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.488618,
+    -76.487846
+   ]
+  },
+  {
+   "codigo": 615,
+   "nombre": "Urbanización Calimio",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.487449,
+    -76.483766
+   ]
+  },
+  {
+   "codigo": 616,
+   "nombre": "Puente del Comercio",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.488458,
+    -76.496472
+   ]
+  },
+  {
+   "codigo": 617,
+   "nombre": "Portada de Comfandi - Las Encinas",
+   "comuna": 6,
+   "categoria": "Barrio",
+   "centroide": [
+    3.486342,
+    -76.493175
+   ]
+  },
+  {
+   "codigo": 701,
+   "nombre": "Alfonso Lopez Pumarejo 1a Etapa",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.464841,
+    -76.478993
+   ]
+  },
+  {
+   "codigo": 702,
+   "nombre": "Alfonso Lopez Pumarejo 2a Etapa",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.459386,
+    -76.479933
+   ]
+  },
+  {
+   "codigo": 703,
+   "nombre": "Alfonso Lopez Pumarejo 3a Etapa",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.45386,
+    -76.480356
+   ]
+  },
+  {
+   "codigo": 705,
+   "nombre": "Puerto Mallarino",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.449404,
+    -76.479539
+   ]
+  },
+  {
+   "codigo": 706,
+   "nombre": "Urbanización El Ángel del Hogar",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.447388,
+    -76.482256
+   ]
+  },
+  {
+   "codigo": 707,
+   "nombre": "Siete de Agosto",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.447524,
+    -76.486284
+   ]
+  },
+  {
+   "codigo": 708,
+   "nombre": "Los Pinos",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.457854,
+    -76.485203
+   ]
+  },
+  {
+   "codigo": 709,
+   "nombre": "San Marino",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.460501,
+    -76.48855
+   ]
+  },
+  {
+   "codigo": 710,
+   "nombre": "Las Ceibas",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.455849,
+    -76.487718
+   ]
+  },
+  {
+   "codigo": 711,
+   "nombre": "Sector Base Áerea",
+   "comuna": 7,
+   "categoria": "Sector",
+   "centroide": [
+    3.457293,
+    -76.496847
+   ]
+  },
+  {
+   "codigo": 712,
+   "nombre": "Sector Parque de la Caña",
+   "comuna": 7,
+   "categoria": "Sector",
+   "centroide": [
+    3.455773,
+    -76.507788
+   ]
+  },
+  {
+   "codigo": 713,
+   "nombre": "Fepicol",
+   "comuna": 7,
+   "categoria": "Barrio",
+   "centroide": [
+    3.462362,
+    -76.48547
+   ]
+  },
+  {
+   "codigo": 801,
+   "nombre": "Primitivo Crespo",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.438059,
+    -76.516718
+   ]
+  },
+  {
+   "codigo": 802,
+   "nombre": "Simón Bolívar",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.441991,
+    -76.517598
+   ]
+  },
+  {
+   "codigo": 803,
+   "nombre": "Saavedra Galindo",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.441812,
+    -76.514501
+   ]
+  },
+  {
+   "codigo": 804,
+   "nombre": "Rafael Uribe Uribe",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.439051,
+    -76.512056
+   ]
+  },
+  {
+   "codigo": 805,
+   "nombre": "Santa Mónica Popular",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437248,
+    -76.51027
+   ]
+  },
+  {
+   "codigo": 806,
+   "nombre": "La Floresta",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.444116,
+    -76.512446
+   ]
+  },
+  {
+   "codigo": 807,
+   "nombre": "Benjamín Herrera",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.447277,
+    -76.5161
+   ]
+  },
+  {
+   "codigo": 808,
+   "nombre": "Municipal",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.448002,
+    -76.512012
+   ]
+  },
+  {
+   "codigo": 809,
+   "nombre": "Industrial",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.452784,
+    -76.514178
+   ]
+  },
+  {
+   "codigo": 810,
+   "nombre": "El Troncal",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.450947,
+    -76.506375
+   ]
+  },
+  {
+   "codigo": 811,
+   "nombre": "Las Américas",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.447693,
+    -76.505986
+   ]
+  },
+  {
+   "codigo": 812,
+   "nombre": "Atanasio Girardot",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.444524,
+    -76.507945
+   ]
+  },
+  {
+   "codigo": 813,
+   "nombre": "Santa Fé",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.440646,
+    -76.505509
+   ]
+  },
+  {
+   "codigo": 814,
+   "nombre": "Chapinero",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.44457,
+    -76.501839
+   ]
+  },
+  {
+   "codigo": 815,
+   "nombre": "Villa Colombia",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.449305,
+    -76.499613
+   ]
+  },
+  {
+   "codigo": 816,
+   "nombre": "El Trébol",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.443069,
+    -76.496036
+   ]
+  },
+  {
+   "codigo": 817,
+   "nombre": "La Base",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.449154,
+    -76.49538
+   ]
+  },
+  {
+   "codigo": 818,
+   "nombre": "Urbanización La Nueva Base",
+   "comuna": 8,
+   "categoria": "Barrio",
+   "centroide": [
+    3.448485,
+    -76.491097
+   ]
+  },
+  {
+   "codigo": 901,
+   "nombre": "Alameda",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437724,
+    -76.535518
+   ]
+  },
+  {
+   "codigo": 902,
+   "nombre": "Bretaña",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437596,
+    -76.532189
+   ]
+  },
+  {
+   "codigo": 903,
+   "nombre": "Junín",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.434289,
+    -76.527578
+   ]
+  },
+  {
+   "codigo": 904,
+   "nombre": "Guayaquil",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.439245,
+    -76.527671
+   ]
+  },
+  {
+   "codigo": 905,
+   "nombre": "Aranjuez",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.436388,
+    -76.522875
+   ]
+  },
+  {
+   "codigo": 906,
+   "nombre": "Manuel María Buenaventura",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.438725,
+    -76.522892
+   ]
+  },
+  {
+   "codigo": 907,
+   "nombre": "Santa Mónica Belalcázar",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437148,
+    -76.520095
+   ]
+  },
+  {
+   "codigo": 908,
+   "nombre": "Belalcázar",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.441722,
+    -76.521287
+   ]
+  },
+  {
+   "codigo": 909,
+   "nombre": "Sucre",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.447132,
+    -76.524663
+   ]
+  },
+  {
+   "codigo": 910,
+   "nombre": "Barrio Obrero",
+   "comuna": 9,
+   "categoria": "Barrio",
+   "centroide": [
+    3.448781,
+    -76.520255
+   ]
+  },
+  {
+   "codigo": 1001,
+   "nombre": "El Dorado",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.420627,
+    -76.528943
+   ]
+  },
+  {
+   "codigo": 1002,
+   "nombre": "El Guabal",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.416182,
+    -76.527231
+   ]
+  },
+  {
+   "codigo": 1003,
+   "nombre": "La Libertad",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.423764,
+    -76.523763
+   ]
+  },
+  {
+   "codigo": 1004,
+   "nombre": "Santa Elena",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.428475,
+    -76.523728
+   ]
+  },
+  {
+   "codigo": 1005,
+   "nombre": "Las Acacias",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.433958,
+    -76.520879
+   ]
+  },
+  {
+   "codigo": 1006,
+   "nombre": "Santo Domingo",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.412496,
+    -76.532238
+   ]
+  },
+  {
+   "codigo": 1007,
+   "nombre": "Jorge Zawadsky",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.410379,
+    -76.532113
+   ]
+  },
+  {
+   "codigo": 1008,
+   "nombre": "Olímpico",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.422009,
+    -76.532542
+   ]
+  },
+  {
+   "codigo": 1009,
+   "nombre": "Cristóbal Colón",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.422363,
+    -76.52475
+   ]
+  },
+  {
+   "codigo": 1010,
+   "nombre": "La Selva",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.41046,
+    -76.52921
+   ]
+  },
+  {
+   "codigo": 1011,
+   "nombre": "Departamental",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.415167,
+    -76.535882
+   ]
+  },
+  {
+   "codigo": 1012,
+   "nombre": "Pasoancho",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.418324,
+    -76.532481
+   ]
+  },
+  {
+   "codigo": 1013,
+   "nombre": "Panamericano",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.413089,
+    -76.534193
+   ]
+  },
+  {
+   "codigo": 1014,
+   "nombre": "Colseguros Andes",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.426907,
+    -76.528891
+   ]
+  },
+  {
+   "codigo": 1015,
+   "nombre": "San Cristóbal",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.431882,
+    -76.522372
+   ]
+  },
+  {
+   "codigo": 1016,
+   "nombre": "Las Granjas",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.409622,
+    -76.52695
+   ]
+  },
+  {
+   "codigo": 1017,
+   "nombre": "San Judas Tadeo I",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.408696,
+    -76.524187
+   ]
+  },
+  {
+   "codigo": 1018,
+   "nombre": "San Judas Tadeo II",
+   "comuna": 10,
+   "categoria": "Barrio",
+   "centroide": [
+    3.414001,
+    -76.523107
+   ]
+  },
+  {
+   "codigo": 1101,
+   "nombre": "San Carlos",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.422288,
+    -76.513391
+   ]
+  },
+  {
+   "codigo": 1102,
+   "nombre": "Maracaibo",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.418547,
+    -76.517105
+   ]
+  },
+  {
+   "codigo": 1103,
+   "nombre": "La Independencia",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.416542,
+    -76.5186
+   ]
+  },
+  {
+   "codigo": 1104,
+   "nombre": "La Esperanza",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.420167,
+    -76.519991
+   ]
+  },
+  {
+   "codigo": 1105,
+   "nombre": "Urbanización Boyaca",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.423242,
+    -76.519819
+   ]
+  },
+  {
+   "codigo": 1106,
+   "nombre": "El Jardín",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.424774,
+    -76.51756
+   ]
+  },
+  {
+   "codigo": 1107,
+   "nombre": "La Fortaleza",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.42658,
+    -76.512878
+   ]
+  },
+  {
+   "codigo": 1108,
+   "nombre": "El Recuerdo",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.430194,
+    -76.515459
+   ]
+  },
+  {
+   "codigo": 1109,
+   "nombre": "Aguablanca",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.431695,
+    -76.518125
+   ]
+  },
+  {
+   "codigo": 1110,
+   "nombre": "El Prado",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.434919,
+    -76.516703
+   ]
+  },
+  {
+   "codigo": 1111,
+   "nombre": "20 de Julio",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.43501,
+    -76.513058
+   ]
+  },
+  {
+   "codigo": 1112,
+   "nombre": "Prados de Oriente",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.431385,
+    -76.513018
+   ]
+  },
+  {
+   "codigo": 1113,
+   "nombre": "Los Sauces - Ciudad Modelo",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.417735,
+    -76.512699
+   ]
+  },
+  {
+   "codigo": 1114,
+   "nombre": "Villa del Sur",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.412401,
+    -76.518577
+   ]
+  },
+  {
+   "codigo": 1115,
+   "nombre": "José Holguín Garcés",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.40791,
+    -76.521128
+   ]
+  },
+  {
+   "codigo": 1116,
+   "nombre": "León XIII",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.426221,
+    -76.509266
+   ]
+  },
+  {
+   "codigo": 1117,
+   "nombre": "José María Córdoba",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.422227,
+    -76.510469
+   ]
+  },
+  {
+   "codigo": 1118,
+   "nombre": "San Pedro Claver",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.424591,
+    -76.504698
+   ]
+  },
+  {
+   "codigo": 1119,
+   "nombre": "Los Conquistadores",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.42596,
+    -76.506727
+   ]
+  },
+  {
+   "codigo": 1120,
+   "nombre": "La Gran Colombia",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.421831,
+    -76.50668
+   ]
+  },
+  {
+   "codigo": 1121,
+   "nombre": "San Benito",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.428858,
+    -76.50968
+   ]
+  },
+  {
+   "codigo": 1122,
+   "nombre": "Primavera",
+   "comuna": 11,
+   "categoria": "Barrio",
+   "centroide": [
+    3.422381,
+    -76.508671
+   ]
+  },
+  {
+   "codigo": 1201,
+   "nombre": "Villanueva",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.430469,
+    -76.508711
+   ]
+  },
+  {
+   "codigo": 1202,
+   "nombre": "Asturias",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.438143,
+    -76.502832
+   ]
+  },
+  {
+   "codigo": 1203,
+   "nombre": "Eduardo Santos",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.429253,
+    -76.505162
+   ]
+  },
+  {
+   "codigo": 1204,
+   "nombre": "Alfonso Barberena A.",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.434163,
+    -76.508926
+   ]
+  },
+  {
+   "codigo": 1205,
+   "nombre": "El Paraíso",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.431903,
+    -76.506402
+   ]
+  },
+  {
+   "codigo": 1206,
+   "nombre": "Fenalco Kennedy",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.438114,
+    -76.499609
+   ]
+  },
+  {
+   "codigo": 1207,
+   "nombre": "Nueva Floresta",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437534,
+    -76.497622
+   ]
+  },
+  {
+   "codigo": 1208,
+   "nombre": "Julio Rincón",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.427048,
+    -76.501213
+   ]
+  },
+  {
+   "codigo": 1209,
+   "nombre": "Doce de Octubre",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.427844,
+    -76.503051
+   ]
+  },
+  {
+   "codigo": 1210,
+   "nombre": "El Rodeo",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.435767,
+    -76.504612
+   ]
+  },
+  {
+   "codigo": 1211,
+   "nombre": "Sindical",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.430579,
+    -76.501173
+   ]
+  },
+  {
+   "codigo": 1212,
+   "nombre": "Bello Horizonte",
+   "comuna": 12,
+   "categoria": "Barrio",
+   "centroide": [
+    3.433149,
+    -76.503683
+   ]
+  },
+  {
+   "codigo": 1301,
+   "nombre": "Ulpiano Lloreda",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.441584,
+    -76.490099
+   ]
+  },
+  {
+   "codigo": 1302,
+   "nombre": "El Vergel",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.415435,
+    -76.500639
+   ]
+  },
+  {
+   "codigo": 1303,
+   "nombre": "El Poblado I",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.418592,
+    -76.497231
+   ]
+  },
+  {
+   "codigo": 1304,
+   "nombre": "El Poblado II",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.420533,
+    -76.490661
+   ]
+  },
+  {
+   "codigo": 1305,
+   "nombre": "Los Comuneros II Etapa",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.425052,
+    -76.493123
+   ]
+  },
+  {
+   "codigo": 1306,
+   "nombre": "Ricardo Balcázar",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.433458,
+    -76.493213
+   ]
+  },
+  {
+   "codigo": 1307,
+   "nombre": "Omar Torrijos",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.42522,
+    -76.486793
+   ]
+  },
+  {
+   "codigo": 1308,
+   "nombre": "El Diamante",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.421124,
+    -76.502415
+   ]
+  },
+  {
+   "codigo": 1309,
+   "nombre": "Lleras Restrepo",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.436842,
+    -76.49347
+   ]
+  },
+  {
+   "codigo": 1310,
+   "nombre": "Villa del Lago",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437684,
+    -76.489377
+   ]
+  },
+  {
+   "codigo": 1311,
+   "nombre": "Los Robles",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.421894,
+    -76.495305
+   ]
+  },
+  {
+   "codigo": 1312,
+   "nombre": "Rodrigo Lara Bonilla",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.426529,
+    -76.489128
+   ]
+  },
+  {
+   "codigo": 1313,
+   "nombre": "Charco Azul",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.441623,
+    -76.485559
+   ]
+  },
+  {
+   "codigo": 1314,
+   "nombre": "Villablanca",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.429669,
+    -76.494875
+   ]
+  },
+  {
+   "codigo": 1315,
+   "nombre": "Calipso",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.425067,
+    -76.498987
+   ]
+  },
+  {
+   "codigo": 1316,
+   "nombre": "Yira Castro",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.426769,
+    -76.497697
+   ]
+  },
+  {
+   "codigo": 1317,
+   "nombre": "Lleras Restrepo II",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.438049,
+    -76.491021
+   ]
+  },
+  {
+   "codigo": 1318,
+   "nombre": "Marroquín III",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.433136,
+    -76.485375
+   ]
+  },
+  {
+   "codigo": 1319,
+   "nombre": "Los Lagos",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.4295,
+    -76.486213
+   ]
+  },
+  {
+   "codigo": 1320,
+   "nombre": "Sector Laguna del Pondaje",
+   "comuna": 13,
+   "categoria": "Sector",
+   "centroide": [
+    3.433038,
+    -76.489055
+   ]
+  },
+  {
+   "codigo": 1321,
+   "nombre": "El Pondaje",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.430359,
+    -76.49657
+   ]
+  },
+  {
+   "codigo": 1322,
+   "nombre": "Asprosocial - Diamante",
+   "comuna": 13,
+   "categoria": "Barrio",
+   "centroide": [
+    3.423475,
+    -76.49934
+   ]
+  },
+  {
+   "codigo": 1401,
+   "nombre": "Alfonso Bonilla Aragón",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.419954,
+    -76.482676
+   ]
+  },
+  {
+   "codigo": 1402,
+   "nombre": "Alirio Mora Beltrán",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.436883,
+    -76.479144
+   ]
+  },
+  {
+   "codigo": 1403,
+   "nombre": "Manuela Beltrán",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.420224,
+    -76.472288
+   ]
+  },
+  {
+   "codigo": 1404,
+   "nombre": "Las Orquídeas",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.414144,
+    -76.47636
+   ]
+  },
+  {
+   "codigo": 1405,
+   "nombre": "José Manuel Marroquín Segunda Etapa",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.432426,
+    -76.481769
+   ]
+  },
+  {
+   "codigo": 1406,
+   "nombre": "José Manuel Marroquín Primera Etapa",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.423318,
+    -76.478947
+   ]
+  },
+  {
+   "codigo": 1407,
+   "nombre": "Puerta del Sol",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.430906,
+    -76.473487
+   ]
+  },
+  {
+   "codigo": 1408,
+   "nombre": "Los Naranjos I",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.433642,
+    -76.481243
+   ]
+  },
+  {
+   "codigo": 1409,
+   "nombre": "Promociones Populares B",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.426614,
+    -76.472351
+   ]
+  },
+  {
+   "codigo": 1410,
+   "nombre": "Los Naranjos II",
+   "comuna": 14,
+   "categoria": "Barrio",
+   "centroide": [
+    3.432615,
+    -76.476878
+   ]
+  },
+  {
+   "codigo": 1501,
+   "nombre": "El Retiro",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.410336,
+    -76.498795
+   ]
+  },
+  {
+   "codigo": 1502,
+   "nombre": "Los Comuneros I",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.411582,
+    -76.492895
+   ]
+  },
+  {
+   "codigo": 1503,
+   "nombre": "Laureano Gómez",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.412188,
+    -76.495889
+   ]
+  },
+  {
+   "codigo": 1504,
+   "nombre": "El Vallado",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.40636,
+    -76.499176
+   ]
+  },
+  {
+   "codigo": 1505,
+   "nombre": "Ciudad Córdoba",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.400961,
+    -76.508614
+   ]
+  },
+  {
+   "codigo": 1506,
+   "nombre": "Mojica",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.415505,
+    -76.487737
+   ]
+  },
+  {
+   "codigo": 1507,
+   "nombre": "El Morichal",
+   "comuna": 15,
+   "categoria": "Barrio",
+   "centroide": [
+    3.396193,
+    -76.505967
+   ]
+  },
+  {
+   "codigo": 1601,
+   "nombre": "Mariano Ramos",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.403261,
+    -76.517027
+   ]
+  },
+  {
+   "codigo": 1602,
+   "nombre": "República de Israel",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.407334,
+    -76.512964
+   ]
+  },
+  {
+   "codigo": 1603,
+   "nombre": "Unión de Vivienda Popular",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.410481,
+    -76.509594
+   ]
+  },
+  {
+   "codigo": 1604,
+   "nombre": "Antonio Nariño",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.414553,
+    -76.505962
+   ]
+  },
+  {
+   "codigo": 1605,
+   "nombre": "Brisas del Limonar",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.401513,
+    -76.521897
+   ]
+  },
+  {
+   "codigo": 1606,
+   "nombre": "Sector Vendimia",
+   "comuna": 16,
+   "categoria": "Sector",
+   "centroide": [
+    3.390591,
+    -76.513233
+   ]
+  },
+  {
+   "codigo": 1607,
+   "nombre": "Ciudad 2000",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.39412,
+    -76.519636
+   ]
+  },
+  {
+   "codigo": 1608,
+   "nombre": "La Alborada",
+   "comuna": 16,
+   "categoria": "Barrio",
+   "centroide": [
+    3.399725,
+    -76.521504
+   ]
+  },
+  {
+   "codigo": 1701,
+   "nombre": "La Playa",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.375277,
+    -76.54142
+   ]
+  },
+  {
+   "codigo": 1702,
+   "nombre": "Primero de Mayo",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.4055,
+    -76.533398
+   ]
+  },
+  {
+   "codigo": 1703,
+   "nombre": "Ciudadela Comfandi",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.384914,
+    -76.522408
+   ]
+  },
+  {
+   "codigo": 1704,
+   "nombre": "Sector Ciudad Universitaria",
+   "comuna": 17,
+   "categoria": "Sector",
+   "centroide": [
+    3.374684,
+    -76.533101
+   ]
+  },
+  {
+   "codigo": 1705,
+   "nombre": "Caney",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.384335,
+    -76.51834
+   ]
+  },
+  {
+   "codigo": 1706,
+   "nombre": "Lili",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.371326,
+    -76.519616
+   ]
+  },
+  {
+   "codigo": 1707,
+   "nombre": "Santa Anita - La Selva",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.405526,
+    -76.53802
+   ]
+  },
+  {
+   "codigo": 1708,
+   "nombre": "El Ingenio",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.383154,
+    -76.530566
+   ]
+  },
+  {
+   "codigo": 1709,
+   "nombre": "Mayapan - Las Vegas",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.382445,
+    -76.541561
+   ]
+  },
+  {
+   "codigo": 1710,
+   "nombre": "Las Quintas de Don Simón",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.389582,
+    -76.535651
+   ]
+  },
+  {
+   "codigo": 1711,
+   "nombre": "Ciudad Capri",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.389427,
+    -76.541875
+   ]
+  },
+  {
+   "codigo": 1712,
+   "nombre": "La Hacienda",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.395063,
+    -76.529792
+   ]
+  },
+  {
+   "codigo": 1713,
+   "nombre": "Los Portales - Nuevo Rey",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.394005,
+    -76.539321
+   ]
+  },
+  {
+   "codigo": 1714,
+   "nombre": "Cañaverales - Los Samanes",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.401732,
+    -76.525261
+   ]
+  },
+  {
+   "codigo": 1715,
+   "nombre": "El Limonar",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.402164,
+    -76.529594
+   ]
+  },
+  {
+   "codigo": 1716,
+   "nombre": "Bosques del Limonar",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.39972,
+    -76.53491
+   ]
+  },
+  {
+   "codigo": 1717,
+   "nombre": "El Gran Limonar - Cataya",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.398533,
+    -76.54005
+   ]
+  },
+  {
+   "codigo": 1718,
+   "nombre": "El Gran Limonar",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.397131,
+    -76.544582
+   ]
+  },
+  {
+   "codigo": 1719,
+   "nombre": "Unicentro Cali",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.376664,
+    -76.539096
+   ]
+  },
+  {
+   "codigo": 1720,
+   "nombre": "Ciudadela Pasoancho",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.385834,
+    -76.536077
+   ]
+  },
+  {
+   "codigo": 1721,
+   "nombre": "Prados del Limonar",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.38995,
+    -76.528437
+   ]
+  },
+  {
+   "codigo": 1722,
+   "nombre": "Urbanización San Joaquín",
+   "comuna": 17,
+   "categoria": "Barrio",
+   "centroide": [
+    3.372405,
+    -76.527061
+   ]
+  },
+  {
+   "codigo": 1801,
+   "nombre": "Buenos Aires",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.392814,
+    -76.549324
+   ]
+  },
+  {
+   "codigo": 1802,
+   "nombre": "Caldas",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.394858,
+    -76.549536
+   ]
+  },
+  {
+   "codigo": 1803,
+   "nombre": "Los Chorros",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.394131,
+    -76.55493
+   ]
+  },
+  {
+   "codigo": 1804,
+   "nombre": "Meléndez",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.377951,
+    -76.545066
+   ]
+  },
+  {
+   "codigo": 1805,
+   "nombre": "Los Farallones",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.391214,
+    -76.552784
+   ]
+  },
+  {
+   "codigo": 1807,
+   "nombre": "Francisco Eladio Ramírez",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.388302,
+    -76.548647
+   ]
+  },
+  {
+   "codigo": 1808,
+   "nombre": "Prados del Sur",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.388194,
+    -76.554956
+   ]
+  },
+  {
+   "codigo": 1809,
+   "nombre": "Horizontes",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.375823,
+    -76.54864
+   ]
+  },
+  {
+   "codigo": 1810,
+   "nombre": "Mario Correa Rengifo",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.387845,
+    -76.557369
+   ]
+  },
+  {
+   "codigo": 1811,
+   "nombre": "Lourdes",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.391634,
+    -76.5558
+   ]
+  },
+  {
+   "codigo": 1812,
+   "nombre": "Colinas del Sur",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.389538,
+    -76.552179
+   ]
+  },
+  {
+   "codigo": 1813,
+   "nombre": "Alférez Real",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.389898,
+    -76.547603
+   ]
+  },
+  {
+   "codigo": 1814,
+   "nombre": "Nápoles",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.386565,
+    -76.54832
+   ]
+  },
+  {
+   "codigo": 1815,
+   "nombre": "El Jordán",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.374555,
+    -76.551296
+   ]
+  },
+  {
+   "codigo": 1816,
+   "nombre": "Sector Cuarteles de Nápoles",
+   "comuna": 18,
+   "categoria": "Sector",
+   "centroide": [
+    3.381867,
+    -76.550694
+   ]
+  },
+  {
+   "codigo": 1817,
+   "nombre": "Sector Alto de los Chorros",
+   "comuna": 18,
+   "categoria": "Sector",
+   "centroide": [
+    3.391008,
+    -76.559938
+   ]
+  },
+  {
+   "codigo": 1818,
+   "nombre": "Sector Polvorines",
+   "comuna": 18,
+   "categoria": "Sector",
+   "centroide": [
+    3.37166,
+    -76.558967
+   ]
+  },
+  {
+   "codigo": 1819,
+   "nombre": "Altos de Santa Elena",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.370605,
+    -76.555521
+   ]
+  },
+  {
+   "codigo": 1820,
+   "nombre": "Altos del Madrigal",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.369617,
+    -76.551864
+   ]
+  },
+  {
+   "codigo": 1821,
+   "nombre": "Bajo Meléndez",
+   "comuna": 18,
+   "categoria": "Barrio",
+   "centroide": [
+    3.373195,
+    -76.546273
+   ]
+  },
+  {
+   "codigo": 1822,
+   "nombre": "Sector Alto Jordán",
+   "comuna": 18,
+   "categoria": "Sector",
+   "centroide": [
+    3.376655,
+    -76.556475
+   ]
+  },
+  {
+   "codigo": 1823,
+   "nombre": "Sector Alto Nápoles",
+   "comuna": 18,
+   "categoria": "Sector",
+   "centroide": [
+    3.385075,
+    -76.556654
+   ]
+  },
+  {
+   "codigo": 1901,
+   "nombre": "El Refugio",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.39787,
+    -76.551161
+   ]
+  },
+  {
+   "codigo": 1902,
+   "nombre": "La Cascada",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.400817,
+    -76.554286
+   ]
+  },
+  {
+   "codigo": 1903,
+   "nombre": "El Lido",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.418888,
+    -76.550919
+   ]
+  },
+  {
+   "codigo": 1904,
+   "nombre": "Urbanización Tequendama",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.420607,
+    -76.545261
+   ]
+  },
+  {
+   "codigo": 1905,
+   "nombre": "Eucarístico",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.424311,
+    -76.54025
+   ]
+  },
+  {
+   "codigo": 1906,
+   "nombre": "San Fernando Nuevo",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.427712,
+    -76.542901
+   ]
+  },
+  {
+   "codigo": 1907,
+   "nombre": "Urbanización Nueva Granada",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.423954,
+    -76.549608
+   ]
+  },
+  {
+   "codigo": 1908,
+   "nombre": "Santa Isabel",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.428883,
+    -76.548797
+   ]
+  },
+  {
+   "codigo": 1909,
+   "nombre": "Bellavista",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.445148,
+    -76.552656
+   ]
+  },
+  {
+   "codigo": 1910,
+   "nombre": "San Fernando Viejo",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.435308,
+    -76.54457
+   ]
+  },
+  {
+   "codigo": 1911,
+   "nombre": "Miraflores",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.439141,
+    -76.540864
+   ]
+  },
+  {
+   "codigo": 1912,
+   "nombre": "3 de Julio",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.433034,
+    -76.540074
+   ]
+  },
+  {
+   "codigo": 1913,
+   "nombre": "El Cedro",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.432154,
+    -76.537399
+   ]
+  },
+  {
+   "codigo": 1914,
+   "nombre": "Champagnat",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.429383,
+    -76.534891
+   ]
+  },
+  {
+   "codigo": 1915,
+   "nombre": "Urbanización Colseguros",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.429577,
+    -76.531706
+   ]
+  },
+  {
+   "codigo": 1916,
+   "nombre": "Los Cámbulos",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.419066,
+    -76.539354
+   ]
+  },
+  {
+   "codigo": 1917,
+   "nombre": "El Mortiñal",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.442148,
+    -76.55003
+   ]
+  },
+  {
+   "codigo": 1918,
+   "nombre": "Urbanización Militar",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.413517,
+    -76.539293
+   ]
+  },
+  {
+   "codigo": 1919,
+   "nombre": "Cuarto de Legua - Guadalupe",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.40882,
+    -76.551829
+   ]
+  },
+  {
+   "codigo": 1920,
+   "nombre": "Nueva Tequendama",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.41337,
+    -76.543882
+   ]
+  },
+  {
+   "codigo": 1921,
+   "nombre": "Camino Real - Joaquín Borrero Sinisterra",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.407862,
+    -76.544607
+   ]
+  },
+  {
+   "codigo": 1922,
+   "nombre": "Camino Real - Los Fundadores",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.40815,
+    -76.541048
+   ]
+  },
+  {
+   "codigo": 1923,
+   "nombre": "Altos de Santa Isabel",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.43222,
+    -76.552867
+   ]
+  },
+  {
+   "codigo": 1924,
+   "nombre": "Santa Bárbara",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.442016,
+    -76.547105
+   ]
+  },
+  {
+   "codigo": 1925,
+   "nombre": "Tejares - Cristales",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437216,
+    -76.549168
+   ]
+  },
+  {
+   "codigo": 1926,
+   "nombre": "Unidad Residencial Santiago de Cali",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.415685,
+    -76.54677
+   ]
+  },
+  {
+   "codigo": 1927,
+   "nombre": "Unidad Residencial El Coliseo",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.413657,
+    -76.554398
+   ]
+  },
+  {
+   "codigo": 1928,
+   "nombre": "Cañaveralejo - Seguros Patria",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.403066,
+    -76.543729
+   ]
+  },
+  {
+   "codigo": 1929,
+   "nombre": "Cañaveral",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.409206,
+    -76.564273
+   ]
+  },
+  {
+   "codigo": 1930,
+   "nombre": "Pampa Linda",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.404316,
+    -76.551235
+   ]
+  },
+  {
+   "codigo": 1931,
+   "nombre": "Cañaveralejo Guadalupe",
+   "comuna": 19,
+   "categoria": "Barrio",
+   "centroide": [
+    3.408488,
+    -76.558315
+   ]
+  },
+  {
+   "codigo": 1932,
+   "nombre": "Sector Unidad Deportiva Jaime Aparicio",
+   "comuna": 19,
+   "categoria": "Sector",
+   "centroide": [
+    3.42393,
+    -76.536149
+   ]
+  },
+  {
+   "codigo": 1933,
+   "nombre": "Sector Unidad Deportiva Alberto Galindo Plaza de Toros",
+   "comuna": 19,
+   "categoria": "Sector",
+   "centroide": [
+    3.412311,
+    -76.550564
+   ]
+  },
+  {
+   "codigo": 2001,
+   "nombre": "El Cortijo",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.416598,
+    -76.558873
+   ]
+  },
+  {
+   "codigo": 2002,
+   "nombre": "Belisario Caicedo",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.414568,
+    -76.556308
+   ]
+  },
+  {
+   "codigo": 2003,
+   "nombre": "Siloé",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.422126,
+    -76.55609
+   ]
+  },
+  {
+   "codigo": 2004,
+   "nombre": "Lleras Camargo",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.421162,
+    -76.561636
+   ]
+  },
+  {
+   "codigo": 2005,
+   "nombre": "Belén",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.427235,
+    -76.55331
+   ]
+  },
+  {
+   "codigo": 2006,
+   "nombre": "Brisas de Mayo",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.417805,
+    -76.563908
+   ]
+  },
+  {
+   "codigo": 2007,
+   "nombre": "Tierra Blanca",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.419676,
+    -76.558881
+   ]
+  },
+  {
+   "codigo": 2008,
+   "nombre": "Pueblo Joven",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.416209,
+    -76.565216
+   ]
+  },
+  {
+   "codigo": 2009,
+   "nombre": "Cañaveralejo",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.412936,
+    -76.563506
+   ]
+  },
+  {
+   "codigo": 2010,
+   "nombre": "Venezuela",
+   "comuna": 20,
+   "categoria": "Barrio",
+   "centroide": [
+    3.41437,
+    -76.559695
+   ]
+  },
+  {
+   "codigo": 2011,
+   "nombre": "Sector La Sultana",
+   "comuna": 20,
+   "categoria": "Sector",
+   "centroide": [
+    3.421951,
+    -76.564565
+   ]
+  },
+  {
+   "codigo": 2101,
+   "nombre": "Pizamos I",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.402387,
+    -76.474917
+   ]
+  },
+  {
+   "codigo": 2102,
+   "nombre": "Pizamos II",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.404149,
+    -76.472458
+   ]
+  },
+  {
+   "codigo": 2103,
+   "nombre": "Calimio Desepaz",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.414422,
+    -76.468859
+   ]
+  },
+  {
+   "codigo": 2104,
+   "nombre": "El Remanso",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.418355,
+    -76.465135
+   ]
+  },
+  {
+   "codigo": 2105,
+   "nombre": "Los Líderes",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.419686,
+    -76.466318
+   ]
+  },
+  {
+   "codigo": 2106,
+   "nombre": "Desepaz Invicali",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.425348,
+    -76.463134
+   ]
+  },
+  {
+   "codigo": 2107,
+   "nombre": "Compartir",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.431481,
+    -76.466126
+   ]
+  },
+  {
+   "codigo": 2108,
+   "nombre": "Ciudad Talanga",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.434129,
+    -76.467522
+   ]
+  },
+  {
+   "codigo": 2109,
+   "nombre": "Sector Villamercedes I - Villa Luz - Las Garzas",
+   "comuna": 21,
+   "categoria": "Sector",
+   "centroide": [
+    3.409938,
+    -76.477261
+   ]
+  },
+  {
+   "codigo": 2110,
+   "nombre": "Pizamos III - Las Dalias",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.407894,
+    -76.47544
+   ]
+  },
+  {
+   "codigo": 2111,
+   "nombre": "Nuevo Amanecer",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.407222,
+    -76.470013
+   ]
+  },
+  {
+   "codigo": 2112,
+   "nombre": "Ciudadela del Rio",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.426246,
+    -76.466271
+   ]
+  },
+  {
+   "codigo": 2113,
+   "nombre": "Valle Grande",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.437548,
+    -76.471349
+   ]
+  },
+  {
+   "codigo": 2114,
+   "nombre": "Sector Planta de Tratamiento",
+   "comuna": 21,
+   "categoria": "Sector",
+   "centroide": [
+    3.444287,
+    -76.479068
+   ]
+  },
+  {
+   "codigo": 2115,
+   "nombre": "Ciudadela Río Cauca",
+   "comuna": 21,
+   "categoria": "Barrio",
+   "centroide": [
+    3.440882,
+    -76.478194
+   ]
+  },
+  {
+   "codigo": 2201,
+   "nombre": "Urbanización Ciudad Jardín",
+   "comuna": 22,
+   "categoria": "Barrio",
+   "centroide": [
+    3.362974,
+    -76.536694
+   ]
+  },
+  {
+   "codigo": 2202,
+   "nombre": "Parcelaciones Pance",
+   "comuna": 22,
+   "categoria": "Barrio",
+   "centroide": [
+    3.345759,
+    -76.536492
+   ]
+  },
+  {
+   "codigo": 2203,
+   "nombre": "Urbanización Río Lili",
+   "comuna": 22,
+   "categoria": "Barrio",
+   "centroide": [
+    3.364587,
+    -76.527669
+   ]
+  },
+  {
+   "codigo": 2204,
+   "nombre": "Ciudad Campestre",
+   "comuna": 22,
+   "categoria": "Barrio",
+   "centroide": [
+    3.369726,
+    -76.539465
+   ]
+  },
+  {
+   "codigo": 2205,
+   "nombre": "Club Campestre",
+   "comuna": 22,
+   "categoria": "Sector",
+   "centroide": [
+    3.369419,
+    -76.543988
+   ]
+  }
+ ]
+}

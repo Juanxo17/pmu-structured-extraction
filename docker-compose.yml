@@ -1,0 +1,94 @@
+services:
+  bff:
+    build:
+      context: .
+      dockerfile: backend/bff/Dockerfile
+    image: sirena-bff
+    ports:
+      - "8000:8000"
+    environment:
+      - CRUD_URL=http://crud:8001
+      - PROCESS_URL=http://process:8002
+    depends_on:
+      - crud
+      - process
+
+  telegram-source:
+    build:
+      context: .
+      dockerfile: backend/bff/Dockerfile
+    image: sirena-bff
+    command: ["uv", "run", "--package", "bff", "python", "-m", "bff.telegram_source"]
+    environment:
+      - BFF_URL=http://bff:8000
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    depends_on:
+      - bff
+
+  crud:
+    build:
+      context: .
+      dockerfile: backend/crud/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - sirena_db:/app/data
+
+  process:
+    build:
+      context: .
+      dockerfile: backend/process/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - INFERENCE_URL=http://inference:8003
+      - GEO_URL=http://geo:8004
+      - CRUD_URL=http://crud:8001
+    depends_on:
+      - inference
+      - geo
+      - crud
+
+  inference:
+    build:
+      context: .
+      dockerfile: backend/inference/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+
+  geo:
+    build:
+      context: .
+      dockerfile: backend/geo/Dockerfile
+    ports:
+      - "8004:8004"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - BFF_URL=http://bff:8000
+    depends_on:
+      - bff
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: >
+      mlflow server --host 0.0.0.0
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root mlflow-artifacts:/mlflow/artifacts
+      --serve-artifacts
+      --artifacts-destination /mlflow/artifacts
+
+volumes:
+  sirena_db:
+  mlflow_data:
