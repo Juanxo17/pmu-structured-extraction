@@ -2,7 +2,9 @@
 
 Ejecuta la compuerta y la extraccion sobre cada ejemplo de un corpus anotado
 y calcula exactitud y F1 por campo del esquema, junto con la latencia media
-y el percentil 95. Genera un informe Markdown con el resumen.
+y el percentil 95. Genera un informe Markdown con el resumen, las matrices
+de confusion por campo en forma de tablas legibles y las matrices con mayor
+cantidad de errores.
 
 Uso desde la raiz del repo:
 
@@ -30,6 +32,9 @@ CAMPOS_COMPUERTA = ("es_reporte_accionable", "temporalidad", "intencion")
 CAMPOS_NATURALEZA = ("tipo_evento", "servicio_de_respuesta")
 CAMPOS_UBICACION = ("ubicacion_texto_literal", "punto_referencia")
 CAMPOS_EVALUADOS = CAMPOS_COMPUERTA + CAMPOS_NATURALEZA + CAMPOS_UBICACION
+MAX_VALORES_MATRIZ = 16
+MAX_MATRICES_ERROR = 3
+MAX_CONFUSIONES_POR_CAMPO = 3
 
 
 @dataclass(frozen=True)
@@ -280,17 +285,56 @@ def metricas_por_campo(
     )
 
 
+def matriz_confusion(
+    ejemplos: Sequence[EjemploGold],
+    resultados: Sequence[EvaluacionEjemplo],
+    campo: str,
+) -> dict[str, dict[str, int]]:
+    """Cuenta las coincidencias por valor entre lo predicho y el gold.
+
+    Desnormaliza los campos multivaluados expandiendo cada valor de la
+    lista como una entrada independiente en la matriz.
+
+    Args:
+        ejemplos: Ejemplos gold evaluados en orden de entrada.
+        resultados: Resultados del servicio en el mismo orden.
+        campo: Nombre del campo del esquema.
+
+    Returns:
+        Diccionario anidado valor_gold -> valor_predicho -> cantidad.
+
+    """
+    cuentas: dict[str, dict[str, int]] = {}
+    for ejemplo, resultado in zip(ejemplos, resultados, strict=True):
+        gold = _valor_gold(ejemplo, campo)
+        if gold is None:
+            continue
+        predicho = _valor_predicho(resultado, campo)
+        for valor_gold in _a_conjunto(gold):
+            fila = cuentas.setdefault(valor_gold, {})
+            for valor_predicho in _a_conjunto(predicho):
+                fila[valor_predicho] = fila.get(valor_predicho, 0) + 1
+    return cuentas
+
+
 def generar_informe(
     metricas: Metricas,
     resultados: Sequence[EvaluacionEjemplo],
     ruta: Path,
+    matrices_confusion: dict[str, dict[str, dict[str, int]]] | None = None,
 ) -> None:
     """Escribe el informe de evaluacion en formato Markdown.
+
+    Incluye, cuando se calculan, las matrices de confusion por campo en
+    forma de tablas legibles y una seccion que destaca las matrices con
+    mayor cantidad de errores y explica sus confusiones dominantes.
 
     Args:
         metricas: Resumen numerico de la corrida.
         resultados: Resultados por ejemplo para listar los errores.
         ruta: Ruta donde se escribira el informe.
+        matrices_confusion: Matrices por campo calculadas por
+            matriz_confusion, si se desea incluir su vista legible.
 
     """
     lineas = [
@@ -319,6 +363,9 @@ def generar_informe(
             f"- P95: {metricas.latencia_p95_ms:.1f} ms",
         ]
     )
+    if matrices_confusion is not None:
+        lineas.extend(_seccion_matrices(matrices_confusion))
+        lineas.extend(_seccion_matrices_error(metricas, matrices_confusion))
     con_error = [resultado for resultado in resultados if resultado.error is not None]
     if con_error:
         lineas.extend(["", "## Ejemplos con error", ""])
@@ -326,6 +373,248 @@ def generar_informe(
             lineas.append(f"- {resultado.texto!r}: {resultado.error}")
     ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_text("\n".join(lineas) + "\n", encoding="utf-8")
+
+
+def _seccion_matrices(
+    matrices_confusion: dict[str, dict[str, dict[str, int]]],
+) -> list[str]:
+    """Genera las tablas legibles de las matrices de confusion por campo.
+
+    Args:
+        matrices_confusion: Matrices por campo de matriz_confusion.
+
+    Returns:
+        Lineas de Markdown con una tabla por campo evaluado.
+
+    """
+    lineas = ["", "## Matrices de confusion", ""]
+    for campo in CAMPOS_EVALUADOS:
+        lineas.extend(
+            _render_matriz_confusion(campo, matrices_confusion.get(campo, {}))
+        )
+    return lineas
+
+
+def _seccion_matrices_error(
+    metricas: Metricas,
+    matrices_confusion: dict[str, dict[str, dict[str, int]]],
+) -> list[str]:
+    """Genera la seccion que destaca las matrices con mayor error.
+
+    Args:
+        metricas: Resumen numerico de la corrida.
+        matrices_confusion: Matrices por campo de matriz_confusion.
+
+    Returns:
+        Lineas de Markdown con las matrices mas confusas y su explicacion.
+
+    """
+    lineas: list[str] = ["", "## Matrices con mayor error", ""]
+    destacadas = _matrices_con_mas_error(matrices_confusion)
+    if not destacadas:
+        lineas.append("_Esta corrida no tuvo errores de clasificacion._")
+        return lineas
+    lineas.append(f"Las {len(destacadas)} matrices con mas errores de esta corrida:")
+    for campo, errores, evaluados, confusiones in destacadas:
+        lineas.extend(
+            [f"### {campo} — {errores} errores de {evaluados} evaluados", ""]
+        )
+        for oro, predicho, cantidad in confusiones:
+            lineas.append(f"- {_explicar_confusion(campo, oro, predicho, cantidad)}")
+        lineas.append("")
+    return lineas
+
+
+def _matrices_con_mas_error(
+    matrices_confusion: dict[str, dict[str, dict[str, int]]],
+) -> list[tuple[str, int, int, list[tuple[str, str, int]]]]:
+    """Rankea las matrices por cantidad de errores fuera de la diagonal.
+
+    Args:
+        matrices_confusion: Matrices por campo de matriz_confusion.
+
+    Returns:
+        Tuplas (campo, errores, evaluados, confusiones) con las
+        MAX_MATRICES_ERROR matrices de mayor error, ordenadas de mayor
+        a menor cantidad de errores.
+
+    """
+    errores_por_campo: list[tuple[str, int, int, list[tuple[str, str, int]]]] = []
+    for campo in CAMPOS_EVALUADOS:
+        matriz = matrices_confusion.get(campo, {})
+        evaluados = sum(
+            cantidad for fila in matriz.values() for cantidad in fila.values()
+        )
+        errores = sum(
+            cantidad
+            for oro, fila in matriz.items()
+            for predicho, cantidad in fila.items()
+            if oro != predicho
+        )
+        if errores:
+            errores_por_campo.append(
+                (campo, errores, evaluados, _confusiones_top(matriz))
+            )
+    errores_por_campo.sort(key=lambda entrada: entrada[1], reverse=True)
+    return errores_por_campo[:MAX_MATRICES_ERROR]
+
+
+def _confusiones_top(
+    matriz: dict[str, dict[str, int]],
+) -> list[tuple[str, str, int]]:
+    """Devuelve los pares oro->predicho mas confundidos del campo.
+
+    Args:
+        matriz: Mapeo valor_gold -> valor_predicho -> cantidad.
+
+    Returns:
+        Pares (gold, predicho, cantidad) distintos de la diagonal,
+        ordenados de mayor a menor cantidad.
+
+    """
+    pares = [
+        (oro, predicho, cantidad)
+        for oro, fila in matriz.items()
+        for predicho, cantidad in fila.items()
+        if oro != predicho
+    ]
+    pares.sort(key=lambda par: par[2], reverse=True)
+    return pares[:MAX_CONFUSIONES_POR_CAMPO]
+
+
+def _explicar_confusion(campo: str, oro: str, predicho: str, cantidad: int) -> str:
+    """Describe en espanol una confusion dominante de un campo.
+
+    Args:
+        campo: Campo del esquema al que pertenece la matriz.
+        oro: Valor gold confundido.
+        predicho: Valor predicho incorrecto.
+        cantidad: Ejemplos con esa confusion.
+
+    Returns:
+        Frase de una linea que describe el patron de error.
+
+    """
+    if campo == "es_reporte_accionable":
+        if oro == "true":
+            return (
+                f"{cantidad} ejemplos: reporte accionable clasificado "
+                "como no accionable"
+            )
+        return f"{cantidad} ejemplos: no accionable clasificado como accionable"
+    if campo in CAMPOS_UBICACION:
+        return (
+            f"{cantidad} ejemplos: recupera {predicho!r} en lugar de {oro!r}"
+        )
+    return f"{cantidad} ejemplos: asigna {predicho!r} en lugar de {oro!r}"
+
+
+def _render_matriz_confusion(
+    campo: str,
+    matriz: dict[str, dict[str, int]],
+) -> list[str]:
+    """Genera la tabla Markdown legible de la matriz de confusion de un campo.
+
+    Para campos de alta cardinalidad (por ejemplo, textos libres) solo se
+    muestran los MAX_VALORES_MATRIZ valores mas frecuentes y el resto se
+    agrupa bajo "otros", manteniendo la tabla acotada. La diagonal correcta
+    se resalta en negrita y se agregan totales de filas y columnas.
+
+    Args:
+        campo: Nombre del campo evaluado.
+        matriz: Mapeo valor_gold -> valor_predicho -> cantidad.
+
+    Returns:
+        Lineas de Markdown con la tabla del campo evaluado.
+
+    """
+    if not matriz:
+        return [f"### {campo}", "", "_Sin ejemplos con oro para este campo._", ""]
+    total_oro: dict[str, int] = {}
+    total_predicho: dict[str, int] = {}
+    for oro, fila in matriz.items():
+        total_oro[oro] = sum(fila.values())
+        for predicho, cantidad in fila.items():
+            total_predicho[predicho] = total_predicho.get(predicho, 0) + cantidad
+    visibles = sorted(
+        set(total_oro) | set(total_predicho),
+        key=lambda valor: (valor not in total_oro, -total_oro.get(valor, 0), valor),
+    )
+    visibles = visibles[:MAX_VALORES_MATRIZ]
+    reducida = _agregar_otros(matriz, visibles)
+    filas = [oro for oro in visibles if oro in reducida]
+    if "otros" in reducida:
+        filas.append("otros")
+    columnas = [
+        valor
+        for valor in visibles
+        if any(valor in fila for fila in reducida.values())
+    ]
+    hay_otros = any("otros" in fila for fila in reducida.values())
+    if hay_otros:
+        columnas.append("otros")
+
+    cabecera = "| Oro \\ Predicho | " + " | ".join(
+        _etiqueta_matriz(valor) for valor in columnas
+    ) + " | Total |"
+    celdas_separador = [":---"] + ["---:"] * (len(columnas) + 1)
+    separador = "|" + "|".join(celdas_separador) + "|"
+    lineas = [f"### {campo}", "", cabecera, separador]
+    totales_columna = [0] * len(columnas)
+    for oro in filas:
+        fila = reducida[oro]
+        celdas = [f"**{_etiqueta_matriz(oro)}**"]
+        for indice, predicho in enumerate(columnas):
+            cantidad = fila.get(predicho, 0)
+            totales_columna[indice] += cantidad
+            celdas.append(
+                f"**{cantidad}**" if oro == predicho else str(cantidad)
+            )
+        celdas.append(str(sum(fila.values())))
+        lineas.append("| " + " | ".join(celdas) + " |")
+    celdas_total = ["**Total**"] + [str(t) for t in totales_columna]
+    lineas.append("| " + " | ".join(celdas_total) + " |")
+    return lineas
+
+
+def _agregar_otros(
+    matriz: dict[str, dict[str, int]],
+    visibles: set[str] | list[str],
+) -> dict[str, dict[str, int]]:
+    """Agrupa bajo "otros" los valores no visibles de una matriz.
+
+    Args:
+        matriz: Mapeo valor_gold -> valor_predicho -> cantidad.
+        visibles: Conjunto de valores que si se muestran en la tabla.
+
+    Returns:
+        Matriz reducida donde los valores ocultos se consolidan en "otros".
+
+    """
+    visibles_set = set(visibles)
+    reducida: dict[str, dict[str, int]] = {}
+    for oro, fila in matriz.items():
+        oro_visto = oro if oro in visibles_set else "otros"
+        for predicho, cantidad in fila.items():
+            predicho_visto = predicho if predicho in visibles_set else "otros"
+            reducida.setdefault(oro_visto, {})
+            reducida[oro_visto][predicho_visto] = (
+                reducida[oro_visto].get(predicho_visto, 0) + cantidad
+            )
+    return reducida
+
+
+def _etiqueta_matriz(valor: str) -> str:
+    """Devuelve la etiqueta Markdown de un valor de la matriz.
+
+    Args:
+        valor: Valor del esquema (puede ser la cadena vacia).
+
+    Returns:
+        El valor tal cual, o "_vacio_" cuando es la cadena vacia.
+
+    """
+    return valor if valor else "_vacio_"
 
 
 def _latencia_ms(inicio: float) -> float:
@@ -524,9 +813,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     evaluador = EvaluadorPrompts(servicio)
     resultados = evaluador.evaluar(ejemplos)
     metricas = metricas_por_campo(ejemplos, resultados)
+    matrices = {
+        campo: matriz_confusion(ejemplos, resultados, campo)
+        for campo in CAMPOS_EVALUADOS
+    }
     ruta = args.report if args.report is not None else _ruta_informe_por_defecto()
-    generar_informe(metricas, resultados, ruta)
+    generar_informe(metricas, resultados, ruta, matrices_confusion=matrices)
+    from inference.registro import registrar_corrida
+
+    run_id = registrar_corrida(
+        metricas=metricas,
+        ejemplos=ejemplos,
+        resultados=resultados,
+        ruta_informe=ruta,
+        corpus=args.corpus,
+        matrices_confusion=matrices,
+    )
     print(f"Informe generado en {ruta}")
+    if run_id:
+        print(f"Corrida registrada en MLflow: {run_id}")
     print(
         "Ejemplos: "
         f"{metricas.total_ejemplos} | Errores de validacion: "
