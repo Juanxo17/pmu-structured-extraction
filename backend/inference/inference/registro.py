@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 EXPERIMENTO = "sirena-evaluacion"
-MODELO_POR_DEFECTO = "openai/gpt-oss-20b"
+MODELO_POR_DEFECTO = "openai/gpt-oss-120b"
 PROVEEDOR = "groq"
 UMBRAL_COMPUERTA = "no_aplica"
 EQUIPO = "SIRENA"
@@ -89,6 +89,8 @@ def registrar_corrida(
         _registrar_parametros(corpus)
         _registrar_metricas(metricas)
         _registrar_tags(autor=autor, rama=rama, pr=pr)
+        mlflow.log_text(sistema_compuerta(), "prompt_compuerta.txt")
+        mlflow.log_text(sistema_extraccion(), "prompt_extraccion.txt")
         mlflow.log_artifact(str(ruta_informe))
         mlflow.log_dict(_ejemplos_prediccion(resultados), "ejemplos_prediccion.json")
         if matrices_confusion:

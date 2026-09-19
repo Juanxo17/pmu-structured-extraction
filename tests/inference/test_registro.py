@@ -189,7 +189,7 @@ class TestRegistrarCorrida:
         cliente = mlflow.tracking.MlflowClient(uri)
         assert cliente.get_experiment_by_name(EXPERIMENTO) is not None
         corrida = cliente.get_run(run_id)
-        assert corrida.data.params["modelo"] == "openai/gpt-oss-20b"
+        assert corrida.data.params["modelo"] == "openai/gpt-oss-120b"
         assert corrida.data.params["proveedor"] == "groq"
         assert corrida.data.params["temperatura"] == "0.0"
         assert corrida.data.params["intentos"] == "3"
