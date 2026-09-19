@@ -408,6 +408,156 @@ class TestGenerarInforme:
         assert "## Ejemplos con error" in contenido
         assert "'temblor': salida invalida" in contenido
 
+    def test_omite_matrices_cuando_no_se_calculan(self, tmp_path) -> None:
+        """Sin matrices no aparecen las secciones de confusion."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=10.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(metricas, [resultado], ruta)
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "## Matrices de confusion" not in contenido
+        assert "## Matrices con mayor error" not in contenido
+
+
+class TestGenerarInformeMatrices:
+    """Pruebas de las secciones legibles de matrices en generar_informe."""
+
+    def test_incluye_tabla_por_campo_con_diagonal_y_totales(self, tmp_path) -> None:
+        """Rinde una tabla por campo con la diagonal resaltada y totales."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=20.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        matrices = {
+            "es_reporte_accionable": {
+                "true": {"true": 160, "false": 57},
+                "false": {"false": 120, "true": 3},
+            },
+            "tipo_evento": {"sismo": {"sismo": 14}},
+        }
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(
+            metricas,
+            [resultado],
+            ruta,
+            matrices_confusion=matrices,
+        )
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "## Matrices de confusion" in contenido
+        assert "### es_reporte_accionable" in contenido
+        assert "| Oro \\ Predicho | true | false | Total |" in contenido
+        assert "| **true** | **160** | 57 |" in contenido
+        assert "**Total**" in contenido
+
+    def test_destaca_matrices_con_mayor_error(self, tmp_path) -> None:
+        """Explica los pares mas confundidos de las matrices de mayor error."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=20.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        matrices = {
+            "es_reporte_accionable": {
+                "true": {"true": 160, "false": 57},
+                "false": {"false": 120, "true": 3},
+            },
+            "tipo_evento": {"sismo": {"sismo": 14}},
+        }
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(
+            metricas,
+            [resultado],
+            ruta,
+            matrices_confusion=matrices,
+        )
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "## Matrices con mayor error" in contenido
+        assert "60 errores de 340 evaluados" in contenido
+        assert "reporte accionable clasificado como no accionable" in contenido
+        assert "no accionable clasificado como accionable" in contenido
+
+    def test_deja_seccion_vacia_sin_errores(self, tmp_path) -> None:
+        """Avisa cuando ninguna matriz tiene confusion fuera de la diagonal."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=20.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        matrices = {"tipo_evento": {"sismo": {"sismo": 14}}}
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(
+            metricas,
+            [resultado],
+            ruta,
+            matrices_confusion=matrices,
+        )
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "## Matrices con mayor error" in contenido
+        assert "no tuvo errores de clasificacion" in contenido
+
+    def test_agrupa_valores_de_alta_cardinalidad_en_otros(self, tmp_path) -> None:
+        """Trunca los textos libres de ubicacion bajo la etiqueta otros."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=20.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        matrices = {
+            "ubicacion_texto_literal": {
+                **{f"calle {i}": {f"calle {i}": 2} for i in range(1, 17)},
+                **{f"avenida {i}": {f"avenida {i}": 1} for i in range(1, 11)},
+            }
+        }
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(
+            metricas,
+            [resultado],
+            ruta,
+            matrices_confusion=matrices,
+        )
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "### ubicacion_texto_literal" in contenido
+        assert "| **calle 16** |" in contenido
+        assert "otros" in contenido
+        assert "avenida 1" not in contenido
+
+    def test_etiqueta_valores_vacios(self, tmp_path) -> None:
+        """Representa los textos libres vacios de forma legible."""
+        # Arrange
+        resultado = EvaluacionEjemplo(texto="temblor", latencia_ms=20.0)
+        metricas = metricas_por_campo([_ejemplo_sismo()], [resultado])
+        matrices = {
+            "ubicacion_texto_literal": {"": {"": 16}, "calle 5": {"calle 5": 3}}
+        }
+        ruta = tmp_path / "informe.md"
+
+        # Act
+        generar_informe(
+            metricas,
+            [resultado],
+            ruta,
+            matrices_confusion=matrices,
+        )
+
+        # Assert
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "_vacio_" in contenido
+        assert "**16**" in contenido
+
 
 class TestMatrizConfusion:
     """Pruebas de matriz_confusion."""
