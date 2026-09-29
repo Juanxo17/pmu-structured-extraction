@@ -31,6 +31,8 @@ services:
       dockerfile: backend/crud/Dockerfile
     ports:
       - "8001:8001"
+    environment:
+      - CRUD_DATABASE_PATH=/app/data/sirena.db
     volumes:
       - sirena_db:/app/data
 
