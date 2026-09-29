@@ -1,7 +1,10 @@
 .PHONY: install lint format format-check test test-cov clean \
 	run-bff run-crud run-process run-inference run-geo run-frontend run-telegram-source \
-	docker-build docker-up docker-down \
+	docker-build docker-up docker-down run-pipeline \
 	gga-install gga-setup
+
+# Misma imagen que .gitlab-ci.yml (UV_VERSION-pythonPYTHON_VERSION-BASE_LAYER)
+PIPELINE_IMAGE := ghcr.io/astral-sh/uv:0.10.9-python3.12-trixie-slim
 
 install: gga-setup
 	uv sync --all-packages
@@ -73,3 +76,15 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+# Reproduce las etapas lint y test de .gitlab-ci.yml en un contenedor Linux limpio.
+# UV_PROJECT_ENVIRONMENT deja el .venv dentro del contenedor para no pisar el local;
+# MSYS_NO_PATHCONV evita que Git Bash (Windows) reescriba -w /app como ruta de Windows.
+run-pipeline:
+	MSYS_NO_PATHCONV=1 docker run --rm -v "$(CURDIR):/app" -w /app \
+		-e UV_PROJECT_ENVIRONMENT=/tmp/venv -e UV_LINK_MODE=copy \
+		$(PIPELINE_IMAGE) bash -c \
+		"uv sync --all-packages --locked && \
+		uv run ruff check . && uv run ruff format --check . && \
+		uv run --package process python -m spacy download es_core_news_md && \
+		uv run pytest -v"
