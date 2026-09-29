@@ -1,0 +1,27 @@
+# Replica main y develop de GitHub hacia GitLab (GitHub es la fuente de verdad).
+# Requiere el secret GITLAB_TOKEN: token de GitLab con scope write_repository.
+name: Mirror a GitLab
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-gitlab-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push a GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/Juanxo17/pmu-structured-extraction.git"
+          git push gitlab "HEAD:refs/heads/${GITHUB_REF_NAME}" --force
