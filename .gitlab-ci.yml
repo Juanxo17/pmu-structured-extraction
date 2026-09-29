@@ -52,21 +52,18 @@ build_images:
     - docker:29.3.0-dind
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
-    # Nombre fijo del proyecto: compose etiqueta cada imagen como sirena-<servicio>
-    COMPOSE_PROJECT_NAME: "sirena"
+    # telegram-source reutiliza la imagen de bff; mlflow usa una imagen publicada
     SERVICIOS: "bff crud process inference geo frontend"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   before_script:
     - echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin
   script:
+    # docker-compose.yml nombra cada imagen como $REGISTRY_USER/sirena-<servicio>:$IMAGE_TAG
+    - export IMAGE_TAG="$CI_COMMIT_SHORT_SHA"
     - docker compose build $SERVICIOS
-    # Hacemos push hacia dockerhub: un repositorio por servicio
-    - |
-      for servicio in $SERVICIOS; do
-        remoto="$REGISTRY_USER/sirena-$servicio"
-        docker tag "sirena-$servicio" "$remoto:$CI_COMMIT_SHORT_SHA"
-        docker tag "sirena-$servicio" "$remoto:latest"
-        docker push "$remoto:$CI_COMMIT_SHORT_SHA"
-        docker push "$remoto:latest"
-      done
+    - docker compose push $SERVICIOS
+    # Segundo tag: el build sale completo de la caché de la corrida anterior
+    - export IMAGE_TAG="latest"
+    - docker compose build $SERVICIOS
+    - docker compose push $SERVICIOS
