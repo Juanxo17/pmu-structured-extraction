@@ -224,6 +224,9 @@ class TestTokenBot:
         """Si la variable esta definida, se retorna su valor."""
         # Arrange
         monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "token-de-prueba")
+        # load_dotenv cargaria todo el .env real en os.environ y monkeypatch no
+        # lo revierte: las variables quedarian filtradas al resto de la suite.
+        monkeypatch.setattr(telegram_source, "load_dotenv", lambda: None)
 
         # Act
         resultado = telegram_source._token_bot()

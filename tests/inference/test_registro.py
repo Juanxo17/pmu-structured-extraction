@@ -176,9 +176,10 @@ class TestRegistrarCorrida:
         # Assert
         assert run_id is None
 
-    def test_registra_y_crea_experimento(self, tmp_path) -> None:
+    def test_registra_y_crea_experimento(self, tmp_path, monkeypatch) -> None:
         """Guarda params, metricas y tags en el experimento esperado."""
         # Arrange
+        monkeypatch.delenv("INFERENCE_MODELO", raising=False)
         uri = _uri_sqlite(tmp_path)
 
         # Act
