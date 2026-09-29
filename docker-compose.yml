@@ -31,6 +31,8 @@ services:
       dockerfile: backend/crud/Dockerfile
     ports:
       - "8001:8001"
+    environment:
+      - CRUD_DATABASE_PATH=/app/data/sirena.db
     volumes:
       - sirena_db:/app/data
 
@@ -57,6 +59,7 @@ services:
       - "8003:8003"
     environment:
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - INFERENCE_MODELO=${INFERENCE_MODELO}
 
   geo:
     build:
