@@ -12,6 +12,7 @@ stages:
   - lint
   - test
   - build
+  - deploy
 
 .uv:
   image: ghcr.io/astral-sh/uv:$UV_VERSION-python$PYTHON_VERSION-$BASE_LAYER
@@ -67,3 +68,33 @@ build_images:
     - export IMAGE_TAG="latest"
     - docker compose build $SERVICIOS
     - docker compose push $SERVICIOS
+
+# Despliegue a produccion (VM de Azure). Corre en el GitLab Runner instalado en la VM
+# (tag sirena-vm) y usa el mismo docker-compose.yml del repo, con las imagenes que
+# build_images acaba de subir a Docker Hub.
+deploy:
+  stage: deploy
+  tags: [sirena-vm]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  variables:
+    # Version exacta que subio build_images (hash corto del commit)
+    IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+    # Mismo nombre de proyecto siempre: conserva contenedores y volumenes entre despliegues
+    COMPOSE_PROJECT_NAME: sirena
+  environment:
+    name: produccion
+    url: http://64.236.247.2:8501
+  script:
+    # .env con los secretos de GitLab; INFERENCE_MODELO evita que llegue vacio al servicio
+    - printf "GROQ_API_KEY=%s\nTELEGRAM_BOT_TOKEN=%s\nINFERENCE_MODELO=%s\n" "$GROQ_API_KEY" "$TELEGRAM_BOT_TOKEN" "${INFERENCE_MODELO:-openai/gpt-oss-20b}" > .env
+    # Descarga las imagenes de este commit y recrea solo los contenedores que cambiaron
+    - docker compose pull
+    - docker compose up -d --no-build --remove-orphans
+    # Limpia imagenes viejas para no llenar el disco
+    - docker image prune -f
+    # Verifica que el tablero responda (hasta 2 minutos)
+    - for i in $(seq 1 24); do curl -fsS -o /dev/null http://localhost:8501 && echo "SIRENA arriba (version $IMAGE_TAG)" && exit 0; sleep 5; done; echo "El frontend no respondio"; exit 1
+  after_script:
+    # No dejar secretos en la carpeta de trabajo del runner
+    - rm -f .env
