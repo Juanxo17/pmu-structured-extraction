@@ -19,9 +19,9 @@ class TestPaginaBandeja:
         app = AppTest.from_file(str(_RUTA_PAGINA))
 
         # Act
-        app.run()
+        app.run(timeout=30)
 
         # Assert
         assert not app.exception
         assert len(app.metric) == 3
-        assert app.title[0].value == "Bandeja de reportes"
+        assert app.title[0].value == "Bandeja de reportes 🐰 !!!"
