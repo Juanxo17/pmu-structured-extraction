@@ -208,7 +208,7 @@ def main() -> None:
         pagina = cliente.listar(filtros)
     except ErrorBFF:
         with encabezado:
-            st.title("Bandeja de reportes")
+            st.title("Bandeja de reportes 🔥")
         st.error("No se pudieron cargar los reportes en este momento. Intenta de nuevo más tarde.")
         return
 
