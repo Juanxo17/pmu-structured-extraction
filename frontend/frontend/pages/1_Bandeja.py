@@ -208,13 +208,13 @@ def main() -> None:
         pagina = cliente.listar(filtros)
     except ErrorBFF:
         with encabezado:
-            st.title("Bandeja de reportes 🐰 !!!")
+            st.title("Bandeja de reportes")
         st.error("No se pudieron cargar los reportes en este momento. Intenta de nuevo más tarde.")
         return
 
     with encabezado:
         col_titulo, col_exportar = st.columns([3, 1])
-        col_titulo.title("Bandeja de reportes 🐰 !!!")
+        col_titulo.title("Bandeja de reportes")
         # Trae *todo* lo filtrado (no solo esta página) para que el CSV
         # coincida con el conteo del filtro, no con lo visible en pantalla.
         # Esto pide todas las páginas en cada rerun — aceptable para un botón
