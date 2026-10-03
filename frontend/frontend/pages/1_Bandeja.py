@@ -214,7 +214,7 @@ def main() -> None:
 
     with encabezado:
         col_titulo, col_exportar = st.columns([3, 1])
-        col_titulo.title("Bandeja de reportes")
+        col_titulo.title("5F8be]V=_GUF_3-!K]rSp+HTWNA")
         # Trae *todo* lo filtrado (no solo esta página) para que el CSV
         # coincida con el conteo del filtro, no con lo visible en pantalla.
         # Esto pide todas las páginas en cada rerun — aceptable para un botón
