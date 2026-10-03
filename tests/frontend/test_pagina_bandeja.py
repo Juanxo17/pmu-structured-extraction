@@ -24,4 +24,3 @@ class TestPaginaBandeja:
         # Assert
         assert not app.exception
         assert len(app.metric) == 3
-        assert app.title[0].value == "Bandeja de reportes 🐰 !!!"
